@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Reader Sandbox</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <main>
+        <h1>Document Reader</h1>
+        <p>Upload a text document to preview its contents.</p>
+        <section>
+            <h2>Upload Document</h2>
+            <input type="file" id="documentInput" accept=".txt">
+        </section>
+        <section>
+            <h2>Document Information</h2>
+            <p> File Name: <span id="fileName">No file selected</span></p>
+        </section>
+        <section>
+            <h2>Document Preview</h2>
+            <div id="documentPreview"><p>Your document content will appear here.</p></div>
+        </section>
+    </main>
+</body>
+</html>
