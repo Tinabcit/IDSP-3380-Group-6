@@ -5,23 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document Reader Sandbox</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js" defer></script>
     <script src="script.js" defer></script>
 </head>
 <body>
     <main>
         <h1>Document Reader</h1>
-        <p>Upload a text document to preview its contents.</p>
+        <p>Upload a document to preview its contents.</p>
         <section>
             <h2>Upload Document</h2>
-            <input type="file" id="documentInput" accept=".txt">
+            <p>Supported file types: TXT, PDF, and DOCX</p>
+            <input type="file" id="documentInput" accept=".txt,.pdf,.docx">
         </section>
         <section>
             <h2>Document Information</h2>
-            <p> File Name: <span id="fileName">No file selected</span></p>
+            <p>File Name: <span id="fileName">No file selected</span></p>
+            <p>File Type: <span id="fileType">-</span></p>
+            <p>File Size: <span id="fileSize">-</span></p>
+            <button type="button" id="clearButton">Clear Document</button>
+        </section>
+        <section>
+            <h2>Search Document</h2>
+            <input type="text" id="searchInput" placeholder="Search document...">
+            <button type="button" id="searchButton">Search</button>
+            <p id="searchResult"></p>
         </section>
         <section>
             <h2>Document Preview</h2>
-            <div id="documentPreview"><p>Your document content will appear here.</p></div>
+            <div id="documentPreview">
+                <p>Your document content will appear here.</p>
+            </div>
         </section>
     </main>
 </body>
