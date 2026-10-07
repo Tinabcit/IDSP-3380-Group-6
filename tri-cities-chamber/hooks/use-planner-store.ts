@@ -48,7 +48,7 @@ interface Data {
  * Everything the store holds: the saved data, plus whether it has loaded yet
  * and who is signed in.
  */
-interface PlannerState extends Data {
+export interface PlannerState extends Data {
   status: "loading" | "ready";
   currentUserId: string;
 }
@@ -58,7 +58,7 @@ interface PlannerState extends Data {
  * Each one has a "type" name and the details it needs. logId is an id for the
  * history entry, made before the reducer runs so the reducer stays predictable.
  */
-type Action =
+export type Action =
   | { type: "hydrate"; data: Data; currentUserId?: string }
   | { type: "setUser"; id: string }
   | { type: "addTask"; task: Task; logId: string }
@@ -97,7 +97,7 @@ function log(
  * - ticking a payment/deliverable also ticks its task
  * - deleting a contract also deletes the tasks made from it
  */
-function reducer(state: PlannerState, action: Action): PlannerState {
+export function reducer(state: PlannerState, action: Action): PlannerState {
   switch (action.type) {
     case "hydrate":
       return {

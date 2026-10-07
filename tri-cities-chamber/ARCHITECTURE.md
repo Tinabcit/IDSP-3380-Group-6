@@ -103,7 +103,7 @@ Read as: *file -> files it uses*.
 
 | File | Uses |
 | --- | --- |
-| `layout.tsx` | `app-shell`, `planner-provider` |
+| `layout.tsx` | `planner-provider` |
 | every `page.tsx` | `planner-provider` (DataGate) + its main component (see section 3) |
 
 ### State and shell
@@ -175,7 +175,7 @@ Event     -> belongs to one Pillar
 
 | I want to... | Go to |
 | --- | --- |
-| Add a page to the menu | `PAGES` list in `app/page.tsx`, plus a new folder in `app/` |
+| Add a page to the sandbox index | `PAGES` list in `app/page.tsx`, plus a new folder in `app/` |
 | Change what data looks like | `lib/planner/types.ts` |
 | Change how data is saved or edited | `hooks/use-planner-store.ts` |
 | Use a real database later | Only `hooks/use-planner-store.ts` (keep the functions it returns the same) |
@@ -186,3 +186,7 @@ Event     -> belongs to one Pillar
 | Change the new-contract form | `components/contracts/contract-form.tsx` |
 | Change how dates are written | `lib/planner/dates.ts` |
 | Change colours, buttons, badges | `components/ui/*` and `app/globals.css` |
+
+## 8. Tests
+
+Run `npm test`. Tests sit next to the code they check (`*.test.ts`): `lib/planner/dates`, `selectors`, `contracts`, and the store's `reducer` in `hooks/use-planner-store.test.ts`. The reducer is exported so the contract <-> task sync can be tested without a browser.
