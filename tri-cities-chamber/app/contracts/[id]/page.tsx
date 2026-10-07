@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 
+import { SandboxPage } from "@/components/sandbox/sandbox-page";
 import { DataGate } from "@/components/app-shell/planner-provider";
 import { ContractDetail } from "@/components/contracts/contract-detail";
 
@@ -22,9 +23,11 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
 async function ContractRoute({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   return (
-    <DataGate>
-      <ContractDetail id={id} />
-    </DataGate>
+    <SandboxPage>
+      <DataGate>
+        <ContractDetail id={id} />
+      </DataGate>
+    </SandboxPage>
   );
 }
 

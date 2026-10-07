@@ -44,14 +44,16 @@ Three rules:
 
 | URL | `app/` file | Main component |
 | --- | --- | --- |
-| `/` | `app/page.tsx` | `PlannerApp` (calendar + to-do) |
+| `/` | `app/page.tsx` | Sandbox index (links only) |
+| `/calendar` | `app/calendar/page.tsx` | `CalendarPage` (calendar only) |
+| `/todo` | `app/todo/page.tsx` | `TodoPage` (to-do list only) |
 | `/contracts` | `app/contracts/page.tsx` | `ContractsPage` |
 | `/contracts/new` | `app/contracts/new/page.tsx` | `ContractForm` |
 | `/contracts/:id` | `app/contracts/[id]/page.tsx` | `ContractDetail` |
 | `/events` | `app/events/page.tsx` | `EventsPage` |
 | `/partners` | `app/partners/page.tsx` | `PartnersPage` |
 
-Every page is wrapped by `app/layout.tsx`, which adds the `PlannerProvider` and the `AppShell` (header, menu, footer).
+Every page is wrapped by `app/layout.tsx`, which adds the `PlannerProvider` only. There is no shared header, menu or footer: each page is standalone and shows just a "Sandbox home" link (`SandboxPage`).
 Each page file also wraps its component in `DataGate`, which shows "Loading" until the data is ready.
 
 ## 4. Which component shows which (tree)
@@ -59,17 +61,16 @@ Each page file also wraps its component in `DataGate`, which shows "Loading" unt
 ```text
 app/layout.tsx
 ├─ PlannerProvider ........ planner-provider.tsx   (uses the store + today's date)
-└─ AppShell ............... app-shell.tsx          (header, menu, footer)
+└─ SandboxPage ............ sandbox-page.tsx      (just a "Sandbox home" link)
    └─ the page:
 
-   "/"  PlannerApp ........ components/planner/planner-app.tsx
+   "/calendar"  CalendarPage ... components/calendar/calendar-page.tsx
    ├─ FilterBar ........... filter-bar.tsx
    ├─ MonthHeader ......... month-header.tsx
-   ├─ MonthGrid ........... month-grid.tsx         (draws a DayCell for each day)
-   ├─ DayPanel ............ day-panel.tsx
-   │  └─ TaskItem ......... task-item.tsx
-   ├─ UpcomingPanel ....... upcoming-panel.tsx
-   │  └─ TaskItem
+   └─ MonthGrid ........... month-grid.tsx         (draws a DayCell for each day)
+
+   "/todo"  TodoPage ......... components/todo/todo-page.tsx
+   ├─ TaskItem ............ task-item.tsx
    └─ TaskFormDialog ...... task-form-dialog.tsx   (pop-up to add/edit a task)
 
    "/contracts"  ContractsPage ... components/contracts/contracts-page.tsx
@@ -112,15 +113,14 @@ Read as: *file -> files it uses*.
 | `hooks/use-planner-store.ts` | `lib/planner/dates`, `mock-data`, `mock-contracts`, `types` |
 | `hooks/use-today.ts` | `lib/planner/dates`, `types` |
 | `components/app-shell/planner-provider.tsx` | `use-planner-store`, `use-today`, `lookups`, `mock-data`, `types` |
-| `components/app-shell/app-shell.tsx` | `planner-provider` |
+| `components/sandbox/sandbox-page.tsx` | (none) |
 
 ### Calendar (`components/planner/`)
 
 | File | Uses |
 | --- | --- |
-| `planner-app.tsx` | `planner-provider`, `dates`, `selectors`, `types`, + all 6 children below |
-| `day-panel.tsx` | `dates`, `types`, `lookups`, `task-item` |
-| `upcoming-panel.tsx` | `types`, `lookups`, `task-item` |
+| `components/calendar/calendar-page.tsx` | `planner-provider`, `dates`, `selectors`, `types`, `filter-bar`, `month-header`, `month-grid` |
+| `components/todo/todo-page.tsx` | `planner-provider`, `selectors`, `types`, `task-item`, `task-form-dialog` |
 | `task-item.tsx` | `dates`, `selectors`, `types`, `lookups` |
 | `month-grid.tsx` | `dates`, `selectors`, `types` |
 | `month-header.tsx` | nothing from the app |
@@ -175,7 +175,7 @@ Event     -> belongs to one Pillar
 
 | I want to... | Go to |
 | --- | --- |
-| Add a page to the menu | `NAV` list in `app-shell.tsx`, plus a new folder in `app/` |
+| Add a page to the menu | `PAGES` list in `app/page.tsx`, plus a new folder in `app/` |
 | Change what data looks like | `lib/planner/types.ts` |
 | Change how data is saved or edited | `hooks/use-planner-store.ts` |
 | Use a real database later | Only `hooks/use-planner-store.ts` (keep the functions it returns the same) |
