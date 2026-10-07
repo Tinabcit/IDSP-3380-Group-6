@@ -5,10 +5,8 @@ import { addMonths, isSameMonth, startOfMonth } from 'date-fns';
 import { Plus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { usePlannerStore } from '@/hooks/use-planner-store';
-import { useToday } from '@/hooks/use-today';
+import { usePlannerData } from '@/components/app-shell/planner-provider';
 import { fromISODate, getMonthGrid, toISODate } from '@/lib/planner/dates';
-import { PILLARS, SPONSORS, STAFF } from '@/lib/planner/mock-data';
 import {
   eventsOnDate,
   filterEvents,
@@ -22,28 +20,14 @@ import { EMPTY_FILTERS, type ISODate, type PlannerFilters, type Task, type TaskI
 
 import { DayPanel } from './day-panel';
 import { FilterBar } from './filter-bar';
-import { indexById, type PlannerLookups } from './lookups';
 import { MonthGrid } from './month-grid';
 import { MonthHeader } from './month-header';
 import { TaskFormDialog, type TaskFormState } from './task-form-dialog';
 import { UpcomingPanel } from './upcoming-panel';
 
 export function PlannerApp() {
-  const today = useToday();
-
-  if (!today) {
-    return (
-      <div role="status" className="grid min-h-dvh place-items-center text-sm text-muted-foreground">
-        Loading calendar
-      </div>
-    );
-  }
-
-  return <PlannerView today={today} />;
-}
-
-function PlannerView({ today }: { today: ISODate }) {
-  const store = usePlannerStore();
+  const store = usePlannerData();
+  const { today, lookups } = store;
 
   const [viewMonth, setViewMonth] = useState(() => startOfMonth(fromISODate(today)));
   const [selectedDate, setSelectedDate] = useState<ISODate>(today);
@@ -51,16 +35,6 @@ function PlannerView({ today }: { today: ISODate }) {
   const [filters, setFilters] = useState<PlannerFilters>(EMPTY_FILTERS);
   const [formState, setFormState] = useState<TaskFormState | null>(null);
   const [announcement, setAnnouncement] = useState('');
-
-  const lookups: PlannerLookups = useMemo(
-    () => ({
-      eventsById: indexById(store.events),
-      pillarsById: indexById(PILLARS),
-      sponsorsById: indexById(SPONSORS),
-      staffById: indexById(STAFF),
-    }),
-    [store.events],
-  );
 
   const visibleEvents = useMemo(
     () => filterEvents(store.events, filters, store.tasks),
@@ -144,10 +118,10 @@ function PlannerView({ today }: { today: ISODate }) {
   const filtersActive = hasActiveFilters(filters);
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-7xl flex-col px-4 pb-10 sm:px-6 lg:px-8">
-      <header className="flex items-center justify-between gap-3 py-4 sm:py-6">
+    <div className="flex flex-col">
+      <header className="flex items-center justify-between gap-3 pb-4">
         <div>
-          <h1 className="text-lg font-bold leading-tight sm:text-xl">Partner Calendar</h1>
+          <h1 className="text-xl font-bold leading-tight">Calendar</h1>
           <p className="text-sm text-muted-foreground">Events, sponsor deliverables and reminders</p>
         </div>
         <Button onClick={() => openCreate(selectedDate)}>
@@ -159,84 +133,63 @@ function PlannerView({ today }: { today: ISODate }) {
         </Button>
       </header>
 
-      {!store.isReady ? (
-        <div role="status" className="grid flex-1 place-items-center text-sm text-muted-foreground">
-          Loading calendar
+      <main className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8">
+        <div className="grid content-start gap-4">
+          <FilterBar filters={filters} pillars={store.pillars} sponsors={store.sponsors} onChange={setFilters} />
+          {filtersActive && (
+            <p className="text-sm text-muted-foreground" aria-live="polite">
+              Showing {visibleEvents.length} of {store.events.length} events and {visibleTasks.length} of{' '}
+              {store.tasks.length} tasks.
+            </p>
+          )}
+          <MonthHeader
+            month={viewMonth}
+            isCurrentMonth={isSameMonth(viewMonth, fromISODate(today)) && selectedDate === today}
+            onPrevious={() => setViewMonth((m) => addMonths(m, -1))}
+            onNext={() => setViewMonth((m) => addMonths(m, 1))}
+            onToday={goToToday}
+          />
+          <MonthGrid
+            month={viewMonth}
+            today={today}
+            selectedDate={selectedDate}
+            summaries={summaries}
+            onSelectDate={selectDate}
+            focusKey={focusKey}
+            onKeyboardNavigate={navigateWithKeyboard}
+          />
+          <Legend />
         </div>
-      ) : (
-        <main className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8">
-          <div className="grid content-start gap-4">
-            <FilterBar filters={filters} pillars={PILLARS} sponsors={SPONSORS} onChange={setFilters} />
-            {filtersActive && (
-              <p className="text-sm text-muted-foreground" aria-live="polite">
-                Showing {visibleEvents.length} of {store.events.length} events and {visibleTasks.length} of{' '}
-                {store.tasks.length} tasks.
-              </p>
-            )}
-            <MonthHeader
-              month={viewMonth}
-              isCurrentMonth={isSameMonth(viewMonth, fromISODate(today)) && selectedDate === today}
-              onPrevious={() => setViewMonth((m) => addMonths(m, -1))}
-              onNext={() => setViewMonth((m) => addMonths(m, 1))}
-              onToday={goToToday}
-            />
-            <MonthGrid
-              month={viewMonth}
-              today={today}
-              selectedDate={selectedDate}
-              summaries={summaries}
-              onSelectDate={selectDate}
-              focusKey={focusKey}
-              onKeyboardNavigate={navigateWithKeyboard}
-            />
-            <Legend />
-          </div>
 
-          <aside className="grid content-start gap-8 lg:sticky lg:top-6 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto lg:pr-1">
-            <DayPanel
-              date={selectedDate}
-              today={today}
-              events={dayEvents}
-              tasks={dayTasks}
-              lookups={lookups}
-              onAddTask={openCreate}
-              onToggle={handleToggle}
-              onEdit={openEdit}
-              onDelete={handleDelete}
-            />
-            <UpcomingPanel
-              today={today}
-              tasks={upcoming}
-              lookups={lookups}
-              onToggle={handleToggle}
-              onEdit={openEdit}
-              onDelete={handleDelete}
-              onShowDate={selectDate}
-            />
-          </aside>
-        </main>
-      )}
-
-      <footer className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-10 text-xs text-muted-foreground">
-        <span>Demo data is saved in this browser only.</span>
-        <Button
-          variant="link"
-          size="sm"
-          className="h-auto p-0 text-xs text-muted-foreground"
-          onClick={() => {
-            store.resetDemoData();
-            setAnnouncement('Demo data reset.');
-          }}
-        >
-          Reset demo data
-        </Button>
-      </footer>
+        <aside className="grid content-start gap-8 lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto lg:pr-1">
+          <DayPanel
+            date={selectedDate}
+            today={today}
+            events={dayEvents}
+            tasks={dayTasks}
+            lookups={lookups}
+            onAddTask={openCreate}
+            onToggle={handleToggle}
+            onEdit={openEdit}
+            onDelete={handleDelete}
+          />
+          <UpcomingPanel
+            today={today}
+            tasks={upcoming}
+            lookups={lookups}
+            onToggle={handleToggle}
+            onEdit={openEdit}
+            onDelete={handleDelete}
+            onShowDate={selectDate}
+          />
+        </aside>
+      </main>
 
       <TaskFormDialog
         state={formState}
         events={store.events}
-        sponsors={SPONSORS}
-        staff={STAFF}
+        sponsors={store.sponsors}
+        staff={[store.currentUser, ...store.staff.filter((p) => p.id !== store.currentUser.id)]}
         onClose={() => setFormState(null)}
         onSubmit={handleSubmit}
       />

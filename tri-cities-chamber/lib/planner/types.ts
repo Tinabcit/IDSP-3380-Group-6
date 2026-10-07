@@ -16,6 +16,9 @@ export interface Pillar {
 export interface Sponsor {
   id: string;
   name: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
 }
 
 export interface StaffMember {
@@ -43,9 +46,69 @@ export interface Task {
   assigneeId: string;
   eventId?: string;
   sponsorId?: string;
+  /** Set when the task was generated from a contract payment or deliverable. */
+  contractId?: string;
+  /** The payment or deliverable this task mirrors, kept in sync both ways. */
+  contractItemId?: string;
   notes?: string;
   createdAt: string;
 }
+
+export type ContractStatus = "draft" | "active" | "completed";
+
+export interface PaymentInstalment {
+  id: string;
+  label: string;
+  dueDate: ISODate;
+  amount: number;
+  paid: boolean;
+}
+
+export interface Deliverable {
+  id: string;
+  label: string;
+  dueDate: ISODate;
+  done: boolean;
+}
+
+export interface ContractSummary {
+  overview: string;
+  keyTerms: string[];
+  /** Things staff should double-check, shown separately from key terms. */
+  watchouts: string[];
+}
+
+/** A sponsorship agreement between a partner and (usually) one event. */
+export interface Contract {
+  id: string;
+  title: string;
+  sponsorId: string;
+  eventId?: string;
+  /** Total sponsorship value in CAD. */
+  amount: number;
+  status: ContractStatus;
+  signedDate?: ISODate;
+  fileName?: string;
+  payments: PaymentInstalment[];
+  deliverables: Deliverable[];
+  summary?: ContractSummary;
+  notes?: string;
+  createdAt: string;
+}
+
+export type ContractInput = Omit<Contract, "id" | "createdAt">;
+
+/** A line in the shared history so everyone can see who changed what. */
+export interface ActivityEntry {
+  id: string;
+  at: string;
+  userId: string;
+  message: string;
+  contractId?: string;
+}
+
+export type ContractGroupBy = "none" | "event" | "pillar" | "partner";
+export type ContractSortBy = "nextDue" | "amount" | "title" | "partner";
 
 export type TaskStatus = "pending" | "overdue" | "completed";
 

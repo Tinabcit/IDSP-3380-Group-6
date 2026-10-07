@@ -26,6 +26,7 @@ interface FilterBarProps {
   pillars: Pillar[];
   sponsors: Sponsor[];
   onChange: (filters: PlannerFilters) => void;
+  label?: string;
 }
 
 export function FilterBar({
@@ -33,13 +34,14 @@ export function FilterBar({
   pillars,
   sponsors,
   onChange,
+  label = "Filter calendar",
 }: FilterBarProps) {
   const active = hasActiveFilters(filters);
 
   return (
     <div
       role="group"
-      aria-label="Filter calendar"
+      aria-label={label}
       className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
     >
       <Button

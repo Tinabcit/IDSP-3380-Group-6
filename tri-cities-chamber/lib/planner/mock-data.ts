@@ -22,11 +22,40 @@ export const PILLARS: Pillar[] = [
 ];
 
 export const SPONSORS: Sponsor[] = [
-  { id: "sponsor-coastline", name: "Coastline Credit Union" },
-  { id: "sponsor-harbour", name: "Harbour Insurance" },
-  { id: "sponsor-ridgeway", name: "Ridgeway Builders" },
-  { id: "sponsor-northshore", name: "North Shore Dental" },
-  { id: "sponsor-pacific", name: "Pacific Print Co." },
+  {
+    id: "sponsor-coastline",
+    name: "Coastline Credit Union",
+    contactName: "Alicia Tran",
+    contactEmail: "alicia@coastlinecu.example",
+    contactPhone: "604-555-0142",
+  },
+  {
+    id: "sponsor-harbour",
+    name: "Harbour Insurance",
+    contactName: "Greg Mahler",
+    contactEmail: "greg@harbourins.example",
+    contactPhone: "604-555-0178",
+  },
+  {
+    id: "sponsor-ridgeway",
+    name: "Ridgeway Builders",
+    contactName: "Samira Qureshi",
+    contactEmail: "samira@ridgeway.example",
+    contactPhone: "604-555-0109",
+  },
+  {
+    id: "sponsor-northshore",
+    name: "North Shore Dental",
+    contactName: "Dr. Paul Lee",
+    contactEmail: "office@northshoredental.example",
+  },
+  {
+    id: "sponsor-pacific",
+    name: "Pacific Print Co.",
+    contactName: "Jenna Wirth",
+    contactEmail: "jenna@pacificprint.example",
+    contactPhone: "604-555-0166",
+  },
 ];
 
 export const STAFF: StaffMember[] = [
@@ -113,6 +142,7 @@ export function buildMockTasks(today: ISODate): Task[] {
       assigneeId: "staff-priya",
       eventId: "event-gala",
       sponsorId: "sponsor-coastline",
+      contractId: "contract-gala-coastline",
       notes: "Need vector (SVG or EPS). Printer deadline is firm.",
       createdAt,
     },
@@ -153,6 +183,7 @@ export function buildMockTasks(today: ISODate): Task[] {
       completed: false,
       assigneeId: "staff-maria",
       sponsorId: "sponsor-ridgeway",
+      contractId: "contract-golf-ridgeway",
       notes: "Per contract, 50% due 30 days before golf classic.",
       createdAt,
     },

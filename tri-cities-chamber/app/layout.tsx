@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Public_Sans } from 'next/font/google';
+import { AppShell } from '@/components/app-shell/app-shell';
+import { PlannerProvider } from '@/components/app-shell/planner-provider';
 import './globals.css';
 
 const publicSans = Public_Sans({
@@ -9,8 +11,8 @@ const publicSans = Public_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Partner Calendar',
-  description: 'Events, sponsor deliverables and reminders in one place.',
+  title: 'Tri-Cities Chamber',
+  description: 'Contracts, events, sponsor deliverables and reminders in one place.',
 };
 
 export const viewport: Viewport = {
@@ -25,7 +27,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={publicSans.variable}>
-      <body className="font-sans">{children}</body>
+      <body className="font-sans">
+        <PlannerProvider>
+          <AppShell>{children}</AppShell>
+        </PlannerProvider>
+      </body>
     </html>
   );
 }

@@ -1,7 +1,7 @@
-# Partner Calendar (Calendar + To-Do MVP)
+# Tri-Cities Chamber: Contracts, Events and Reminders (MVP)
 
-Frontend-only MVP for tracking chamber events and sponsor deliverables.
-Mock data, client-side state, no backend.
+Frontend-only MVP built from the Sept. 28 client meet and greet. Mock data,
+client-side state saved in the browser, no backend.
 
 ## Run
 
@@ -10,46 +10,51 @@ npm install
 npm run dev
 ```
 
-## Features
+## What the client asked for, and where it is
 
-- Month calendar with signature events marked by a gold ribbon, plus markers for overdue, to-do and completed tasks
-- Month navigation, Today button and full keyboard support in the grid (arrows, Home/End, PageUp/PageDown)
-- Selected-day panel with that day's events and tasks
-- "Coming up" list: overdue tasks plus anything due in the next 7 days
-- Add, edit, delete (with confirmation) and complete tasks
-- Tasks link to an assignee, an event and a sponsor
-- Filters: signature events only, pillar, sponsor
-- Mobile-first: compact grid on phones, bottom-sheet dialogs, event names on tablet and up
+| Client need (rating)                          | In the MVP                                                                 |
+| --------------------------------------------- | -------------------------------------------------------------------------- |
+| Effortless contract entry (5)                 | `/contracts/new`: upload (simulated auto-fill) or short manual form; payments and deliverables become calendar reminders automatically |
+| Easy navigation for short-term interns (5)    | Four-item nav: bottom tab bar on phones, top bar on desktop; global "Signed in as" switcher |
+| Sorting by event, pillar or partner           | `/contracts`: group by event / pillar / partner, sort by next due, value, partner, title, plus search |
+| Signature event filter                        | Filter bar on Calendar, Contracts and Events                               |
+| Calendar and reminders (not more e-blasts)    | `/`: month calendar, overdue / to-do markers, "Coming up" list             |
+| Contract reader / summarizer                  | Summary card on each contract. **Demo only**: composed from entered fields, labelled as such |
+| Trust and transparency (5)                    | History on every contract and "Recent changes" showing who changed what    |
+| Loss prevention (2-3)                         | "Download backup" (JSON) in the footer; delete needs confirmation          |
+| Phone, laptop and desktop                     | Mobile-first layout                                                        |
+| Reporting (1)                                 | Deliberately minimal: three totals on the Contracts page                   |
+
+Not built yet: real file storage, real AI reading, email or push notifications,
+contract comparison, real sign-in and permissions.
 
 ## Structure
 
 ```
-app/                       page + layout (Public Sans via next/font)
+app/                       routes: / (calendar), /contracts, /contracts/new,
+                           /contracts/[id], /events, /partners
+components/app-shell/      layout, nav, PlannerProvider (shared store via context)
+components/contracts/      list, card, form, detail, activity list
+components/events/         events page + add-event dialog
+components/partners/       partners page
+components/planner/        calendar and task components
 components/ui/             shadcn/ui primitives
-components/planner/        feature components
-  planner-app.tsx          root: view state, filters, wiring
-  month-grid.tsx           calendar grid (roving tabindex)
-  day-panel.tsx            selected day
-  upcoming-panel.tsx       next 7 days
-  task-item.tsx            task row with complete/edit/delete
-  task-form-dialog.tsx     create/edit form
-  filter-bar.tsx
-hooks/
-  use-planner-store.ts     task/event state + localStorage persistence
-  use-today.ts             current date, rolls over at midnight
+hooks/use-planner-store.ts events, tasks, partners, contracts, activity + localStorage
 lib/planner/
   types.ts                 domain types (flat, id-referenced, DB-ready)
-  mock-data.ts             pillars, sponsors, staff, seeded events/tasks
-  selectors.ts             filtering, sorting, status, per-day summaries
-  dates.ts                 date helpers (ISO yyyy-MM-dd strings)
+  mock-data.ts             pillars, partners, staff, events, tasks
+  mock-contracts.ts        contracts and activity
+  contracts.ts             filter, sort, group, totals, demo summary and extraction
+  selectors.ts, dates.ts   task selectors and date helpers
 ```
+
+Contract payments and deliverables are mirrored as tasks (linked by
+`contractItemId`). Ticking one side updates the other.
 
 ## Adding the backend later
 
-Components only talk to `usePlannerStore()` (`tasks`, `events`, `addTask`,
-`updateTask`, `toggleTask`, `deleteTask`). Replace that hook's internals with
-Supabase queries and mutations and the UI should not need changes. The types in
-`lib/planner/types.ts` map one-to-one onto tables: `events`, `tasks`,
-`sponsors`, `pillars`, `staff`.
-
-Pillars, sponsors and staff are placeholder values in `mock-data.ts`.
+Pages only talk to `usePlannerData()`, which wraps `usePlannerStore()`. Replace
+that hook's internals with database calls and the UI should not need changes.
+Types map onto tables: `events`, `tasks`, `sponsors`, `contracts`,
+`payments`, `deliverables`, `activity`. Pillars and staff are placeholder
+constants in `mock-data.ts`.
