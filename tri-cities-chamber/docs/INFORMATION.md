@@ -18,6 +18,7 @@ Other files you will meet:
 | --- | --- |
 | `CLAUDE.md` | Short rules the AI reads before every task (process, security, code style) |
 | `AGENTS.md` | Next.js version warning. Managed by `next dev`, do not edit |
+| `docs/TEAM_QUICKSTART.md` | One page for teammates: which command to run when, which doc to touch |
 | `ARCHITECTURE.md` | Where code lives and how it connects |
 | `README.md` | What the app is, how to run it |
 | `.claude/skills/*/SKILL.md` | The four commands below |

@@ -64,7 +64,7 @@ constants in `mock-data.ts`.
 
 ## Docs and AI workflow
 
-Start with `docs/INFORMATION.md`: what each doc is for, and the commands to run
+New teammates: read `docs/TEAM_QUICKSTART.md` (one page). For the full picture, see `docs/INFORMATION.md`: what each doc is for, and the commands to run
 on every new branch (`/sync`, `/plan`, `/done`, `/landed`). Rules for the AI
 assistant are in `CLAUDE.md`. Decisions are logged in `docs/DECISIONS.md` and
 the current plan is in `docs/IMPLEMENTATION_PLAN.md`. `ARCHITECTURE.md` explains

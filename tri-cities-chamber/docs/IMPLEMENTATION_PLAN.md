@@ -29,6 +29,7 @@ Phases 1-3 were reconstructed from git history. Add the next phase with /plan on
 - [x] Agents in .claude/agents, permissions in .claude/settings.json, .env in .gitignore
 - [x] README.md and ARCHITECTURE.md gain a Tests / Docs section
 - [x] Keep docs current per PR: /done runs the docs-updater agent, PR template added
+- [x] docs/TEAM_QUICKSTART.md: one-page command guide for teammates
 - [ ] Fill in the TODO lines in docs/DISCOVERY.md, USER_RESEARCH.md and COMPETITIVE_MATRIX.md with the client and team
 - [ ] Merge this branch to dev (/done, then /landed)
 

@@ -6,7 +6,7 @@ Enforce TDD workflow. Use /sync (preflight), /plan (design plan), /done (validat
 
 Refer to docs/DECISIONS.md and docs/IMPLEMENTATION_PLAN.md for context before work.
 
-Background: docs/DISCOVERY.md, docs/USER_RESEARCH.md, docs/COMPETITIVE_MATRIX.md, ARCHITECTURE.md. What each doc is for: docs/INFORMATION.md.
+Background: docs/DISCOVERY.md, docs/USER_RESEARCH.md, docs/COMPETITIVE_MATRIX.md, ARCHITECTURE.md. What each doc is for: docs/INFORMATION.md. Teammate steps: docs/TEAM_QUICKSTART.md.
 
 Dev server: npm run dev. Lint: npm run lint. Build: npm run build. Tests: npm test (Vitest, *.test.ts next to the code).
 
