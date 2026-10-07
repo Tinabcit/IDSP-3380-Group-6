@@ -22,6 +22,7 @@ Other files you will meet:
 | `README.md` | What the app is, how to run it |
 | `.claude/skills/*/SKILL.md` | The four commands below |
 | `.claude/agents/*.md` | Helper agents. Core: code-quality-validator, test-coverage-validator, pr-writer, code-reviewer, docs-updater. Optional: security-auditor, refactoring-specialist, acceptance-criteria-validator. Ask Claude to "use the <name> agent" |
+| `../.github/pull_request_template.md` | PR checklist: tests, docs updated, plan ticked, decision logged |
 | `.claude/settings.json` | Permission allow/deny lists (blocks sudo, force push, reading `.env`) |
 
 Rule of thumb: how the code is built goes in `DECISIONS.md`. What the client or users need goes in `DISCOVERY.md` or `USER_RESEARCH.md`.
@@ -37,8 +38,8 @@ Run from the `tri-cities-chamber/` folder (the VS Code terminal). Branch off `de
 | 3 | `/sync` | Claude | Preflight: fetch, ahead/behind, dirty files |
 | 4 | `/plan` | Claude | Reads `docs/`, asks questions, writes the next phase to `IMPLEMENTATION_PLAN.md`, logs decisions to `DECISIONS.md` |
 | 5 | Build with TDD: write a failing test, make it pass, clean up. Commit often | Claude + terminal | Git is your safety net |
-| 6 | `npm run lint` and `npm run build` (plus `npm test` once it exists) | terminal | Check before finishing (`/done` also runs these) |
-| 7 | `/done` | Claude | Validates, commits, opens a PR to `dev`, checks CI, asks for review, adds a changelog entry. Checks off plan items |
+| 6 | `npm run lint` and `npm run build` and `npm test` | terminal | Check before finishing (`/done` also runs these) |
+| 7 | `/done` | Claude | Validates, updates the docs (docs-updater agent, plus a `DECISIONS.md` entry if you made a design choice), commits, opens a PR to `dev` using the PR template, checks CI, asks for review, adds a changelog entry. Checks off plan items |
 | 8 | Teammate reviews and merges the PR on GitHub | GitHub | |
 | 9 | `/landed` | Claude | Confirms `dev` builds and CI passes, deletes the merged branch |
 
@@ -58,3 +59,10 @@ How much `/done` does depends on size:
 - Never use sudo or admin rights. Be wary of `rm`, `chmod` or paths outside this folder.
 - Never commit `.env` files, keys or tokens.
 - Dev server: `npm run dev`.
+
+## Part 4 — Keeping the docs current
+
+- Every PR updates the docs it affects. `/done` does this with the docs-updater agent, and the PR template makes a person confirm it.
+- Only tick plan items your own PR finished. Add a `DECISIONS.md` entry in the same PR as the choice.
+- `DECISIONS.md`, `DISCOVERY.md`, `USER_RESEARCH.md` and `COMPETITIVE_MATRIX.md` are written by people, not generated.
+- Review `IMPLEMENTATION_PLAN.md` once a week and run `/plan` to add the next phase when the current one is finished.
