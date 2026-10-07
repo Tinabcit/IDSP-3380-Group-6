@@ -14,6 +14,7 @@ import type {
  * Replace with Supabase queries once the backend lands.
  */
 
+/** The chamber's focus areas ("pillars"). Every event belongs to one. Fixed list (not saved in the browser). */
 export const PILLARS: Pillar[] = [
   { id: "pillar-advocacy", name: "Advocacy" },
   { id: "pillar-networking", name: "Networking" },
@@ -21,6 +22,10 @@ export const PILLARS: Pillar[] = [
   { id: "pillar-community", name: "Community" },
 ];
 
+/**
+ * The starting list of partners (sponsors). Copied into the store the first time
+ * the app loads; more can be added in the app.
+ */
 export const SPONSORS: Sponsor[] = [
   {
     id: "sponsor-coastline",
@@ -58,6 +63,7 @@ export const SPONSORS: Sponsor[] = [
   },
 ];
 
+/** The staff members who can be "signed in" and be given tasks. Fixed list. */
 export const STAFF: StaffMember[] = [
   { id: "staff-maria", name: "Maria Chen", initials: "MC" },
   { id: "staff-daniel", name: "Daniel Okafor", initials: "DO" },
@@ -65,6 +71,7 @@ export const STAFF: StaffMember[] = [
   { id: "staff-intern", name: "Intern", initials: "IN" },
 ];
 
+/** Makes the demo events. Dates are based on today so the calendar always has something to show. */
 export function buildMockEvents(today: ISODate): ChamberEvent[] {
   const d = (offset: number) => shiftISODate(today, offset);
   return [
@@ -130,6 +137,10 @@ export function buildMockEvents(today: ISODate): ChamberEvent[] {
   ];
 }
 
+/**
+ * Makes the demo tasks (some overdue, some done). Dates are based on today.
+ * They point to events, sponsors and staff using ids.
+ */
 export function buildMockTasks(today: ISODate): Task[] {
   const d = (offset: number) => shiftISODate(today, offset);
   const createdAt = new Date().toISOString();

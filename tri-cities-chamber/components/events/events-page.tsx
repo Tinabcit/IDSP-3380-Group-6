@@ -31,6 +31,12 @@ import { formatShortDate } from "@/lib/planner/dates";
 import { EMPTY_FILTERS, type ChamberEvent, type PlannerFilters } from "@/lib/planner/types";
 import { cn } from "@/lib/utils";
 
+/**
+ * The events page (/events). It applies the filters, splits events into
+ * Upcoming and Past, and shows each one with its contracts and money.
+ * Has an "Add event" button. (Here the sponsor filter means "has a contract
+ * with that sponsor".)
+ */
 export function EventsPage() {
   const data = usePlannerData();
   const { today } = data;
@@ -87,6 +93,10 @@ export function EventsPage() {
   );
 }
 
+/**
+ * One list of events with a heading (used for "Upcoming" and "Past").
+ * Each event shows its pillar, location and contracts.
+ */
 function EventSection({
   title,
   events,
@@ -181,6 +191,10 @@ function EventSection({
   );
 }
 
+/**
+ * The pop-up window for adding an event. The form inside is only created while
+ * the pop-up is open, so it starts empty each time.
+ */
 function NewEventDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -189,6 +203,10 @@ function NewEventDialog({ open, onClose }: { open: boolean; onClose: () => void 
   );
 }
 
+/**
+ * The form for adding an event: name, dates, pillar, signature or not, location.
+ * Saves with store.addEvent.
+ */
 function NewEventForm({ onClose }: { onClose: () => void }) {
   const data = usePlannerData();
   const [name, setName] = useState("");
@@ -199,6 +217,7 @@ function NewEventForm({ onClose }: { onClose: () => void }) {
   const [location, setLocation] = useState("");
   const [error, setError] = useState("");
 
+  /** Runs on Save. Checks the name and dates, then adds the event and closes the pop-up. */
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return setError("Enter an event name.");

@@ -19,8 +19,10 @@ import {
 } from "@/lib/planner/types";
 import { cn } from "@/lib/utils";
 
+/** Special dropdown value that means "no filter" (the dropdown can't hold null). */
 const ALL = "all";
 
+/** The information FilterBar needs. */
 interface FilterBarProps {
   filters: PlannerFilters;
   pillars: Pillar[];
@@ -29,6 +31,12 @@ interface FilterBarProps {
   label?: string;
 }
 
+/**
+ * The row of filters: a "Signature events" button, a pillar dropdown, a sponsor
+ * dropdown and a "Clear filters" button. It does not remember the filters itself;
+ * the parent passes them in and gets told when they change.
+ * Used on the calendar page and the contracts page.
+ */
 export function FilterBar({
   filters,
   pillars,

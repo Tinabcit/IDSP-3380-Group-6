@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
+/** The information MonthHeader needs. */
 interface MonthHeaderProps {
   month: Date;
   isCurrentMonth: boolean;
@@ -13,6 +14,10 @@ interface MonthHeaderProps {
   onToday: () => void;
 }
 
+/**
+ * The title above the calendar (e.g. "March 2025") with the Today, previous and
+ * next buttons. The actual month is stored in PlannerApp.
+ */
 export function MonthHeader({
   month,
   isCurrentMonth,

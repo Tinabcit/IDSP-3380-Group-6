@@ -7,11 +7,16 @@ import type {
   TaskStatus,
 } from "./types";
 
+/**
+ * Works out a task's status: "completed", "overdue" (not done and past its due
+ * date) or "pending". It is calculated each time, never saved.
+ */
 export function getTaskStatus(task: Task, today: ISODate): TaskStatus {
   if (task.completed) return "completed";
   return isISODateBefore(task.dueDate, today) ? "overdue" : "pending";
 }
 
+/** True if at least one filter is turned on (used to show "Clear filters"). */
 export function hasActiveFilters(filters: PlannerFilters): boolean {
   return (
     filters.signatureOnly ||
@@ -20,6 +25,10 @@ export function hasActiveFilters(filters: PlannerFilters): boolean {
   );
 }
 
+/**
+ * Keeps only the events that match the filters. For the sponsor filter, an event
+ * counts if some task connects that sponsor to that event.
+ */
 export function filterEvents(
   events: ChamberEvent[],
   filters: PlannerFilters,
@@ -39,6 +48,10 @@ export function filterEvents(
   });
 }
 
+/**
+ * Keeps only the tasks that match the filters. The signature and pillar filters
+ * check the task's event, so tasks without an event are hidden when they are on.
+ */
 export function filterTasks(
   tasks: Task[],
   filters: PlannerFilters,
@@ -56,6 +69,7 @@ export function filterTasks(
   });
 }
 
+/** Finds the events happening on a date. An event lasting several days shows up on each of those days. */
 export function eventsOnDate(
   events: ChamberEvent[],
   date: ISODate
@@ -63,6 +77,7 @@ export function eventsOnDate(
   return events.filter((e) => isWithinISORange(date, e.startDate, e.endDate));
 }
 
+/** The order of the statuses in a list (smaller number = comes first). */
 const STATUS_ORDER: Record<TaskStatus, number> = {
   overdue: 0,
   pending: 1,
@@ -94,6 +109,7 @@ export function upcomingTasks(
   );
 }
 
+/** What one calendar day needs to show: its events and how many tasks are overdue, pending and done. */
 export interface DaySummary {
   events: ChamberEvent[];
   pending: number;
@@ -101,6 +117,10 @@ export interface DaySummary {
   completed: number;
 }
 
+/**
+ * Makes a DaySummary for each date in the list (the days on screen). It goes
+ * through the tasks only once, which is faster than checking for every day.
+ */
 export function summarizeByDate(
   events: ChamberEvent[],
   tasks: Task[],

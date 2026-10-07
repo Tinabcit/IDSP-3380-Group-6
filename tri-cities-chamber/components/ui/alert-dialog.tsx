@@ -6,10 +6,14 @@ import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
+/** The whole "Are you sure?" pop-up. Unlike a normal Dialog, clicking outside does not close it. */
 const AlertDialog = AlertDialogPrimitive.Root;
+/** The thing you click (usually a button) to open the pop-up. */
 const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
+/** Draws the pop-up on top of the page, outside its normal place in the HTML. */
 const AlertDialogPortal = AlertDialogPrimitive.Portal;
 
+/** The dark layer behind the pop-up. */
 const AlertDialogOverlay = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Overlay>
@@ -25,6 +29,7 @@ const AlertDialogOverlay = React.forwardRef<
 ));
 AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName;
 
+/** The pop-up box in the middle of the screen. Put the header and footer inside it. */
 const AlertDialogContent = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>
@@ -43,6 +48,7 @@ const AlertDialogContent = React.forwardRef<
 ));
 AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName;
 
+/** Holds the title and description. */
 const AlertDialogHeader = ({
   className,
   ...props
@@ -51,6 +57,7 @@ const AlertDialogHeader = ({
 );
 AlertDialogHeader.displayName = "AlertDialogHeader";
 
+/** Holds the buttons (stacked on phones, side by side on bigger screens). */
 const AlertDialogFooter = ({
   className,
   ...props
@@ -65,6 +72,7 @@ const AlertDialogFooter = ({
 );
 AlertDialogFooter.displayName = "AlertDialogFooter";
 
+/** The pop-up's heading (screen readers read it out). */
 const AlertDialogTitle = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Title>
@@ -77,6 +85,7 @@ const AlertDialogTitle = React.forwardRef<
 ));
 AlertDialogTitle.displayName = AlertDialogPrimitive.Title.displayName;
 
+/** The explanation text under the heading. */
 const AlertDialogDescription = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Description>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Description>
@@ -90,6 +99,7 @@ const AlertDialogDescription = React.forwardRef<
 AlertDialogDescription.displayName =
   AlertDialogPrimitive.Description.displayName;
 
+/** The "yes, do it" button (e.g. Delete). Closes the pop-up and runs its onClick. */
 const AlertDialogAction = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Action>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action>
@@ -102,6 +112,7 @@ const AlertDialogAction = React.forwardRef<
 ));
 AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName;
 
+/** The "no, go back" button. Just closes the pop-up. */
 const AlertDialogCancel = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Cancel>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel>

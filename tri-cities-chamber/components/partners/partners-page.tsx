@@ -9,6 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { amountPaid, formatCurrency } from "@/lib/planner/contracts";
 
+/**
+ * The partners page (/partners). Each partner shows contact details, the
+ * contracts they signed (linked to their pages), and the money total vs
+ * received. The search box looks at partner and contact names.
+ */
 export function PartnersPage() {
   const data = usePlannerData();
   const [query, setQuery] = useState("");

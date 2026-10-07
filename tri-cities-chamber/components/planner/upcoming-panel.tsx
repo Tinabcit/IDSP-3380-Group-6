@@ -5,6 +5,7 @@ import type { ISODate, Task } from "@/lib/planner/types";
 import type { PlannerLookups } from "./lookups";
 import { TaskItem } from "./task-item";
 
+/** The information UpcomingPanel needs. */
 interface UpcomingPanelProps {
   today: ISODate;
   tasks: Task[];
@@ -15,6 +16,10 @@ interface UpcomingPanelProps {
   onShowDate: (date: ISODate) => void;
 }
 
+/**
+ * The "Coming up" list: overdue tasks plus tasks due in the next 7 days
+ * (worked out in PlannerApp). Clicking a due date jumps the calendar to that day.
+ */
 export function UpcomingPanel({
   today,
   tasks,

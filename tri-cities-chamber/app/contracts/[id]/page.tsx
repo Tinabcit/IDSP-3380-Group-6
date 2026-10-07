@@ -5,6 +5,10 @@ import { ContractDetail } from "@/components/contracts/contract-detail";
 
 export const metadata = { title: "Contract | Tri-Cities Chamber" };
 
+/**
+ * Page at /contracts/:id. Shows one contract. Next.js gives us the id
+ * asynchronously, so we wait for it inside <Suspense>.
+ */
 export default function Page({ params }: { params: Promise<{ id: string }> }) {
   return (
     <Suspense fallback={<LoadingContract />}>
@@ -13,6 +17,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
   );
 }
 
+/** Waits for the id from the URL, then shows ContractDetail for that id. */
 // `params` is only known at request time, so it is read inside the boundary.
 async function ContractRoute({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -23,6 +28,7 @@ async function ContractRoute({ params }: { params: Promise<{ id: string }> }) {
   );
 }
 
+/** Simple "Loading" message shown while we wait for the id. */
 function LoadingContract() {
   return (
     <div role="status" className="grid min-h-[50dvh] place-items-center text-sm text-muted-foreground">

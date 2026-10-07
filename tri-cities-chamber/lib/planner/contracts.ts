@@ -12,6 +12,7 @@ import type {
   Sponsor,
 } from "./types";
 
+/** Turns a number into Canadian dollars, e.g. 5000 becomes "$5,000". */
 export function formatCurrency(value: number): string {
   return new Intl.NumberFormat("en-CA", {
     style: "currency",
@@ -20,6 +21,7 @@ export function formatCurrency(value: number): string {
   }).format(value);
 }
 
+/** Adds up all the payments marked as paid. */
 export function amountPaid(contract: Contract): number {
   return contract.payments
     .filter((p) => p.paid)
@@ -35,6 +37,10 @@ export function nextDueDate(contract: Contract): ISODate | null {
   return dates[0] ?? null;
 }
 
+/**
+ * True if the contract is not completed and has something unpaid or unfinished
+ * that was due before `today`.
+ */
 export function isContractOverdue(contract: Contract, today: ISODate): boolean {
   const next = nextDueDate(contract);
   return (
@@ -44,12 +50,21 @@ export function isContractOverdue(contract: Contract, today: ISODate): boolean {
   );
 }
 
+/**
+ * Lists of events, pillars and sponsors keyed by id, so we can quickly find the
+ * event/pillar/partner a contract points to.
+ */
 export interface ContractLookups {
   eventsById: Map<string, ChamberEvent>;
   pillarsById: Map<string, Pillar>;
   sponsorsById: Map<string, Sponsor>;
 }
 
+/**
+ * Keeps only the contracts that match the filters (signature event, pillar,
+ * partner) and the search text (looked for in title, partner, event, file name
+ * and notes).
+ */
 export function filterContracts(
   contracts: Contract[],
   filters: PlannerFilters,
@@ -74,6 +89,10 @@ export function filterContracts(
   });
 }
 
+/**
+ * Returns a sorted copy of the contracts. With "nextDue", contracts that have
+ * nothing left to do go last.
+ */
 export function sortContracts(
   contracts: Contract[],
   sortBy: ContractSortBy,
@@ -103,12 +122,17 @@ export function sortContracts(
   });
 }
 
+/** One section of the grouped contracts list: a heading and its contracts. */
 export interface ContractGroup {
   key: string;
   label: string;
   contracts: Contract[];
 }
 
+/**
+ * Puts contracts into groups by event, pillar or partner (or one single group
+ * for "none"), sorted by name. Contracts with no event/pillar go in a catch-all group.
+ */
 export function groupContracts(
   contracts: Contract[],
   groupBy: ContractGroupBy,

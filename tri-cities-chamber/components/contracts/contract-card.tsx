@@ -14,18 +14,27 @@ import { cn } from "@/lib/utils";
 
 import type { PlannerLookups } from "@/components/planner/lookups";
 
+/**
+ * A small coloured label showing if a contract is Draft, Active or Completed.
+ * Also used on the contract detail page.
+ */
 export function ContractStatusBadge({ status }: { status: Contract["status"] }) {
   if (status === "completed") return <Badge variant="secondary">Completed</Badge>;
   if (status === "draft") return <Badge variant="outline">Draft</Badge>;
   return <Badge variant="default">Active</Badge>;
 }
 
+/** The information a ContractCard needs. */
 interface ContractCardProps {
   contract: Contract;
   today: ISODate;
   lookups: PlannerLookups;
 }
 
+/**
+ * One contract in the list: partner, title, status, event, next due date,
+ * amount and % paid. Clicking anywhere on it opens that contract's page.
+ */
 export function ContractCard({ contract, today, lookups }: ContractCardProps) {
   const sponsor = lookups.sponsorsById.get(contract.sponsorId);
   const event = contract.eventId ? lookups.eventsById.get(contract.eventId) : undefined;

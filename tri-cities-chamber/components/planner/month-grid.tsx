@@ -26,8 +26,14 @@ interface MonthGridProps {
   onKeyboardNavigate: (date: ISODate) => void;
 }
 
+/** The weekday names (Sun, Mon, ...), worked out once. */
 const WEEKDAYS = getWeekdayLabels();
 
+/**
+ * The month calendar. Draws one DayCell for every day.
+ * You can use it with the keyboard (arrow keys, Home/End, PageUp/PageDown).
+ * It only draws things; PlannerApp works out what each day contains.
+ */
 export function MonthGrid({
   month,
   today,
@@ -59,6 +65,10 @@ export function MonthGrid({
     cellRefs.current.get(selectedDate)?.focus();
   }, [focusKey, selectedDate]);
 
+  /**
+   * Runs when a key is pressed on a day. Works out which day the key should
+   * move to (e.g. ArrowRight = next day), then tells the parent to go there.
+   */
   function handleKeyDown(event: React.KeyboardEvent, date: ISODate) {
     const moves: Record<string, number> = {
       ArrowLeft: -1,
@@ -139,6 +149,7 @@ export function MonthGrid({
   );
 }
 
+/** The information one DayCell needs. */
 interface DayCellProps {
   date: Date;
   iso: ISODate;
@@ -152,6 +163,10 @@ interface DayCellProps {
   registerRef: (el: HTMLButtonElement | null) => void;
 }
 
+/**
+ * Builds the sentence a screen reader reads for a day,
+ * e.g. "Friday, March 7. Signature event: Gala. 2 overdue".
+ */
 function describeDay(date: Date, summary?: DaySummary): string {
   const parts = [format(date, "EEEE, MMMM d")];
   if (!summary) return parts[0];
@@ -169,6 +184,10 @@ function describeDay(date: Date, summary?: DaySummary): string {
   return parts.join(". ");
 }
 
+/**
+ * One day box in the calendar: the date number, the signature ribbon, and
+ * either small coloured dots (phone) or event names and task counts (bigger screens).
+ */
 function DayCell({
   date,
   iso,

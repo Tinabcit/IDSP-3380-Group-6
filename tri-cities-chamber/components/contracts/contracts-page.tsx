@@ -33,6 +33,7 @@ import {
 import { ActivityList } from "./activity-list";
 import { ContractCard } from "./contract-card";
 
+/** The words shown in the "group by" dropdown. */
 const GROUP_LABELS: Record<ContractGroupBy, string> = {
   none: "No grouping",
   event: "Group by event",
@@ -40,6 +41,7 @@ const GROUP_LABELS: Record<ContractGroupBy, string> = {
   partner: "Group by partner",
 };
 
+/** The words shown in the "sort by" dropdown. */
 const SORT_LABELS: Record<ContractSortBy, string> = {
   nextDue: "Next due first",
   amount: "Highest value",
@@ -47,6 +49,12 @@ const SORT_LABELS: Record<ContractSortBy, string> = {
   title: "Title A to Z",
 };
 
+/**
+ * The contracts list page (/contracts). It remembers the search text, filters,
+ * grouping and sorting. The contracts go through three steps - filter, sort,
+ * group (functions in lib/planner/contracts.ts) - and are then shown as cards.
+ * It also shows totals at the top and recent changes at the bottom.
+ */
 export function ContractsPage() {
   const data = usePlannerData();
   const { today, lookups, contracts } = data;
@@ -193,6 +201,10 @@ export function ContractsPage() {
   );
 }
 
+/**
+ * A small box with a label and a big number (e.g. "Total value $50,000").
+ * tone="alert" makes the number red.
+ */
 function Stat({
   label,
   value,

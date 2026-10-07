@@ -7,6 +7,7 @@ import type { ActivityEntry, Contract, ISODate } from "./types";
  * Replace with database queries once the backend lands.
  */
 
+/** Makes the demo contracts (with payments and deliverables). Dates are based on today. */
 export function buildMockContracts(today: ISODate): Contract[] {
   const d = (offset: number) => shiftISODate(today, offset);
   const createdAt = new Date().toISOString();
@@ -154,6 +155,7 @@ export function buildMockContracts(today: ISODate): Contract[] {
   ];
 }
 
+/** Makes the demo history entries, dated a few hours before now. */
 export function buildMockActivity(now = new Date()): ActivityEntry[] {
   const ago = (hours: number) =>
     new Date(now.getTime() - hours * 3_600_000).toISOString();

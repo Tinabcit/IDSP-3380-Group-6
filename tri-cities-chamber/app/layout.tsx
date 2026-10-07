@@ -20,6 +20,13 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+/**
+ * The frame around EVERY page. From the outside in:
+ *   1. PlannerProvider - loads the data so every page can use it
+ *   2. AppShell - the header, menu and footer
+ *   3. the page itself
+ * It also sets the font and the page title.
+ */
 export default function RootLayout({
   children,
 }: Readonly<{

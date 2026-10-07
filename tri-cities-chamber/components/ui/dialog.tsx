@@ -6,11 +6,16 @@ import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
+/** The whole pop-up window. Open or close it with the open / onOpenChange props. */
 const Dialog = DialogPrimitive.Root;
+/** The thing you click to open the pop-up. */
 const DialogTrigger = DialogPrimitive.Trigger;
+/** Draws the pop-up on top of the page, outside its normal place in the HTML. */
 const DialogPortal = DialogPrimitive.Portal;
+/** The thing you click to close the pop-up. */
 const DialogClose = DialogPrimitive.Close;
 
+/** The dark layer behind the pop-up. */
 const DialogOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
@@ -26,6 +31,7 @@ const DialogOverlay = React.forwardRef<
 ));
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
+/** The pop-up box (has a close X built in). Put the header, footer and form inside it. */
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
@@ -52,6 +58,7 @@ const DialogContent = React.forwardRef<
 ));
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
+/** Holds the title and description. */
 const DialogHeader = ({
   className,
   ...props
@@ -63,6 +70,7 @@ const DialogHeader = ({
 );
 DialogHeader.displayName = "DialogHeader";
 
+/** Holds the buttons at the bottom. */
 const DialogFooter = ({
   className,
   ...props
@@ -77,6 +85,7 @@ const DialogFooter = ({
 );
 DialogFooter.displayName = "DialogFooter";
 
+/** The pop-up's heading (screen readers read it out). */
 const DialogTitle = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
@@ -89,6 +98,7 @@ const DialogTitle = React.forwardRef<
 ));
 DialogTitle.displayName = DialogPrimitive.Title.displayName;
 
+/** The explanation text under the heading. */
 const DialogDescription = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Description>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>

@@ -6,6 +6,7 @@ import { Check } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
+/** A round checkbox used to tick off tasks, payments and deliverables. Turns green when ticked. */
 const Checkbox = React.forwardRef<
   React.ElementRef<typeof CheckboxPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>

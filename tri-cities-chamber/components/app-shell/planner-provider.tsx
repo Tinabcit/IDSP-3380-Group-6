@@ -8,6 +8,11 @@ import { indexById, type PlannerLookups } from "@/components/planner/lookups";
 import { PILLARS, STAFF } from "@/lib/planner/mock-data";
 import type { ISODate, Pillar, StaffMember } from "@/lib/planner/types";
 
+/**
+ * Everything a page can use: the data, the functions that change it
+ * (add task, etc.), today's date, the pillars and staff lists, who is signed in,
+ * and the lookup tables (see lookups.ts).
+ */
 export interface PlannerData extends PlannerStore {
   today: ISODate;
   pillars: Pillar[];
@@ -16,12 +21,16 @@ export interface PlannerData extends PlannerStore {
   lookups: PlannerLookups;
 }
 
+/**
+ * A shared "box" React uses to hand the data to any component that asks for it.
+ * It is empty (null) until the data has loaded.
+ */
 const PlannerContext = createContext<PlannerData | null>(null);
 
 /**
- * One store for the whole app, so the calendar, contracts, events and partners
- * pages all see the same data without refetching when you navigate.
- * `null` until the browser has loaded saved data and today's date.
+ * Loads the app data ONCE and shares it with every page, so the calendar,
+ * contracts, events and partners pages all show the same information.
+ * The value is null until the browser has loaded the saved data and today's date.
  */
 export function PlannerProvider({ children }: { children: React.ReactNode }) {
   const store = usePlannerStore();
@@ -52,12 +61,18 @@ export function PlannerProvider({ children }: { children: React.ReactNode }) {
   return <PlannerContext.Provider value={value}>{children}</PlannerContext.Provider>;
 }
 
-/** For the shell, which renders before data is ready. */
+/**
+ * Gets the shared data, but returns null if it is not loaded yet.
+ * Used by the header/footer, which show up before the data is ready.
+ */
 export function useOptionalPlannerData(): PlannerData | null {
   return useContext(PlannerContext);
 }
 
-/** For pages. The shell only renders them once data is ready. */
+/**
+ * Gets the shared data. Throws an error if it is not loaded yet.
+ * Pages use this; DataGate makes sure they only show once data is ready.
+ */
 export function usePlannerData(): PlannerData {
   const data = useContext(PlannerContext);
   if (!data) throw new Error("usePlannerData must be used inside a ready PlannerProvider");
@@ -65,9 +80,9 @@ export function usePlannerData(): PlannerData {
 }
 
 /**
- * Wraps a page's data-dependent UI. The page segment itself always renders
- * (so it is part of the static shell); only this content waits for the
- * browser to load saved data and today's date.
+ * Wraps the part of a page that needs data. While the data is loading it shows
+ * "Loading"; once ready it shows its children. The page itself still shows
+ * right away - only this inside part waits.
  */
 export function DataGate({ children }: { children: React.ReactNode }) {
   const data = useContext(PlannerContext);

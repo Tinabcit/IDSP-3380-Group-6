@@ -25,6 +25,17 @@ import { MonthHeader } from './month-header';
 import { TaskFormDialog, type TaskFormState } from './task-form-dialog';
 import { UpcomingPanel } from './upcoming-panel';
 
+/**
+ * The calendar page ("/"). It is the "boss" of the calendar: it remembers the
+ * month being viewed, the selected day, the filters and whether the task pop-up
+ * is open. The data comes from usePlannerData().
+ * How data flows:
+ *   all data -> apply filters -> work out a summary for each day -> MonthGrid
+ *   selected day's events and tasks -> DayPanel
+ *   overdue + next 7 days tasks -> UpcomingPanel
+ * The child components only show things. They get data and functions as props
+ * and never change the data themselves.
+ */
 export function PlannerApp() {
   const store = usePlannerData();
   const { today, lookups } = store;
@@ -61,6 +72,7 @@ export function PlannerApp() {
   );
   const upcoming = useMemo(() => upcomingTasks(visibleTasks, today), [visibleTasks, today]);
 
+  /** Selects a day. If it is in a different month, the calendar jumps to that month. */
   const selectDate = useCallback((date: ISODate) => {
     setSelectedDate(date);
     setViewMonth((current) => {
@@ -69,6 +81,10 @@ export function PlannerApp() {
     });
   }, []);
 
+  /**
+   * Used when the arrow keys move between days: selects the new day and also moves
+   * the keyboard focus to it (by increasing focusKey).
+   */
   const navigateWithKeyboard = useCallback(
     (date: ISODate) => {
       selectDate(date);
@@ -77,8 +93,10 @@ export function PlannerApp() {
     [selectDate],
   );
 
+  /** The "Today" button: selects today (this also shows the current month). */
   const goToToday = useCallback(() => selectDate(today), [selectDate, today]);
 
+  /** Ticks or unticks a task and announces it for screen readers. */
   const handleToggle = useCallback(
     (id: string) => {
       const task = store.tasks.find((t) => t.id === id);
@@ -90,6 +108,7 @@ export function PlannerApp() {
     [store],
   );
 
+  /** Deletes a task and announces it for screen readers. */
   const handleDelete = useCallback(
     (id: string) => {
       const task = store.tasks.find((t) => t.id === id);
@@ -99,6 +118,10 @@ export function PlannerApp() {
     [store],
   );
 
+  /**
+   * Runs when the task form is saved. If it has a taskId we update that task,
+   * otherwise we create a new one.
+   */
   const handleSubmit = useCallback(
     (input: TaskInput, taskId?: string) => {
       if (taskId) {
@@ -112,7 +135,9 @@ export function PlannerApp() {
     [store],
   );
 
+  /** Opens the pop-up to create a task. The due date starts as the given date. */
   const openCreate = useCallback((date: ISODate) => setFormState({ mode: 'create', defaultDate: date }), []);
+  /** Opens the pop-up to edit an existing task. */
   const openEdit = useCallback((task: Task) => setFormState({ mode: 'edit', task }), []);
 
   const filtersActive = hasActiveFilters(filters);
@@ -201,6 +226,7 @@ export function PlannerApp() {
   );
 }
 
+/** The colour key (legend) under the calendar. Only displays things. */
 function Legend() {
   return (
     <ul aria-label="Legend" className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">

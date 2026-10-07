@@ -34,6 +34,16 @@ import { cn } from "@/lib/utils";
 import { ActivityList } from "./activity-list";
 import { ContractStatusBadge } from "./contract-card";
 
+/**
+ * The page for one contract (/contracts/:id). It shows:
+ * - money received so far
+ * - a summary of the contract
+ * - checklists for payments and deliverables (ticking one also ticks the matching
+ *   task on the calendar)
+ * - the partner's contact info, a status dropdown and a delete button
+ * - the history of changes to this contract
+ * If the id does not exist, it shows a "Contract not found" message.
+ */
 export function ContractDetail({ id }: { id: string }) {
   const data = usePlannerData();
   const router = useRouter();
@@ -284,6 +294,10 @@ export function ContractDetail({ id }: { id: string }) {
   );
 }
 
+/**
+ * The common shape for a checklist row. Payments and deliverables are
+ * converted into this so one Checklist component can show both.
+ */
 interface ChecklistItem {
   id: string;
   label: string;
@@ -293,6 +307,11 @@ interface ChecklistItem {
   doneLabel: string;
 }
 
+/**
+ * A checklist box used for both Payments and Deliverables.
+ * Each row has a checkbox, a name, an optional amount and a due date.
+ * Unticked rows that are past due are shown in red.
+ */
 function Checklist({
   title,
   empty,

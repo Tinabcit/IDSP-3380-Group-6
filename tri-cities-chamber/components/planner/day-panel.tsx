@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import type { PlannerLookups } from "./lookups";
 import { TaskItem } from "./task-item";
 
+/** The information DayPanel needs. */
 interface DayPanelProps {
   date: ISODate;
   today: ISODate;
@@ -23,6 +24,11 @@ interface DayPanelProps {
   onDelete: (id: string) => void;
 }
 
+/**
+ * The side panel for the selected day. Shows that day's events, its tasks
+ * (using TaskItem) and an "Add task" button.
+ * The data is already filtered by PlannerApp before it gets here.
+ */
 export function DayPanel({
   date,
   today,

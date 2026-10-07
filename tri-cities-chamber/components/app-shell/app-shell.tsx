@@ -17,6 +17,10 @@ import { cn } from "@/lib/utils";
 
 import { useOptionalPlannerData } from "./planner-provider";
 
+/**
+ * The menu links. Used by both the desktop and the phone menu.
+ * To add a new page to the menu, add a line here.
+ */
 const NAV = [
   { href: "/", label: "Calendar", icon: CalendarDays },
   { href: "/contracts", label: "Contracts", icon: FileText },
@@ -24,13 +28,27 @@ const NAV = [
   { href: "/partners", label: "Partners", icon: Handshake },
 ] as const;
 
+/**
+ * Checks if a menu link points to the page we are on (so it can be highlighted).
+ * "/" must match exactly; other links match if the URL starts with them
+ * (so /contracts/123 still highlights "Contracts").
+ */
 function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
 }
 
+/**
+ * The part of the page that stays the same on every route:
+ * the header (title, menu, "signed in as" dropdown), the footer
+ * (backup and reset buttons) and the bottom menu on phones.
+ */
 export function AppShell({ children }: { children: React.ReactNode }) {
   const data = useOptionalPlannerData();
 
+  /**
+   * Downloads all the app data as a .json file (a backup).
+   * It makes a temporary download link and clicks it for you.
+   */
   function downloadBackup() {
     if (!data) return;
     const blob = new Blob([data.exportBackup(data.today)], { type: "application/json" });
@@ -117,6 +135,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+/** The menu across the top. Only shown on wider screens (tablet and up). */
 function DesktopNav() {
   const pathname = usePathname();
   return (
@@ -142,6 +161,7 @@ function DesktopNav() {
   );
 }
 
+/** The menu stuck to the bottom of the screen. Only shown on phones. */
 function MobileNav() {
   const pathname = usePathname();
   return (

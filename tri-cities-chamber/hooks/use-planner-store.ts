@@ -28,8 +28,14 @@ import type {
  * either side updates the other.
  */
 
+/**
+ * The name the data is saved under in the browser's localStorage.
+ * Change the version number (v2) if the shape of the saved data changes,
+ * so old saved data is ignored.
+ */
 const STORAGE_KEY = "partner-calendar:v2";
 
+/** The lists of data that get saved in the browser. */
 interface Data {
   events: ChamberEvent[];
   tasks: Task[];
@@ -38,11 +44,20 @@ interface Data {
   activity: ActivityEntry[];
 }
 
+/**
+ * Everything the store holds: the saved data, plus whether it has loaded yet
+ * and who is signed in.
+ */
 interface PlannerState extends Data {
   status: "loading" | "ready";
   currentUserId: string;
 }
 
+/**
+ * All the things that can change the data (add a task, delete a contract, ...).
+ * Each one has a "type" name and the details it needs. logId is an id for the
+ * history entry, made before the reducer runs so the reducer stays predictable.
+ */
 type Action =
   | { type: "hydrate"; data: Data; currentUserId?: string }
   | { type: "setUser"; id: string }
@@ -57,6 +72,7 @@ type Action =
   | { type: "setContractStatus"; id: string; status: Contract["status"]; logId: string }
   | { type: "deleteContract"; id: string; logId: string };
 
+/** Adds a new line to the history list (newest first). Only the latest 200 are kept. */
 function log(
   state: PlannerState,
   id: string,
@@ -74,6 +90,13 @@ function log(
   return [entry, ...state.activity].slice(0, 200);
 }
 
+/**
+ * The "reducer": one function that takes the current data plus an action and
+ * returns the new data. All data changes happen here. Special cases:
+ * - ticking a task made from a contract also ticks the payment/deliverable
+ * - ticking a payment/deliverable also ticks its task
+ * - deleting a contract also deletes the tasks made from it
+ */
 function reducer(state: PlannerState, action: Action): PlannerState {
   switch (action.type) {
     case "hydrate":
@@ -194,6 +217,7 @@ function reducer(state: PlannerState, action: Action): PlannerState {
   }
 }
 
+/** Marks one payment as paid (or one deliverable as done) on a contract. */
 function setItemDone(contract: Contract, itemId: string, done: boolean): Contract {
   return {
     ...contract,
@@ -202,6 +226,10 @@ function setItemDone(contract: Contract, itemId: string, done: boolean): Contrac
   };
 }
 
+/**
+ * Makes a fresh set of demo data. Dates are based on today, so the calendar
+ * always looks current.
+ */
 function seed(): Data {
   const today = todayISO();
   return {
@@ -213,10 +241,15 @@ function seed(): Data {
   };
 }
 
+/** What gets saved in the browser: the data plus who is signed in. */
 interface Stored extends Data {
   currentUserId?: string;
 }
 
+/**
+ * Reads the saved data from the browser and checks it looks right.
+ * Returns null if there is none or it is broken (then we use demo data instead).
+ */
 function readStorage(): Stored | null {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -238,6 +271,10 @@ function readStorage(): Stored | null {
   }
 }
 
+/**
+ * Saves the data in the browser. If saving fails (e.g. storage is full) it is
+ * ignored, so the app still works - it just won't remember things.
+ */
 function writeStorage(stored: Stored) {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
@@ -246,6 +283,10 @@ function writeStorage(stored: Stored) {
   }
 }
 
+/**
+ * Makes a unique id such as "task-3f2a...". Uses a built-in generator when the
+ * browser has one, otherwise the time plus a random number.
+ */
 function createId(prefix: string): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return `${prefix}-${crypto.randomUUID()}`;
@@ -253,11 +294,18 @@ function createId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+/** Extra settings for creating a contract. */
 export interface NewContractOptions {
   /** Who the generated reminder tasks are assigned to. */
   assigneeId: string;
 }
 
+/**
+ * The one hook that holds all the app data. It is called ONCE, in
+ * PlannerProvider; other components get the data with usePlannerData().
+ * It gives back the data lists plus functions to change them (add, update,
+ * toggle, delete, ...).
+ */
 export function usePlannerStore() {
   const [state, dispatch] = useReducer(reducer, {
     status: "loading",
@@ -285,8 +333,10 @@ export function usePlannerStore() {
     writeStorage({ events, tasks, sponsors, contracts, activity, currentUserId });
   }, [state]);
 
+  /** Changes who is signed in (used in the history and as the default assignee). */
   const setCurrentUser = useCallback((id: string) => dispatch({ type: "setUser", id }), []);
 
+  /** Creates a new task (not done yet) from the form values and records it in the history. */
   const addTask = useCallback((input: TaskInput) => {
     dispatch({
       type: "addTask",
@@ -300,24 +350,29 @@ export function usePlannerStore() {
     });
   }, []);
 
+  /** Updates the fields of an existing task. */
   const updateTask = useCallback((id: string, input: TaskInput) => {
     dispatch({ type: "updateTask", id, input, logId: createId("act") });
   }, []);
 
+  /** Ticks or unticks a task (and its matching payment/deliverable, if it has one). */
   const toggleTask = useCallback((id: string) => {
     dispatch({ type: "toggleTask", id, logId: createId("act") });
   }, []);
 
+  /** Deletes a task. The contract it came from is not changed. */
   const deleteTask = useCallback((id: string) => {
     dispatch({ type: "deleteTask", id, logId: createId("act") });
   }, []);
 
+  /** Adds an event and returns its new id. */
   const addEvent = useCallback((input: Omit<ChamberEvent, "id">): string => {
     const id = createId("event");
     dispatch({ type: "addEvent", event: { ...input, id }, logId: createId("act") });
     return id;
   }, []);
 
+  /** Adds a partner (sponsor) and returns its new id. */
   const addSponsor = useCallback((input: Omit<Sponsor, "id">): string => {
     const id = createId("sponsor");
     dispatch({ type: "addSponsor", sponsor: { ...input, id } });
@@ -368,18 +423,22 @@ export function usePlannerStore() {
     []
   );
 
+  /** Ticks or unticks a payment/deliverable on a contract (and its matching task). */
   const toggleContractItem = useCallback((contractId: string, itemId: string) => {
     dispatch({ type: "toggleContractItem", contractId, itemId, logId: createId("act") });
   }, []);
 
+  /** Changes a contract's status: draft, active or completed. */
   const setContractStatus = useCallback((id: string, status: Contract["status"]) => {
     dispatch({ type: "setContractStatus", id, status, logId: createId("act") });
   }, []);
 
+  /** Deletes a contract and all the tasks made from it. */
   const deleteContract = useCallback((id: string) => {
     dispatch({ type: "deleteContract", id, logId: createId("act") });
   }, []);
 
+  /** Deletes everything and loads the demo data again. */
   const resetDemoData = useCallback(() => {
     dispatch({ type: "hydrate", data: seed() });
   }, []);
@@ -414,4 +473,5 @@ export function usePlannerStore() {
   };
 }
 
+/** The type of everything usePlannerStore() returns. Used by PlannerProvider. */
 export type PlannerStore = ReturnType<typeof usePlannerStore>;

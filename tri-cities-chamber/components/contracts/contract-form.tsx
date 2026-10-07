@@ -21,18 +21,32 @@ import { buildDemoSummary, formatCurrency, simulateExtraction } from "@/lib/plan
 import { formatShortDate, shiftISODate } from "@/lib/planner/dates";
 import type { Deliverable, PaymentInstalment } from "@/lib/planner/types";
 
+/** Special dropdown value that means "no event chosen". */
 const NONE = "none";
+/** Special dropdown value that means "add a new partner using the name typed in". */
 const NEW_PARTNER = "new";
 
+/**
+ * Makes a unique id for each payment/deliverable row added in the form
+ * (the form needs ids before the contract is saved).
+ */
 let rowCounter = 0;
 const rowId = (prefix: string) => `${prefix}-${Date.now()}-${rowCounter++}`;
 
+/** Error messages to show under fields that were filled in wrong. */
 interface Errors {
   sponsor?: string;
   title?: string;
   amount?: string;
 }
 
+/**
+ * The "New contract" page (/contracts/new).
+ * You can upload a file (we pretend to read it and fill the fields in), then
+ * check or edit the partner, event, amount, payments and deliverables.
+ * On save it creates the contract plus reminder tasks on the calendar, then
+ * takes you to the new contract's page.
+ */
 export function ContractForm() {
   const data = usePlannerData();
   const { today } = data;
@@ -59,6 +73,10 @@ export function ContractForm() {
   const amountNumber = Number(amount);
   const scheduled = payments.reduce((n, p) => n + p.amount, 0);
 
+  /**
+   * Runs when a file is chosen. After a short pretend "reading" delay it fills
+   * the form with best guesses (see simulateExtraction).
+   */
   function handleFile(file: File | undefined) {
     if (!file) return;
     setFileName(file.name);
@@ -83,6 +101,7 @@ export function ContractForm() {
     }, 900);
   }
 
+  /** Adds an empty payment row, due in 30 days. */
   function addPayment() {
     setPayments((rows) => [
       ...rows,
@@ -96,6 +115,7 @@ export function ContractForm() {
     ]);
   }
 
+  /** Adds an empty deliverable row, due in 14 days. */
   function addDeliverable() {
     setDeliverables((rows) => [
       ...rows,
@@ -103,6 +123,11 @@ export function ContractForm() {
     ]);
   }
 
+  /**
+   * Runs when you press Save. Checks that a partner, a title and an amount were
+   * entered. If so, it adds the new partner (if needed), tidies the rows,
+   * saves the contract and opens it.
+   */
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const next: Errors = {};

@@ -3,7 +3,11 @@ import { formatDistanceToNow } from "date-fns";
 import type { PlannerLookups } from "@/components/planner/lookups";
 import type { ActivityEntry } from "@/lib/planner/types";
 
-/** Who changed what and when, so everyone can trust what they see. */
+/**
+ * A list of recent changes, like "Maria marked Deposit as paid, 2 hours ago".
+ * Newest first. Turns the saved user id into a real name.
+ * Used on the contracts page (latest 6) and the contract detail page (that contract only).
+ */
 export function ActivityList({
   entries,
   lookups,

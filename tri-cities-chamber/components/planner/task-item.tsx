@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 
 import type { PlannerLookups } from "./lookups";
 
+/** The information TaskItem needs. The buttons call functions given by the parent. */
 interface TaskItemProps {
   task: Task;
   today: ISODate;
@@ -35,6 +36,12 @@ interface TaskItemProps {
   onShowDate?: (date: ISODate) => void;
 }
 
+/**
+ * One task in a list: checkbox, title, "Overdue" label, due date, who it is
+ * assigned to, event and sponsor, plus Edit and Delete buttons (delete asks to
+ * confirm first). The left border colour shows overdue / to do / done.
+ * Used by DayPanel and UpcomingPanel.
+ */
 export function TaskItem({
   task,
   today,

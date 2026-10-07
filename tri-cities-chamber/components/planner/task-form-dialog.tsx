@@ -31,12 +31,18 @@ import type {
   TaskInput,
 } from "@/lib/planner/types";
 
+/** Special dropdown value that means "nothing chosen". */
 const NONE = "none";
 
+/**
+ * Which form is open: "create" (with a starting due date), "edit" (an existing
+ * task) or null (closed). This is stored in PlannerApp.
+ */
 export type TaskFormState =
   | { mode: "create"; defaultDate: ISODate }
   | { mode: "edit"; task: Task };
 
+/** The information TaskFormDialog needs. onSubmit only gets a taskId when editing. */
 interface TaskFormDialogProps {
   state: TaskFormState | null;
   events: ChamberEvent[];
@@ -46,6 +52,10 @@ interface TaskFormDialogProps {
   onSubmit: (input: TaskInput, taskId?: string) => void;
 }
 
+/**
+ * The pop-up window. It opens when `state` is not null and puts a fresh
+ * TaskForm inside.
+ */
 export function TaskFormDialog({
   state,
   onClose,
@@ -68,15 +78,22 @@ export function TaskFormDialog({
   );
 }
 
+/** The information TaskForm needs (same as the dialog, but state is never null). */
 interface TaskFormProps extends Omit<TaskFormDialogProps, "state"> {
   state: TaskFormState;
 }
 
+/** Error messages for fields that were filled in wrong. */
 interface FormErrors {
   title?: string;
   dueDate?: string;
 }
 
+/**
+ * The form for creating or editing a task. It keeps a draft of what you typed,
+ * checks that a title and due date were entered when you save, then passes the
+ * result to the parent and closes.
+ */
 function TaskForm({
   state,
   events,
@@ -108,11 +125,16 @@ function TaskForm({
     a.startDate.localeCompare(b.startDate)
   );
 
+  /** Changes one field in the draft and clears that field's error message. */
   function update<K extends keyof TaskInput>(key: K, value: TaskInput[K]) {
     setValues((v) => ({ ...v, [key]: value }));
     if (key in errors) setErrors((e) => ({ ...e, [key]: undefined }));
   }
 
+  /**
+   * Runs on Save. Checks the form, removes extra spaces, gives the task to the
+   * parent and closes the pop-up.
+   */
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const title = values.title.trim();
