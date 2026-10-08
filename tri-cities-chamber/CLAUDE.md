@@ -2,7 +2,7 @@
 
 ## Development Process
 
-Enforce TDD workflow. Use /sync (preflight), /plan (design plan), /done (validate), /landed (post-merge).
+Enforce TDD workflow. Use /sync (preflight), /phase (plan the next phase), /done (validate), /landed (post-merge).
 
 Refer to docs/DECISIONS.md and docs/IMPLEMENTATION_PLAN.md for context before work.
 

@@ -1,6 +1,6 @@
 ---
-name: plan
-description: Planning phase. Read docs/, ask questions, update IMPLEMENTATION_PLAN.md and log decisions in DECISIONS.md.
+name: phase
+description: Phase planning. Read docs/, ask questions, update IMPLEMENTATION_PLAN.md and log decisions in DECISIONS.md.
 ---
 
 1. Read everything in docs/ and ARCHITECTURE.md, especially DECISIONS.md and IMPLEMENTATION_PLAN.md.

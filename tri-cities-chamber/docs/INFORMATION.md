@@ -6,11 +6,11 @@ Start here. Part 1 says what each doc is for. Part 2 says which command to run, 
 
 | File | Question it answers | How it changes | Who reads it |
 | --- | --- | --- | --- |
-| `docs/DISCOVERY.md` | Why are we building this? What hurts, what is success, what limits do we have? | Written up front, revised when the client says something new | `/plan` |
-| `docs/USER_RESEARCH.md` | What do real users say? | Grows as interviews happen | `/plan` |
-| `docs/COMPETITIVE_MATRIX.md` | What do people use today, and where is it weak? | Updated as you learn about alternatives | `/plan` |
-| `docs/DECISIONS.md` | What did we choose while building, and why? | Append-only, never cleared | `/plan` |
-| `docs/IMPLEMENTATION_PLAN.md` | What are we building next? | Short-lived, one phase at a time, reset per feature | `/plan`, `/done`, `/landed` |
+| `docs/DISCOVERY.md` | Why are we building this? What hurts, what is success, what limits do we have? | Written up front, revised when the client says something new | `/phase` |
+| `docs/USER_RESEARCH.md` | What do real users say? | Grows as interviews happen | `/phase` |
+| `docs/COMPETITIVE_MATRIX.md` | What do people use today, and where is it weak? | Updated as you learn about alternatives | `/phase` |
+| `docs/DECISIONS.md` | What did we choose while building, and why? | Append-only, never cleared | `/phase` |
+| `docs/IMPLEMENTATION_PLAN.md` | What are we building next? | Short-lived, one phase at a time, reset per feature | `/phase`, `/done`, `/landed` |
 
 Other files you will meet:
 
@@ -37,7 +37,7 @@ Run from the `tri-cities-chamber/` folder (the VS Code terminal). Branch off `de
 | 1 | `git checkout dev` then `git pull` | terminal | Start from the latest `dev` |
 | 2 | `git checkout -b features/<name>` | terminal | Make your branch |
 | 3 | `/sync` | Claude | Preflight: fetch, ahead/behind, dirty files |
-| 4 | `/plan` | Claude | Reads `docs/`, asks questions, writes the next phase to `IMPLEMENTATION_PLAN.md`, logs decisions to `DECISIONS.md` |
+| 4 | `/phase` | Claude | Reads `docs/`, asks questions, writes the next phase to `IMPLEMENTATION_PLAN.md`, logs decisions to `DECISIONS.md` |
 | 5 | Build with TDD: write a failing test, make it pass, clean up. Commit often | Claude + terminal | Git is your safety net |
 | 6 | `npm run lint` and `npm run build` and `npm test` | terminal | Check before finishing (`/done` also runs these) |
 | 7 | `/done` | Claude | Validates, updates the docs (docs-updater agent, plus a `DECISIONS.md` entry if you made a design choice), commits, opens a PR to `dev` using the PR template, checks CI, asks for review, adds a changelog entry. Checks off plan items |
@@ -66,4 +66,4 @@ How much `/done` does depends on size:
 - Every PR updates the docs it affects. `/done` does this with the docs-updater agent, and the PR template makes a person confirm it.
 - Only tick plan items your own PR finished. Add a `DECISIONS.md` entry in the same PR as the choice.
 - `DECISIONS.md`, `DISCOVERY.md`, `USER_RESEARCH.md` and `COMPETITIVE_MATRIX.md` are written by people, not generated.
-- Review `IMPLEMENTATION_PLAN.md` once a week and run `/plan` to add the next phase when the current one is finished.
+- Review `IMPLEMENTATION_PLAN.md` once a week and run `/phase` to add the next phase when the current one is finished.

@@ -7,7 +7,7 @@ One page for teammates. Do these steps on every branch and the docs stay up to d
 1. Open the `tri-cities-chamber/` folder in VS Code (File > Open Folder), not the repo root.
 2. Run Claude Code from the VS Code terminal in that folder.
 3. `npm install`
-4. Check the commands exist: type `/` in Claude Code and look for `sync`, `plan`, `done`, `landed`.
+4. Check the commands exist: type `/` in Claude Code and look for `sync`, `phase`, `done`, `landed`.
 
 ## Every branch: what to run
 
@@ -15,7 +15,7 @@ One page for teammates. Do these steps on every branch and the docs stay up to d
 | --- | --- | --- | --- |
 | Start | `git checkout dev`, `git pull`, `git checkout -b features/<name>` | terminal | A fresh branch from the latest `dev` |
 | Start | `/sync` | Claude | Branch health and dirty files |
-| Before coding | `/plan` | Claude | Reads the docs, asks questions, writes the next phase into `IMPLEMENTATION_PLAN.md`, logs design choices in `DECISIONS.md` |
+| Before coding | `/phase` | Claude | Reads the docs, asks questions, writes the next phase into `IMPLEMENTATION_PLAN.md`, logs design choices in `DECISIONS.md` |
 | While coding | Write a failing test first, then the code, then clean up | Claude + terminal | Tests in `*.test.ts` next to the code |
 | Finished | `/done` | Claude | Lint, build, tests, then updates README / ARCHITECTURE / plan boxes, asks about a `DECISIONS.md` entry, commits, opens the PR |
 | After merge | `/landed` | Claude | Checks `dev` builds, deletes your branch |

@@ -59,3 +59,11 @@ Context: The shared root .claude/settings.json (f815fcb) enabled five plugins. T
 Decision: The shared settings enable only typescript-lsp. Any other plugin is enabled in a person's own .claude/settings.local.json.
 
 Alternatives considered: Keeping all five in the shared file (rejected: supabase and vercel imply a backend we have not chosen).
+
+## 2026-10-07 — Rename the /plan command to /phase
+
+Context: The bare name /plan resolves to a Claude Code built-in command (plan mode), so our skill was only reachable as tri-cities-chamber:plan. Confirmed by a skill-tool test: `plan` was rejected as a UI command and `tri-cities-chamber:plan` loaded.
+
+Decision: Rename the skill from /plan to /phase (folder .claude/skills/phase). Nothing else changes: it still reads docs/, writes the next phase to IMPLEMENTATION_PLAN.md and logs decisions in DECISIONS.md. /phase matched no built-in command, bundled skill or installed plugin in this session or in the Claude Code commands docs. Older entries above still say /plan; that was the name at the time.
+
+Alternatives considered: Keeping /plan and typing tri-cities-chamber:plan (rejected: easy to mistype, and the plain /plan would silently start plan mode). Other names such as /design (rejected: the guide warns it collides with a built-in).

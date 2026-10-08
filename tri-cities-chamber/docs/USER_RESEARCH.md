@@ -13,4 +13,4 @@
 
 ## Findings
 
-Not yet collected. After interviews, add one section per participant (screener result, what frustrates them, what they use most, what would make them switch), then a "Key takeaways" list that feeds the next /plan. The Sept. 28 client ratings are in DISCOVERY.md.
+Not yet collected. After interviews, add one section per participant (screener result, what frustrates them, what they use most, what would make them switch), then a "Key takeaways" list that feeds the next /phase. The Sept. 28 client ratings are in DISCOVERY.md.

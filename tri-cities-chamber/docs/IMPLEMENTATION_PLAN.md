@@ -1,6 +1,6 @@
 # Implementation Plan: Tri-Cities Chamber Contracts, Events and Reminders (MVP)
 
-Phases 1-3 were reconstructed from git history. Add the next phase with /plan only when the current one is done.
+Phases 1-3 were reconstructed from git history. Add the next phase with /phase only when the current one is done.
 
 ## Phase 1 — Scaffold and calendar/to-do (commits e441972, 0bbaf85)
 
@@ -33,6 +33,6 @@ Phases 1-3 were reconstructed from git history. Add the next phase with /plan on
 - [ ] Fill in the TODO lines in docs/DISCOVERY.md, USER_RESEARCH.md and COMPETITIVE_MATRIX.md with the client and team
 - [ ] Merge this branch to dev (/done, then /landed)
 
-## Backlog (not a phase yet — /plan turns these into the next phase)
+## Backlog (not a phase yet — /phase turns these into the next phase)
 
 From the README "Not built yet" list: real file storage, real AI contract reading, email/push notifications, contract comparison, real sign-in and permissions, backend.
