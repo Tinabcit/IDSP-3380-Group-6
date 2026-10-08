@@ -51,3 +51,11 @@ Context: The team follows the AI_Agent_Setup guide.
 Decision: Add CLAUDE.md, .claude/skills (sync, plan, done, landed), .claude/agents, .claude/settings.json (Tier 2 permissions), Vitest for TDD, and the docs/ set. AGENTS.md is left untouched because next dev rewrites its Next.js block, and CLAUDE.md imports it.
 
 Alternatives considered: Putting the workflow rules in AGENTS.md (rejected: it would be overwritten).
+
+## 2026-10-07 — Shared Claude Code plugins: typescript-lsp only
+
+Context: The shared root .claude/settings.json (f815fcb) enabled five plugins. This is a frontend-only MVP with no backend.
+
+Decision: The shared settings enable only typescript-lsp. Any other plugin is enabled in a person's own .claude/settings.local.json.
+
+Alternatives considered: Keeping all five in the shared file (rejected: supabase and vercel imply a backend we have not chosen).
