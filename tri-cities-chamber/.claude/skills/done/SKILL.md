@@ -4,10 +4,10 @@ description: Validation gate. Detect scope (quick, standard, project), validate,
 ---
 
 1. Run `git branch --show-current`. If it is `dev` or `main`, stop and tell the user: work happens on a `features/<name>` branch and reaches `dev` through a PR.
-2. Detect scope from the branch name, `git diff --stat dev...HEAD`, and the items in docs/IMPLEMENTATION_PLAN.md that this branch works on (not unrelated unchecked items):
-   - Quick: small diff, no plan items tied to this branch.
-   - Standard: medium diff, no plan items tied to this branch.
-   - Project: this branch has plan items it finishes or starts.
+2. Detect scope from the branch name, `git diff --stat dev...HEAD`, and the phase in docs/IMPLEMENTATION_PLAN.md whose `Branch:` line matches the current branch (ignore unchecked items in other phases):
+   - Quick: small diff, no phase tied to this branch.
+   - Standard: medium diff, no phase tied to this branch.
+   - Project: a phase has a `Branch:` line matching this branch.
 3. Always validate, never skip: run `npm run lint`, `npm run build` and `npm test`, then use the code-quality-validator agent. Stop and report on any failure.
 4. Docs: run the docs-updater agent on the diff (README, ARCHITECTURE.md, plan checkboxes). Quick runs it only if the diff touches docs or changes pages, components or data shapes. If the change involved a real architectural choice, ask the user and append an entry to docs/DECISIONS.md. Commit doc changes with the work.
 5. Show the user the diff stat, the commit message and the PR draft (use the pr-writer agent). Ask for confirmation before any push or PR. Nothing is pushed before that.

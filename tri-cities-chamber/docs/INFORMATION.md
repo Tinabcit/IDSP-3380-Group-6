@@ -40,9 +40,9 @@ How much `/done` does depends on size:
 
 | Scope | Signal | What happens |
 | --- | --- | --- |
-| Quick | Small change, no plan items tied to this branch | Validate, commit, PR into `dev`, check CI. No code review |
-| Standard | Medium change, no plan items tied to this branch | Quick, plus wait on CI and run the code-reviewer agent |
-| Project | This branch has plan items | Standard, plus handoff note and ticking the plan items it finished |
+| Quick | Small change, no phase tied to this branch | Validate, commit, PR into `dev`, check CI. No code review |
+| Standard | Medium change, no phase tied to this branch | Quick, plus wait on CI and run the code-reviewer agent |
+| Project | A plan phase has a `Branch:` line matching this branch | Standard, plus handoff note and ticking the plan items it finished |
 
 All scopes run lint, build and tests, and none pushes before you confirm.
 

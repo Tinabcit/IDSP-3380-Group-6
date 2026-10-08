@@ -5,6 +5,6 @@ description: Phase planning. Read docs/, ask questions, update IMPLEMENTATION_PL
 
 1. Read everything in docs/ and ARCHITECTURE.md, especially DECISIONS.md and IMPLEMENTATION_PLAN.md.
 2. Ask clarifying questions if the feature is ambiguous.
-3. Update docs/IMPLEMENTATION_PLAN.md with the next phase only, as ordered `- [ ]` steps grouped logically (data layer, store, UI). Each behaviour step starts with its test (TDD).
+3. Update docs/IMPLEMENTATION_PLAN.md with the next phase only, as ordered `- [ ]` steps grouped logically (data layer, store, UI). Each behaviour step starts with its test (TDD). Under the phase heading, write `Branch: <name>` from `git branch --show-current` (if on dev or main, ask for the intended features/<name>). Never invent a branch name for older phases.
 4. Append each real architectural decision to docs/DECISIONS.md as `## YYYY-MM-DD — title` with Context, Decision, Alternatives considered. Never edit or delete old entries.
 5. Do not write application code in this step.

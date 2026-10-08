@@ -67,3 +67,11 @@ Context: The bare name /plan resolves to a Claude Code built-in command (plan mo
 Decision: Rename the skill from /plan to /phase (folder .claude/skills/phase). Nothing else changes: it still reads docs/, writes the next phase to IMPLEMENTATION_PLAN.md and logs decisions in DECISIONS.md. /phase matched no built-in command, bundled skill or installed plugin in this session or in the Claude Code commands docs. Older entries above still say /plan; that was the name at the time.
 
 Alternatives considered: Keeping /plan and typing tri-cities-chamber:plan (rejected: easy to mistype, and the plain /plan would silently start plan mode). Other names such as /design (rejected: the guide warns it collides with a built-in).
+
+## 2026-10-07 — /phase records the branch name; /done uses it to pick scope
+
+Context: /done decided Project scope from any unchecked plan item, and the plan always has unchecked items, so every run looked like Project.
+
+Decision: /phase writes `Branch: <name>` under each new phase heading in IMPLEMENTATION_PLAN.md. /done picks Project scope only when a phase's Branch line matches the current branch. Older reconstructed phases have no Branch line because their branch names are not recorded.
+
+Alternatives considered: Matching plan items by branch name or keywords (rejected: fragile). Always asking the user for the scope (rejected: slows small PRs).
