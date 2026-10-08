@@ -10,6 +10,13 @@
       "Bash(git log:*)",
       "Bash(git fetch)"
     ],
+    "ask": [
+      "PowerShell(Remove-Item *)",
+      "PowerShell(rm *)",
+      "PowerShell(del *)",
+      "PowerShell(rd *)",
+      "PowerShell(rmdir *)"
+    ],
     "deny": [
       "Bash(sudo *)",
       "Bash(rm -r *)",
@@ -17,11 +24,6 @@
       "Bash(rm -fr *)",
       "Bash(del *)",
       "Bash(rmdir /s *)",
-      "PowerShell(Remove-Item *)",
-      "PowerShell(rm *)",
-      "PowerShell(del *)",
-      "PowerShell(rd *)",
-      "PowerShell(rmdir *)",
       "Bash(git push --force *)",
       "Bash(git push -f *)",
       "Bash(git push --force-with-lease *)",
