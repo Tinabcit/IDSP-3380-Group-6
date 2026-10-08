@@ -8,6 +8,9 @@ client-side state saved in the browser, no backend.
 ```bash
 npm install
 npm run dev
+npm test        # unit tests (Vitest)
+npm run lint
+npm run build
 ```
 
 ## What the client asked for, and where it is
@@ -58,3 +61,11 @@ that hook's internals with database calls and the UI should not need changes.
 Types map onto tables: `events`, `tasks`, `sponsors`, `contracts`,
 `payments`, `deliverables`, `activity`. Pillars and staff are placeholder
 constants in `mock-data.ts`.
+
+## Docs and AI workflow
+
+New teammates: read `docs/TEAM_QUICKSTART.md` (one page). For the full picture, see `docs/INFORMATION.md`: what each doc is for, and the commands to run
+on every new branch (`/sync`, `/phase`, `/done`, `/landed`). Rules for the AI
+assistant are in `CLAUDE.md`. Decisions are logged in `docs/DECISIONS.md` and
+the current plan is in `docs/IMPLEMENTATION_PLAN.md`. `ARCHITECTURE.md` explains
+how the files connect.
