@@ -24,7 +24,7 @@ Phases 1-3 were reconstructed from git history. Add the next phase with /phase o
 
 ## Phase 4 — AI workflow and test foundation (current)
 
-Branch: docs/ai-workflow-setup
+Branch: features/ai-workflow-setup
 
 - [x] CLAUDE.md, .claude/skills (sync, plan, done, landed), docs/ discovery set
 - [x] Vitest, `npm test` script, tests for dates, selectors, contracts and the store reducer
