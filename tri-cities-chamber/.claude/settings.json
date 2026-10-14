@@ -44,7 +44,6 @@
       "PowerShell(git push * *:main)",
       "Read(.env)",
       "Read(.env.*)",
-      "Read(!.env.example)",
       "Read(**/*.pem)"
     ]
   }

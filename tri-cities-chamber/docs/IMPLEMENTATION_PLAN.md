@@ -1,6 +1,6 @@
 # Implementation Plan: Tri-Cities Chamber Contracts, Events and Reminders (MVP)
 
-Phases 1-3 were reconstructed from git history. Add the next phase with /phase only when the current one is done.
+Phases 1-3 were reconstructed from git history. Several phases can be open at once: one phase = one branch = one person. Each phase's `Branch:` line names the branch that does it, and `/done` on that branch ticks only that phase's boxes.
 
 ## Phase 1 — Scaffold and calendar/to-do (commits e441972, 0bbaf85)
 
@@ -32,9 +32,10 @@ Branch: features/ai-workflow-setup
 - [x] README.md gains an `npm test` line and a "Docs and AI workflow" section; ARCHITECTURE.md gains section 8, Tests
 - [x] Keep docs current per PR: /done runs the docs-updater agent, PR template added
 - [x] docs/TEAM_QUICKSTART.md: one-page command guide for teammates
-- [x] Fill in the TODO lines in docs/DISCOVERY.md, USER_RESEARCH.md and COMPETITIVE_MATRIX.md with the client and team
-- [ ] Merge this branch to dev (/done, then /landed)
+- [x] docs/DISCOVERY.md, USER_RESEARCH.md and COMPETITIVE_MATRIX.md created; open questions marked TODO for the client
 
 ## Backlog (not a phase yet — /phase turns these into the next phase)
 
 From the README "Not built yet" list: real file storage, real AI contract reading, email/push notifications, contract comparison, real sign-in and permissions, backend.
+
+Also: fill the TODO lines in docs/DISCOVERY.md and COMPETITIVE_MATRIX.md with the client and team. Test gaps found in the Phase 4 review: tasks built in addContract, readStorage, reducer cases setUser/addSponsor/addEvent, most of lib/planner/dates.ts, and updateTask writing history for an unknown id.

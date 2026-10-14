@@ -83,3 +83,11 @@ Context: A review against the guide found three places where our workflow does s
 Decision: (1) Quick scope opens a PR into dev instead of committing and pushing to main, because nobody commits to dev or main. (2) There is no CHANGELOG file. /done Standard fills a Changelog section in the PR description, so the merged PRs into dev are the changelog. (3) IMPLEMENTATION_PLAN.md keeps finished phases as history instead of being cleared after each feature. /landed still offers to archive it once every item is checked.
 
 Alternatives considered: A CHANGELOG.md file that every PR appends to (rejected: PRs that run at the same time would conflict on it). Pushing small fixes straight to main, as the guide's Quick scope does (rejected: skips review, and the settings deny pushes to dev and main).
+
+## 2026-10-14 — Several open phases at once, one per branch
+
+Context: The plan said to add the next phase only when the current one is done. With four developers working at the same time, that forces everyone to wait, and if each person runs /phase on their own branch, the new phases land in the same spot of IMPLEMENTATION_PLAN.md and conflict.
+
+Decision: Several phases can be open at once. One phase = one branch = one person, named on the phase's `Branch:` line. New phases are planned together on a small planning branch and merged into dev before coding starts. /phase may add more than one phase and asks for the branch name and owner when the phase is for another branch. Phases no longer contain a "merge this branch" item, because no PR can tick it before its own merge; the Phase 4 one was removed.
+
+Alternatives considered: Keeping one phase at a time (rejected: blocks three of four people). Each person running /phase on their own branch (rejected: plan conflicts on every PR). One shared phase with items assigned to people (rejected: /done picks scope by branch, so several branches would match one phase).

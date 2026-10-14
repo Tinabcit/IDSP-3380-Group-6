@@ -10,7 +10,7 @@ Start here. Part 1 says what each doc is for. Part 2 points to the commands. Par
 | `docs/USER_RESEARCH.md` | What do real users say? | Grows as interviews happen | `/phase` |
 | `docs/COMPETITIVE_MATRIX.md` | What do people use today, and where is it weak? | Updated as you learn about alternatives | `/phase` |
 | `docs/DECISIONS.md` | What did we choose while building, and why? | Append-only, never cleared | `/phase` |
-| `docs/IMPLEMENTATION_PLAN.md` | What are we building next? | Holds the reconstructed history (Phases 1-3) plus the current phase. `/phase` adds one phase at a time. Finished phases may later move to `docs/archive/` | `/phase`, `/done`, `/landed` |
+| `docs/IMPLEMENTATION_PLAN.md` | What are we building next? | Holds the reconstructed history (Phases 1-3) plus the open phases. `/phase` adds phases; several can be open at once, one per branch. Finished phases may later move to `docs/archive/` | `/phase`, `/done`, `/landed` |
 
 Other files you will meet:
 
@@ -66,4 +66,8 @@ All scopes run lint, build, tests and the test-coverage-validator agent, and non
 - Every PR updates the docs it affects. `/done` does this with the docs-updater agent, and the PR template makes a person confirm it.
 - Only tick plan items your own PR finished. Add a `DECISIONS.md` entry in the same PR as the choice.
 - `DECISIONS.md`, `DISCOVERY.md`, `USER_RESEARCH.md` and `COMPETITIVE_MATRIX.md` are written by people, not generated.
-- Review `IMPLEMENTATION_PLAN.md` once a week and run `/phase` to add the next phase when the current one is finished.
+- Review `IMPLEMENTATION_PLAN.md` once a week. Plan new phases together on one small planning branch, give each phase a `Branch:` line and an owner, and merge that PR into `dev` before anyone starts coding. This keeps people from adding phases to the same spot in the plan on separate branches.
+- One phase = one branch = one person. Name your branch exactly as the phase's `Branch:` line says, or `/done` will not find your phase and will not tick it.
+- A box shows as ticked on your branch as soon as `/done` runs, and on `dev` only after your PR merges.
+- Do not add "merge this branch" items to a phase. Merging is part of every phase, and no PR can tick it before the merge.
+- Big notes (client meeting, requirements, research) go into `DISCOVERY.md` or `USER_RESEARCH.md`, not the plan. Then run `/phase` and name the feature; it reads them from there.
