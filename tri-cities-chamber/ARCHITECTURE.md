@@ -186,3 +186,7 @@ Event     -> belongs to one Pillar
 | Change the new-contract form | `components/contracts/contract-form.tsx` |
 | Change how dates are written | `lib/planner/dates.ts` |
 | Change colours, buttons, badges | `components/ui/*` and `app/globals.css` |
+
+## 8. Tests
+
+Run `npm test`. Tests sit next to the code they check (`*.test.ts`): `lib/planner/dates`, `selectors`, `contracts`, and the store's `reducer` in `hooks/use-planner-store.test.ts`. The reducer is exported so the contract <-> task sync can be tested without a browser.
