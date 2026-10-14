@@ -5,6 +5,8 @@ client-side state saved in the browser, no backend.
 
 ## Run
 
+Needs Node 22.12 or newer (Vitest 5 does not run on Node 20).
+
 ```bash
 npm install
 npm run dev

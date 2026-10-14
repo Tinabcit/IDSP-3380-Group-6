@@ -24,7 +24,7 @@ Other files you will meet:
 | `.claude/skills/*/SKILL.md` | The four commands: `/sync`, `/phase`, `/done`, `/landed` |
 | `.claude/agents/*.md` | Helper agents. Core: code-quality-validator, test-coverage-validator, pr-writer, code-reviewer, docs-updater. Optional: security-auditor, refactoring-specialist, acceptance-criteria-validator. Ask Claude to "use the <name> agent" |
 | `../.github/pull_request_template.md` | PR checklist: tests, docs updated, plan ticked, decision logged |
-| `tri-cities-chamber/.claude/settings.json` | Permissions: allow, ask and deny lists (blocks sudo, recursive deletes, force pushes, pushes to `dev`/`main`, reading `.env`) |
+| `tri-cities-chamber/.claude/settings.json` | Permissions: allow, ask and deny lists (blocks sudo, Bash recursive deletes, force pushes, pushes that name `dev`/`main`, reading `.env` files; PowerShell deletes ask first). A plain `git push` while on `dev` is not caught, so `/done` always pushes the feature branch by name |
 | `../.claude/settings.json` (repo root) | Shared plugins only. Currently just `typescript-lsp` |
 | `.claude/settings.local.json` | Your personal settings and extra plugins. Gitignored, never committed |
 
@@ -40,11 +40,11 @@ How much `/done` does depends on size:
 
 | Scope | Signal | What happens |
 | --- | --- | --- |
-| Quick | Small change, no phase tied to this branch | Validate, commit, PR into `dev`, check CI. No code review |
-| Standard | Medium change, no phase tied to this branch | Quick, plus wait on CI, run the code-reviewer agent and fill the PR's Changelog section |
+| Quick | Small change, no phase tied to this branch | Validate, commit, PR into `dev`, check CI if there is any. No code review |
+| Standard | Medium change, no phase tied to this branch | Quick, plus wait on CI if there is any, run the code-reviewer agent and fill the PR's Changelog section |
 | Project | A plan phase has a `Branch:` line matching this branch | Standard, plus handoff note and ticking the plan items it finished |
 
-All scopes run lint, build, tests and the test-coverage-validator agent, and none pushes before you confirm. There is no CHANGELOG file: the Changelog section of each merged PR is the changelog.
+All scopes run lint, build, tests and the code-quality-validator and test-coverage-validator agents, and none pushes before you confirm. The repo has no CI workflow yet, so these local checks are the gate. There is no CHANGELOG file: the Changelog section of each merged PR is the changelog.
 
 ## Part 3 — Safety reminders
 

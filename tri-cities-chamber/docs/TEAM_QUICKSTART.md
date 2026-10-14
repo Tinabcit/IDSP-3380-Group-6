@@ -6,7 +6,7 @@ One page for teammates. Do these steps on every branch and the docs stay up to d
 
 1. Open the `tri-cities-chamber/` folder in VS Code (File > Open Folder), not the repo root.
 2. Run Claude Code from the VS Code terminal in that folder.
-3. `npm install`
+3. Node 22.12 or newer (`node -v`), then `npm install`
 4. Check the commands exist: type `/` in Claude Code and look for `sync`, `phase`, `done`, `landed`.
 
 ## Every branch: what to run
@@ -54,4 +54,4 @@ Have a big file of notes? Do not paste it into the plan or into chat each time. 
 
 - `/sync` shows where your branch stands.
 - A command is missing: you opened the wrong folder. Reopen `tri-cities-chamber/`.
-- A PR check fails: run `npm run lint`, `npm run build` and `npm test` and read the first error.
+- A check fails: run `npm run lint`, `npm run build` and `npm test` and read the first error. (The repo has no CI yet, so these local checks are the only ones.)

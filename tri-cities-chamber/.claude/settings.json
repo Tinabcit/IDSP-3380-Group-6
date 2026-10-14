@@ -8,7 +8,10 @@
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)",
-      "Bash(git fetch)"
+      "Bash(git fetch)",
+      "Bash(git branch --show-current)",
+      "Bash(git rev-list:*)",
+      "Bash(gh pr checks:*)"
     ],
     "ask": [
       "PowerShell(Remove-Item *)",
