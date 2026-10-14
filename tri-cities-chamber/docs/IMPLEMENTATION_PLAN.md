@@ -26,13 +26,13 @@ Phases 1-3 were reconstructed from git history. Add the next phase with /phase o
 
 Branch: features/ai-workflow-setup
 
-- [x] CLAUDE.md, .claude/skills (sync, plan, done, landed), docs/ discovery set
+- [x] CLAUDE.md, .claude/skills (sync, plan (now /phase), done, landed), docs/ discovery set
 - [x] Vitest, `npm test` script, tests for dates, selectors, contracts and the store reducer
 - [x] Agents in .claude/agents, permissions in .claude/settings.json, .env in .gitignore
 - [x] README.md gains an `npm test` line and a "Docs and AI workflow" section; ARCHITECTURE.md gains section 8, Tests
 - [x] Keep docs current per PR: /done runs the docs-updater agent, PR template added
 - [x] docs/TEAM_QUICKSTART.md: one-page command guide for teammates
-- [ ] Fill in the TODO lines in docs/DISCOVERY.md, USER_RESEARCH.md and COMPETITIVE_MATRIX.md with the client and team
+- [x] Fill in the TODO lines in docs/DISCOVERY.md, USER_RESEARCH.md and COMPETITIVE_MATRIX.md with the client and team
 - [ ] Merge this branch to dev (/done, then /landed)
 
 ## Backlog (not a phase yet — /phase turns these into the next phase)

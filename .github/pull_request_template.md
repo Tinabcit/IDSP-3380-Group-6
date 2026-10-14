@@ -2,6 +2,10 @@
 
 What changed and why (2-4 bullets).
 
+## Changelog
+
+1-3 user-facing lines (what a teammate or the client would notice). Merged PRs into `dev` are the project changelog.
+
 ## Checks
 
 - [ ] `npm run lint`, `npm run build` and `npm test` pass

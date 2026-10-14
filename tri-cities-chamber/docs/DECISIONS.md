@@ -75,3 +75,11 @@ Context: /done decided Project scope from any unchecked plan item, and the plan 
 Decision: /phase writes `Branch: <name>` under each new phase heading in IMPLEMENTATION_PLAN.md. /done picks Project scope only when a phase's Branch line matches the current branch. Older reconstructed phases have no Branch line because their branch names are not recorded.
 
 Alternatives considered: Matching plan items by branch name or keywords (rejected: fragile). Always asking the user for the scope (rejected: slows small PRs).
+
+## 2026-10-14 — Where we differ from the AI_Agent_Setup guide
+
+Context: A review against the guide found three places where our workflow does something different from it.
+
+Decision: (1) Quick scope opens a PR into dev instead of committing and pushing to main, because nobody commits to dev or main. (2) There is no CHANGELOG file. /done Standard fills a Changelog section in the PR description, so the merged PRs into dev are the changelog. (3) IMPLEMENTATION_PLAN.md keeps finished phases as history instead of being cleared after each feature. /landed still offers to archive it once every item is checked.
+
+Alternatives considered: A CHANGELOG.md file that every PR appends to (rejected: PRs that run at the same time would conflict on it). Pushing small fixes straight to main, as the guide's Quick scope does (rejected: skips review, and the settings deny pushes to dev and main).
