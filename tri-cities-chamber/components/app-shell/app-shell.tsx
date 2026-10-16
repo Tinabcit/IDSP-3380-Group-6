@@ -15,7 +15,10 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
+import { OverdueBell } from "./overdue-bell";
 import { useOptionalPlannerData } from "./planner-provider";
+import { ReminderToasts } from "./reminder-toasts";
+import { useToast } from "./toast-provider";
 
 /**
  * The menu links. Used by both the desktop and the phone menu.
@@ -44,6 +47,7 @@ function isActive(pathname: string, href: string) {
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
   const data = useOptionalPlannerData();
+  const toast = useToast();
 
   /**
    * Downloads all the app data as a .json file (a backup).
@@ -58,6 +62,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     a.download = `chamber-backup-${data.today}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    toast({ title: "Backup downloaded" });
   }
 
   return (
@@ -79,6 +84,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           {data && (
             <div className="ml-auto flex items-center gap-2">
+              <OverdueBell />
               <span className="hidden text-xs text-muted-foreground sm:inline">
                 Signed in as
               </span>
@@ -120,13 +126,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               variant="link"
               size="sm"
               className="h-auto p-0 text-xs text-muted-foreground"
-              onClick={data.resetDemoData}
+              onClick={() => {
+                data.resetDemoData();
+                toast({ title: "Demo data reset" });
+              }}
             >
               Reset demo data
             </Button>
           </span>
         )}
       </footer>
+
+      <ReminderToasts />
 
       <Suspense fallback={null}>
         <MobileNav />

@@ -236,5 +236,14 @@ export function buildMockTasks(today: ISODate): Task[] {
       eventId: "event-policy",
       createdAt,
     },
+    {
+      id: "task-10",
+      title: "Confirm gala catering headcount",
+      dueDate: d(1),
+      completed: false,
+      assigneeId: "staff-maria",
+      eventId: "event-gala",
+      createdAt,
+    },
   ];
 }

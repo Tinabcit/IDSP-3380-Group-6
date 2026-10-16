@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Calendar, MapPin, Plus } from "lucide-react";
 
 import { usePlannerData } from "@/components/app-shell/planner-provider";
+import { useToast } from "@/components/app-shell/toast-provider";
 import { FilterBar } from "@/components/planner/filter-bar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -209,6 +210,7 @@ function NewEventDialog({ open, onClose }: { open: boolean; onClose: () => void 
  */
 function NewEventForm({ onClose }: { onClose: () => void }) {
   const data = usePlannerData();
+  const toast = useToast();
   const [name, setName] = useState("");
   const [date, setDate] = useState(data.today);
   const [endDate, setEndDate] = useState("");
@@ -231,6 +233,7 @@ function NewEventForm({ onClose }: { onClose: () => void }) {
       isSignature,
       location: location.trim() || undefined,
     });
+    toast({ title: "Event added", description: name.trim() });
     onClose();
   }
 

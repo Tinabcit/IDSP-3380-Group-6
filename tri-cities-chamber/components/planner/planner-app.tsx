@@ -1,11 +1,13 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { addMonths, isSameMonth, startOfMonth } from 'date-fns';
 import { Plus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { usePlannerData } from '@/components/app-shell/planner-provider';
+import { useToast } from '@/components/app-shell/toast-provider';
 import { fromISODate, getMonthGrid, toISODate } from '@/lib/planner/dates';
 import {
   eventsOnDate,
@@ -39,6 +41,8 @@ import { UpcomingPanel } from './upcoming-panel';
 export function PlannerApp() {
   const store = usePlannerData();
   const { today, lookups } = store;
+  const toast = useToast();
+  const dateParam = useSearchParams().get('date');
 
   const [viewMonth, setViewMonth] = useState(() => startOfMonth(fromISODate(today)));
   const [selectedDate, setSelectedDate] = useState<ISODate>(today);
@@ -46,6 +50,17 @@ export function PlannerApp() {
   const [filters, setFilters] = useState<PlannerFilters>(EMPTY_FILTERS);
   const [formState, setFormState] = useState<TaskFormState | null>(null);
   const [announcement, setAnnouncement] = useState('');
+
+  // Opening "/?date=2025-03-07" (from the header bell) jumps to that day. This
+  // adjusts state while rendering, once per new value of the URL.
+  const [seenDateParam, setSeenDateParam] = useState<string | null>(null);
+  if (dateParam !== seenDateParam) {
+    setSeenDateParam(dateParam);
+    if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+      setSelectedDate(dateParam);
+      setViewMonth(startOfMonth(fromISODate(dateParam)));
+    }
+  }
 
   const visibleEvents = useMemo(
     () => filterEvents(store.events, filters, store.tasks),
@@ -103,9 +118,10 @@ export function PlannerApp() {
       store.toggleTask(id);
       if (task) {
         setAnnouncement(task.completed ? `"${task.title}" marked as not done.` : `"${task.title}" marked as done.`);
+        if (!task.completed) toast({ title: 'Task completed', description: task.title });
       }
     },
-    [store],
+    [store, toast],
   );
 
   /** Deletes a task and announces it for screen readers. */
@@ -113,9 +129,12 @@ export function PlannerApp() {
     (id: string) => {
       const task = store.tasks.find((t) => t.id === id);
       store.deleteTask(id);
-      if (task) setAnnouncement(`"${task.title}" deleted.`);
+      if (task) {
+        setAnnouncement(`"${task.title}" deleted.`);
+        toast({ title: 'Task deleted', description: task.title });
+      }
     },
-    [store],
+    [store, toast],
   );
 
   /**
@@ -127,12 +146,14 @@ export function PlannerApp() {
       if (taskId) {
         store.updateTask(taskId, input);
         setAnnouncement(`"${input.title}" saved.`);
+        toast({ title: 'Task saved', description: input.title });
       } else {
         store.addTask(input);
         setAnnouncement(`"${input.title}" added.`);
+        toast({ title: 'Task added', description: input.title });
       }
     },
-    [store],
+    [store, toast],
   );
 
   /** Opens the pop-up to create a task. The due date starts as the given date. */
