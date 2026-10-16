@@ -23,7 +23,7 @@ npm run build
 | Easy navigation for short-term interns (5)    | Four-item nav: bottom tab bar on phones, top bar on desktop; global "Signed in as" switcher |
 | Sorting by event, pillar or partner           | `/contracts`: group by event / pillar / partner, sort by next due, value, partner, title, plus search |
 | Signature event filter                        | Filter bar on Calendar, Contracts and Events                               |
-| Calendar and reminders (not more e-blasts)    | `/`: month calendar, overdue / to-do markers, "Coming up" list             |
+| Calendar and reminders (not more e-blasts)    | `/`: month calendar, overdue / to-do markers, "Coming up" list, bell toasts for tasks due in 1-2 days, header bell for overdue           |
 | Contract reader / summarizer                  | Summary card on each contract. **Demo only**: composed from entered fields, labelled as such |
 | Trust and transparency (5)                    | History on every contract and "Recent changes" showing who changed what    |
 | Loss prevention (2-3)                         | "Download backup" (JSON) in the footer; delete needs confirmation          |
