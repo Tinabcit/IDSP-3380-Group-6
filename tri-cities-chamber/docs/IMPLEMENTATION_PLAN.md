@@ -34,6 +34,15 @@ Branch: features/ai-workflow-setup
 - [x] docs/TEAM_QUICKSTART.md: one-page command guide for teammates
 - [x] docs/DISCOVERY.md, USER_RESEARCH.md and COMPETITIVE_MATRIX.md created; open questions marked TODO for the client
 
+## Phase 5 - Toast Notification
+
+Branch: features/toastNotification
+
+- [x] cd into tri-cities-chamber
+- [x] add Toast Notification to provide feedback on users when creating calender, contracts, etc.
+- [x] When users calender sheducle is due 1-2 days earlier they should receive a notification [toast notication] and should be displayed in top right corner with a bell icon to showcase.
+- [x] In the homepage there should be a bell icon on the right top corner that shows all overdue notifications and when you click it, it brings you to all the overdues or the selected overdues.
+
 ## Backlog (not a phase yet — /phase turns these into the next phase)
 
 From the README "Not built yet" list: real file storage, real AI contract reading, email/push notifications, contract comparison, real sign-in and permissions, backend.

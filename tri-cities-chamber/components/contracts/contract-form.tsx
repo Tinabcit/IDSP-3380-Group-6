@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, FileUp, Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
 
 import { usePlannerData } from "@/components/app-shell/planner-provider";
+import { useToast } from "@/components/app-shell/toast-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,6 +50,7 @@ interface Errors {
  */
 export function ContractForm() {
   const data = usePlannerData();
+  const toast = useToast();
   const { today } = data;
   const router = useRouter();
   const fileInput = useRef<HTMLInputElement>(null);
@@ -174,6 +176,7 @@ export function ContractForm() {
       { ...input, summary: buildDemoSummary(input, sponsorName, event?.name) },
       { assigneeId }
     );
+    toast({ title: "Contract created", description: input.title });
     router.push(`/contracts/${id}`);
   }
 

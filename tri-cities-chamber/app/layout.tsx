@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Public_Sans } from 'next/font/google';
 import { AppShell } from '@/components/app-shell/app-shell';
 import { PlannerProvider } from '@/components/app-shell/planner-provider';
+import { ToastProvider } from '@/components/app-shell/toast-provider';
 import './globals.css';
 
 const publicSans = Public_Sans({
@@ -23,8 +24,9 @@ export const viewport: Viewport = {
 /**
  * The frame around EVERY page. From the outside in:
  *   1. PlannerProvider - loads the data so every page can use it
- *   2. AppShell - the header, menu and footer
- *   3. the page itself
+ *   2. ToastProvider - lets any page show a toast in the top right corner
+ *   3. AppShell - the header, menu and footer
+ *   4. the page itself
  * It also sets the font and the page title.
  */
 export default function RootLayout({
@@ -36,7 +38,9 @@ export default function RootLayout({
     <html lang="en" className={publicSans.variable}>
       <body className="font-sans">
         <PlannerProvider>
-          <AppShell>{children}</AppShell>
+          <ToastProvider>
+            <AppShell>{children}</AppShell>
+          </ToastProvider>
         </PlannerProvider>
       </body>
     </html>

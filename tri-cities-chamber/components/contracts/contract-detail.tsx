@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AlertTriangle, ArrowLeft, FileText, Mail, MapPin, Phone, Sparkles, Trash2 } from "lucide-react";
 
 import { usePlannerData } from "@/components/app-shell/planner-provider";
+import { useToast } from "@/components/app-shell/toast-provider";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,6 +47,7 @@ import { ContractStatusBadge } from "./contract-card";
  */
 export function ContractDetail({ id }: { id: string }) {
   const data = usePlannerData();
+  const toast = useToast();
   const router = useRouter();
   const { today, lookups } = data;
   const contract = data.contracts.find((c) => c.id === id);
@@ -247,7 +249,10 @@ export function ContractDetail({ id }: { id: string }) {
           <span className="text-sm text-muted-foreground">Status</span>
           <Select
             value={contract.status}
-            onValueChange={(v) => data.setContractStatus(contract.id, v as Contract["status"])}
+            onValueChange={(v) => {
+              data.setContractStatus(contract.id, v as Contract["status"]);
+              toast({ title: "Status updated", description: `${contract.title} is now ${v}.` });
+            }}
           >
             <SelectTrigger aria-label="Contract status" className="h-9 w-auto gap-2">
               <SelectValue />
@@ -280,6 +285,7 @@ export function ContractDetail({ id }: { id: string }) {
               <AlertDialogAction
                 onClick={() => {
                   data.deleteContract(contract.id);
+                  toast({ title: "Contract deleted", description: contract.title });
                   router.push("/contracts");
                 }}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

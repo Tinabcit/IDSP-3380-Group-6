@@ -91,3 +91,19 @@ Context: The plan said to add the next phase only when the current one is done. 
 Decision: Several phases can be open at once. One phase = one branch = one person, named on the phase's `Branch:` line. New phases are planned together on a small planning branch and merged into dev before coding starts. /phase may add more than one phase and asks for the branch name and owner when the phase is for another branch. Phases no longer contain a "merge this branch" item, because no PR can tick it before its own merge; the Phase 4 one was removed.
 
 Alternatives considered: Keeping one phase at a time (rejected: blocks three of four people). Each person running /phase on their own branch (rejected: plan conflicts on every PR). One shared phase with items assigned to people (rejected: /done picks scope by branch, so several branches would match one phase).
+
+## 2026-10-16 — Toasts built in-house, reminders shown once per task per day
+
+Context: Phase 5 needs toast feedback after create/edit/delete actions and a bell-icon reminder for tasks due in 1-2 days. CLAUDE.md says to ask before adding dependencies.
+
+Decision: Build a small ToastProvider/useToast (no new package) that draws toasts in the top right corner. ReminderToasts (in the app shell) shows a bell toast for each open task assigned to the signed-in person that is due tomorrow or in 2 days. Shown reminders are remembered in localStorage per day, so a refresh does not repeat them. Overdue and due-today tasks are not reminded (the calendar already highlights them).
+
+Alternatives considered: The sonner package (rejected: new dependency needs team approval). A bell button with an unread list in the header (rejected: the phase asks for toasts).
+
+## 2026-10-16 — Header bell lists all overdue tasks and links into the calendar
+
+Context: Phase 5 asks for a bell in the top right of the home page that shows overdue items and takes the user to them.
+
+Decision: A bell in the header (all pages) shows a red count of every open overdue task, for the whole team, matching the "Coming up" panel. Clicking a task opens "/?date=<due date>", which selects that day on the calendar. "View all overdue" opens "/#upcoming-heading", the Coming up list, where overdue tasks come first.
+
+Alternatives considered: Only the signed-in person's overdue tasks (rejected: the demo user may have none and the panel is team-wide). A separate overdue page (rejected: more surface than the phase asks for).
