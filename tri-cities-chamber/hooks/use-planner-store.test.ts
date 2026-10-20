@@ -168,6 +168,57 @@ describe('reducer: other actions', () => {
     expect(state.activity[0].id).toBe('log204');
   });
 
+  it('edits an event and logs it', () => {
+    const event = { id: 'e1', name: 'Gala', startDate: '2025-03-01', endDate: '2025-03-01', pillarId: 'p', isSignature: false };
+    let state = reducer(emptyState(), { type: 'addEvent', event, logId: 'l1' });
+    state = reducer(state, {
+      type: 'updateEvent',
+      id: 'e1',
+      input: { ...event, name: 'Gala 2', startTime: '18:00', category: 'fundraiser' },
+      logId: 'l2',
+    });
+    expect(state.events[0]).toMatchObject({ id: 'e1', name: 'Gala 2', startTime: '18:00', category: 'fundraiser' });
+    expect(state.activity[0].message).toBe('Edited event Gala 2');
+  });
+
+  it('deleting an event clears eventId on its tasks and contracts but keeps them', () => {
+    const event = { id: 'e1', name: 'Gala', startDate: '2025-03-01', endDate: '2025-03-01', pillarId: 'p', isSignature: false };
+    const linkedTask: Task = { ...mirroredTasks[0], eventId: 'e1' };
+    const start = emptyState({
+      events: [event],
+      tasks: [linkedTask, mirroredTasks[1]],
+      contracts: [{ ...contract, eventId: 'e1' }],
+    });
+    const state = reducer(start, { type: 'deleteEvent', id: 'e1', logId: 'l2' });
+    expect(state.events).toHaveLength(0);
+    expect(state.tasks).toHaveLength(2);
+    expect(state.tasks[0].eventId).toBeUndefined();
+    expect(state.contracts[0].eventId).toBeUndefined();
+    expect(state.activity[0].message).toBe('Deleted event Gala');
+  });
+
+  it('editing keeps the id, can clear optional fields, and delete leaves other events alone', () => {
+    const e1 = { id: 'e1', name: 'A', startDate: '2025-03-01', endDate: '2025-03-01', pillarId: 'p', isSignature: false, startTime: '09:00', location: 'Hall' };
+    const e2 = { ...e1, id: 'e2', name: 'B' };
+    const otherTask: Task = { ...mirroredTasks[0], eventId: 'e2' };
+    let state = emptyState({ events: [e1, e2], tasks: [otherTask] });
+    const rest = { name: 'A', startDate: '2025-03-01', endDate: '2025-03-01', pillarId: 'p', isSignature: false };
+    state = reducer(state, { type: 'updateEvent', id: 'e1', input: { ...rest, id: 'other' } as never, logId: 'l1' });
+    expect(state.events[0].id).toBe('e1');
+    expect(state.events[0].startTime).toBeUndefined();
+    expect(state.events[0].location).toBeUndefined();
+    state = reducer(state, { type: 'deleteEvent', id: 'e1', logId: 'l2' });
+    expect(state.events.map((e) => e.id)).toEqual(['e2']);
+    expect(state.tasks[0].eventId).toBe('e2');
+  });
+
+  it('ignores edit and delete for an unknown event', () => {
+    const state = emptyState();
+    expect(reducer(state, { type: 'deleteEvent', id: 'nope', logId: 'l' })).toBe(state);
+    const input = { name: 'x', startDate: '2025-03-01', endDate: '2025-03-01', pillarId: 'p', isSignature: false };
+    expect(reducer(state, { type: 'updateEvent', id: 'nope', input, logId: 'l' })).toBe(state);
+  });
+
   it('hydrate loads data, marks the store ready and keeps the user unless one is given', () => {
     const loading = emptyState({ status: 'loading' });
     const data = { events: [], tasks: [], sponsors: [], contracts: [contract], activity: [] };

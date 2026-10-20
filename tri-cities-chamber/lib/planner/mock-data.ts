@@ -82,6 +82,10 @@ export function buildMockEvents(today: ISODate): ChamberEvent[] {
       endDate: d(9),
       pillarId: "pillar-community",
       isSignature: true,
+      category: "fundraiser",
+      startTime: "18:00",
+      endTime: "22:00",
+      description: "A black-tie evening honouring local business leaders.",
       location: "Civic Centre Ballroom",
     },
     {
@@ -91,6 +95,9 @@ export function buildMockEvents(today: ISODate): ChamberEvent[] {
       endDate: d(24),
       pillarId: "pillar-networking",
       isSignature: true,
+      category: "fundraiser",
+      startTime: "09:00",
+      endTime: "16:00",
       location: "Westwood Plateau",
     },
     {
@@ -100,6 +107,9 @@ export function buildMockEvents(today: ISODate): ChamberEvent[] {
       endDate: d(-5),
       pillarId: "pillar-education",
       isSignature: true,
+      category: "workshop",
+      startTime: "09:00",
+      endTime: "17:00",
       location: "Evergreen Cultural Centre",
     },
     {
@@ -109,6 +119,9 @@ export function buildMockEvents(today: ISODate): ChamberEvent[] {
       endDate: d(2),
       pillarId: "pillar-networking",
       isSignature: false,
+      category: "networking",
+      startTime: "07:30",
+      endTime: "09:00",
     },
     {
       id: "event-policy",
@@ -117,6 +130,9 @@ export function buildMockEvents(today: ISODate): ChamberEvent[] {
       endDate: d(15),
       pillarId: "pillar-advocacy",
       isSignature: false,
+      category: "meeting",
+      startTime: "12:00",
+      endTime: "13:30",
     },
     {
       id: "event-workshop",
@@ -125,6 +141,9 @@ export function buildMockEvents(today: ISODate): ChamberEvent[] {
       endDate: d(5),
       pillarId: "pillar-education",
       isSignature: false,
+      category: "workshop",
+      startTime: "13:00",
+      endTime: "15:00",
     },
     {
       id: "event-mixer",
@@ -133,6 +152,9 @@ export function buildMockEvents(today: ISODate): ChamberEvent[] {
       endDate: d(-12),
       pillarId: "pillar-networking",
       isSignature: false,
+      category: "networking",
+      startTime: "17:00",
+      endTime: "19:00",
     },
   ];
 }

@@ -107,3 +107,19 @@ Context: Phase 5 asks for a bell in the top right of the home page that shows ov
 Decision: A bell in the header (all pages) shows a red count of every open overdue task, for the whole team, matching the "Coming up" panel. Clicking a task opens "/?date=<due date>", which selects that day on the calendar. "View all overdue" opens "/#upcoming-heading", the Coming up list, where overdue tasks come first.
 
 Alternatives considered: Only the signed-in person's overdue tasks (rejected: the demo user may have none and the panel is team-wide). A separate overdue page (rejected: more surface than the phase asks for).
+
+## 2026-10-19 — Event CRUD lives in the store; no API routes; Figma item dropped
+
+Context: Phase 6 first listed "API endpoints for CRUD on events" and "Match layout to Figma calendar design". The MVP is frontend-only, and no Figma file is in the repo.
+
+Decision: Events are created, edited and deleted through updateEvent/deleteEvent in hooks/use-planner-store.ts, like every other record. No app/api routes are added. The Figma item is removed from Phase 6 until a design is supplied. The Branch line is feature/calendar-events, matching the working branch.
+
+Alternatives considered: Next.js route handlers with server storage (rejected: needs a backend decision the team has not made). Keeping the Figma item with no file to work from (rejected: it cannot be checked off).
+
+## 2026-10-20 — Home page is one component; calendar moves to /calendar
+
+Context: Phase 7 asks for the TuDu home page from the Figma screenshot. The team plans to build many separate components later and merge them into one.
+
+Decision: The whole home page (sidebar, filters, task table, pagination) is one component, components/home/home-page.tsx, with only small local helpers inside it; the pure logic lives in lib/planner/home.ts. It replaces "/", so the calendar moves to "/calendar" and the menu gains a Home link. The header bell links now point to /calendar. The sidebar uses real data: Repeat = signature events, One-off = other events, Archived = finished events. The data has no partner levels yet, so all partners sit under Pillar Partners and Annual / Program stay empty.
+
+Alternatives considered: A new /home route next to the calendar (rejected: the design is the home page). Replacing AppShell with the sidebar (rejected: other pages still need the header and menu). Splitting into many files now (rejected: the team wants one component).

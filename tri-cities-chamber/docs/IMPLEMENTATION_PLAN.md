@@ -22,7 +22,7 @@ Phases 1-3 were reconstructed from git history. Several phases can be open at on
 - [x] Plain-language comments on every ts/tsx file, and ARCHITECTURE.md (commit 664fb91)
 - [x] Document reader sandbox prototype in /sandbox/document-reader (PR #1)
 
-## Phase 4 — AI workflow and test foundation (current)
+## Phase 4 — AI workflow and test foundation
 
 Branch: features/ai-workflow-setup
 
@@ -42,6 +42,30 @@ Branch: features/toastNotification
 - [x] add Toast Notification to provide feedback on users when creating calender, contracts, etc.
 - [x] When users calender sheducle is due 1-2 days earlier they should receive a notification [toast notication] and should be displayed in top right corner with a bell icon to showcase.
 - [x] In the homepage there should be a bell icon on the right top corner that shows all overdue notifications and when you click it, it brings you to all the overdues or the selected overdues.
+
+## Phase 6 - Calander fixes/optimization/events
+
+Branch: feature/calendar-events
+
+- [x] cd into tri-cities-chamber
+- [x] Event model: add startTime, endTime, description and category to ChamberEvent (lib/planner/types.ts); update the seed in mock-data.ts; new fields are optional, so saved data keeps working and the storage key is unchanged
+- [x] Store: updateEvent and deleteEvent (reducer cases, hook functions, activity log); deleting an event clears eventId on linked tasks and contracts; tests in hooks/use-planner-store.test.ts
+- [x] Pure helpers in lib/planner: time parse/format/sort, eventsOnDate sorted by time, ?date= validation; tests first
+- [x] Month/year picker in MonthHeader alongside prev/next
+- [x] Extract NewEventForm into a shared create/edit EventFormDialog, reused by /events
+- [x] Calendar: "Add event" button, DayPanel list with edit and delete (AlertDialog confirm), click a day to see its events
+- [x] Day cells: event chips with category colour and badge; keep the "+N more" overflow
+- [x] Toast on event create, update and delete
+- [x] Empty state for months with no events; loading state while data hydrates (no fetching in the MVP)
+- [x] Year boundary and timezone edge cases (Dec/Jan navigation, multi-day events across year end); tests for getMonthGrid, toISODate, fromISODate
+
+## Phase 7 - Home Page design (Current)
+
+Branch: feature/homepage
+
+- [x] cd into tri-cities-chamber
+- [x] ![HomePage](<Screenshot 2026-10-20 152402.png>)
+- [x] From above image recreate/or make the homepage: one component (components/home/home-page.tsx), helpers in lib/planner/home.ts with tests, calendar moved to /calendar
 
 ## Backlog (not a phase yet — /phase turns these into the next phase)
 

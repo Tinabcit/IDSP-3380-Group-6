@@ -10,6 +10,7 @@ import type {
   ChamberEvent,
   Contract,
   ContractInput,
+  EventInput,
   ISODate,
   Sponsor,
   Task,
@@ -66,6 +67,8 @@ export type Action =
   | { type: "toggleTask"; id: string; logId: string }
   | { type: "deleteTask"; id: string; logId: string }
   | { type: "addEvent"; event: ChamberEvent; logId: string }
+  | { type: "updateEvent"; id: string; input: EventInput; logId: string }
+  | { type: "deleteEvent"; id: string; logId: string }
   | { type: "addSponsor"; sponsor: Sponsor }
   | { type: "addContract"; contract: Contract; tasks: Task[]; logId: string }
   | { type: "toggleContractItem"; contractId: string; itemId: string; logId: string }
@@ -158,6 +161,28 @@ export function reducer(state: PlannerState, action: Action): PlannerState {
         events: [...state.events, action.event],
         activity: log(state, action.logId, `Added event ${action.event.name}`),
       };
+    case "updateEvent": {
+      if (!state.events.some((e) => e.id === action.id)) return state;
+      return {
+        ...state,
+        events: state.events.map((e) => (e.id === action.id ? { ...action.input, id: e.id } : e)),
+        activity: log(state, action.logId, `Edited event ${action.input.name}`),
+      };
+    }
+    case "deleteEvent": {
+      const event = state.events.find((e) => e.id === action.id);
+      if (!event) return state;
+      // Tasks and contracts stay, they just stop pointing at the deleted event.
+      return {
+        ...state,
+        events: state.events.filter((e) => e.id !== action.id),
+        tasks: state.tasks.map((t) => (t.eventId === action.id ? { ...t, eventId: undefined } : t)),
+        contracts: state.contracts.map((c) =>
+          c.eventId === action.id ? { ...c, eventId: undefined } : c
+        ),
+        activity: log(state, action.logId, `Deleted event ${event.name}`),
+      };
+    }
     case "addSponsor":
       return { ...state, sponsors: [...state.sponsors, action.sponsor] };
 
@@ -366,10 +391,20 @@ export function usePlannerStore() {
   }, []);
 
   /** Adds an event and returns its new id. */
-  const addEvent = useCallback((input: Omit<ChamberEvent, "id">): string => {
+  const addEvent = useCallback((input: EventInput): string => {
     const id = createId("event");
     dispatch({ type: "addEvent", event: { ...input, id }, logId: createId("act") });
     return id;
+  }, []);
+
+  /** Replaces the fields of an existing event. */
+  const updateEvent = useCallback((id: string, input: EventInput) => {
+    dispatch({ type: "updateEvent", id, input, logId: createId("act") });
+  }, []);
+
+  /** Deletes an event. Its tasks and contracts are kept but no longer linked to it. */
+  const deleteEvent = useCallback((id: string) => {
+    dispatch({ type: "deleteEvent", id, logId: createId("act") });
   }, []);
 
   /** Adds a partner (sponsor) and returns its new id. */
@@ -463,6 +498,8 @@ export function usePlannerStore() {
     toggleTask,
     deleteTask,
     addEvent,
+    updateEvent,
+    deleteEvent,
     addSponsor,
     addContract,
     toggleContractItem,

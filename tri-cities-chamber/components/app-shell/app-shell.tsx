@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, Download, FileText, Handshake, Star } from "lucide-react";
+import { CalendarDays, Download, FileText, Handshake, Home, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -25,7 +25,8 @@ import { useToast } from "./toast-provider";
  * To add a new page to the menu, add a line here.
  */
 const NAV = [
-  { href: "/", label: "Calendar", icon: CalendarDays },
+  { href: "/", label: "Home", icon: Home },
+  { href: "/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/contracts", label: "Contracts", icon: FileText },
   { href: "/events", label: "Events", icon: Star },
   { href: "/partners", label: "Partners", icon: Handshake },
@@ -180,7 +181,7 @@ function MobileNav() {
     aria-label="Main"
     className="fixed inset-x-0 bottom-0 z-30 border-t bg-card pb-[env(safe-area-inset-bottom)] md:hidden"
   >
-    <ul className="grid grid-cols-4">
+    <ul className="grid grid-cols-5">
       {NAV.map(({ href, label, icon: Icon }) => {
         const active = isActive(pathname, href);
         return (

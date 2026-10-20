@@ -114,6 +114,16 @@ describe('eventsOnDate', () => {
     expect(eventsOnDate(events, '2025-03-12')).toHaveLength(1);
     expect(eventsOnDate(events, '2025-03-13')).toHaveLength(0);
   });
+
+  it('lists the day in time order, all-day first', () => {
+    const events = [
+      makeEvent({ id: 'late', name: 'Late', startTime: '17:00' }),
+      makeEvent({ id: 'allday', name: 'All day' }),
+      makeEvent({ id: 'early', name: 'Early', startTime: '08:00' }),
+    ];
+    const date = events[0].startDate;
+    expect(eventsOnDate(events, date).map((e) => e.id)).toEqual(['allday', 'early', 'late']);
+  });
 });
 
 describe('sortTasks', () => {
