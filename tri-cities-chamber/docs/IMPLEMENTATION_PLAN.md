@@ -43,7 +43,7 @@ Branch: features/toastNotification
 - [x] When users calender sheducle is due 1-2 days earlier they should receive a notification [toast notication] and should be displayed in top right corner with a bell icon to showcase.
 - [x] In the homepage there should be a bell icon on the right top corner that shows all overdue notifications and when you click it, it brings you to all the overdues or the selected overdues.
 
-## Phase 6 - Calander fixes/optimization/events (Current)
+## Phase 6 - Calander fixes/optimization/events
 
 Branch: feature/calendar-events
 
@@ -58,6 +58,14 @@ Branch: feature/calendar-events
 - [x] Toast on event create, update and delete
 - [x] Empty state for months with no events; loading state while data hydrates (no fetching in the MVP)
 - [x] Year boundary and timezone edge cases (Dec/Jan navigation, multi-day events across year end); tests for getMonthGrid, toISODate, fromISODate
+
+## Phase 7 - Home Page design (Current)
+
+Branch: feature/homepage
+
+- [x] cd into tri-cities-chamber
+- [x] ![HomePage](<Screenshot 2026-10-20 152402.png>)
+- [x] From above image recreate/or make the homepage: one component (components/home/home-page.tsx), helpers in lib/planner/home.ts with tests, calendar moved to /calendar
 
 ## Backlog (not a phase yet — /phase turns these into the next phase)
 

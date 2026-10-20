@@ -44,7 +44,8 @@ Three rules:
 
 | URL | `app/` file | Main component |
 | --- | --- | --- |
-| `/` | `app/page.tsx` | `PlannerApp` (calendar + to-do) |
+| `/` | `app/page.tsx` | `HomePage` (sidebar + task table) |
+| `/calendar` | `app/calendar/page.tsx` | `PlannerApp` (calendar + to-do) |
 | `/contracts` | `app/contracts/page.tsx` | `ContractsPage` |
 | `/contracts/new` | `app/contracts/new/page.tsx` | `ContractForm` |
 | `/contracts/:id` | `app/contracts/[id]/page.tsx` | `ContractDetail` |
@@ -62,7 +63,9 @@ app/layout.tsx
 └─ AppShell ............... app-shell.tsx          (header, menu, footer)
    └─ the page:
 
-   "/"  PlannerApp ........ components/planner/planner-app.tsx
+   "/"  HomePage .......... components/home/home-page.tsx   (ONE component: sidebar, filters, table, paging; all parts are local functions)
+
+   "/calendar"  PlannerApp  components/planner/planner-app.tsx
    ├─ FilterBar ........... filter-bar.tsx
    ├─ MonthHeader ......... month-header.tsx       (arrows plus month / year picker)
    ├─ MonthGrid ........... month-grid.tsx         (draws a DayCell for each day)
@@ -118,6 +121,12 @@ Read as: *file -> files it uses*.
 | `components/app-shell/overdue-bell.tsx` | `planner-provider`, `lib/planner/reminders` (header bell with overdue count and list) |
 | `components/app-shell/reminder-toasts.tsx` | `planner-provider`, `toast-provider`, `lib/planner/reminders` |
 
+### Home (`components/home/`)
+
+| File | Uses |
+| --- | --- |
+| `home-page.tsx` | `planner-provider`, `toast-provider`, `lib/planner/home`, `selectors`, `dates`, `types`, `components/ui/*` |
+
 ### Calendar (`components/planner/`)
 
 | File | Uses |
@@ -154,6 +163,7 @@ Read as: *file -> files it uses*.
 | `events.ts` | Event categories and colours, time text, sort order, checks for the event form | `types` |
 | `selectors.ts` | Filter / sort tasks and events, count tasks per day | `dates`, `types` |
 | `contracts.ts` | Money, due dates, filter / sort / group contracts | `dates`, `types` |
+| `home.ts` | Paging, search, due-date sort, sidebar event groups and labels for the home page | `dates`, `types` |
 | `reminders.ts` | Which tasks are due in 1-2 days or overdue, and the reminder text | `dates`, `types` |
 | `mock-data.ts` | Demo pillars, partners, staff, events, tasks | `dates`, `types` |
 | `mock-contracts.ts` | Demo contracts and history | `dates`, `types` |
@@ -184,6 +194,7 @@ Event     -> belongs to one Pillar
 
 | I want to... | Go to |
 | --- | --- |
+| Change the home page | `components/home/home-page.tsx` (look), `lib/planner/home.ts` (paging, search, labels) |
 | Add a page to the menu | `NAV` list in `app-shell.tsx`, plus a new folder in `app/` |
 | Change what data looks like | `lib/planner/types.ts` |
 | Change how data is saved or edited | `hooks/use-planner-store.ts` |
@@ -200,4 +211,4 @@ Event     -> belongs to one Pillar
 
 ## 8. Tests
 
-Run `npm test`. Tests sit next to the code they check (`*.test.ts`): `lib/planner/dates`, `selectors`, `contracts`, `reminders`, `events`, and the store's `reducer` in `hooks/use-planner-store.test.ts`. The reducer is exported so the contract <-> task sync can be tested without a browser.
+Run `npm test`. Tests sit next to the code they check (`*.test.ts`): `lib/planner/dates`, `selectors`, `contracts`, `reminders`, `events`, `home`, and the store's `reducer` in `hooks/use-planner-store.test.ts`. The reducer is exported so the contract <-> task sync can be tested without a browser.

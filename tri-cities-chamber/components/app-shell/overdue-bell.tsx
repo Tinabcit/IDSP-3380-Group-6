@@ -83,7 +83,7 @@ export function OverdueBell() {
                 {overdue.slice(0, MAX_LISTED).map((t) => (
                   <li key={t.id}>
                     <Link
-                      href={`/?date=${t.dueDate}`}
+                      href={`/calendar?date=${t.dueDate}`}
                       onClick={() => setOpen(false)}
                       className={cn(
                         "block rounded-sm px-2 py-1.5 hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -98,7 +98,7 @@ export function OverdueBell() {
                 ))}
               </ul>
               <Link
-                href="/#upcoming-heading"
+                href="/calendar#upcoming-heading"
                 onClick={() => setOpen(false)}
                 className="mt-1 block rounded-sm px-2 py-1.5 text-center text-sm font-medium text-primary hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >

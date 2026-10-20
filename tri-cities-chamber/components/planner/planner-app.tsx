@@ -62,7 +62,7 @@ export function PlannerApp() {
   const [eventForm, setEventForm] = useState<EventFormState | null>(null);
   const [announcement, setAnnouncement] = useState('');
 
-  // Opening "/?date=2025-03-07" (from the header bell) jumps to that day. This
+  // Opening "/calendar?date=2025-03-07" (from the header bell) jumps to that day. This
   // adjusts state while rendering, once per new value of the URL.
   const [seenDateParam, setSeenDateParam] = useState<string | null>(null);
   if (dateParam !== seenDateParam) {
