@@ -6,27 +6,10 @@ import { Calendar, MapPin, Plus } from "lucide-react";
 
 import { usePlannerData } from "@/components/app-shell/planner-provider";
 import { useToast } from "@/components/app-shell/toast-provider";
+import { EventFormDialog } from "@/components/events/event-form-dialog";
 import { FilterBar } from "@/components/planner/filter-bar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { amountPaid, formatCurrency } from "@/lib/planner/contracts";
 import { formatShortDate } from "@/lib/planner/dates";
 import { EMPTY_FILTERS, type ChamberEvent, type PlannerFilters } from "@/lib/planner/types";
@@ -42,6 +25,7 @@ export function EventsPage() {
   const data = usePlannerData();
   const { today } = data;
   const [filters, setFilters] = useState<PlannerFilters>(EMPTY_FILTERS);
+  const toast = useToast();
   const [adding, setAdding] = useState(false);
 
   const { upcoming, past } = useMemo(() => {
@@ -89,7 +73,14 @@ export function EventsPage() {
       <EventSection title="Upcoming" events={upcoming} empty="No upcoming events match." />
       <EventSection title="Past" events={past} empty="No past events match." />
 
-      <NewEventDialog open={adding} onClose={() => setAdding(false)} />
+      <EventFormDialog
+        state={adding ? { mode: "create", defaultDate: today } : null}
+        onClose={() => setAdding(false)}
+        onSubmit={(input) => {
+          data.addEvent(input);
+          toast({ title: "Event added", description: input.name });
+        }}
+      />
     </div>
   );
 }
@@ -189,127 +180,5 @@ function EventSection({
         </ul>
       )}
     </section>
-  );
-}
-
-/**
- * The pop-up window for adding an event. The form inside is only created while
- * the pop-up is open, so it starts empty each time.
- */
-function NewEventDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
-  return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent>{open && <NewEventForm onClose={onClose} />}</DialogContent>
-    </Dialog>
-  );
-}
-
-/**
- * The form for adding an event: name, dates, pillar, signature or not, location.
- * Saves with store.addEvent.
- */
-function NewEventForm({ onClose }: { onClose: () => void }) {
-  const data = usePlannerData();
-  const toast = useToast();
-  const [name, setName] = useState("");
-  const [date, setDate] = useState(data.today);
-  const [endDate, setEndDate] = useState("");
-  const [pillarId, setPillarId] = useState(data.pillars[0].id);
-  const [isSignature, setIsSignature] = useState(false);
-  const [location, setLocation] = useState("");
-  const [error, setError] = useState("");
-
-  /** Runs on Save. Checks the name and dates, then adds the event and closes the pop-up. */
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!name.trim()) return setError("Enter an event name.");
-    if (!date) return setError("Choose a date.");
-    if (endDate && endDate < date) return setError("The end date can't be before the start date.");
-    data.addEvent({
-      name: name.trim(),
-      startDate: date,
-      endDate: endDate || date,
-      pillarId,
-      isSignature,
-      location: location.trim() || undefined,
-    });
-    toast({ title: "Event added", description: name.trim() });
-    onClose();
-  }
-
-  return (
-    <form onSubmit={submit} noValidate className="grid gap-4">
-      <DialogHeader>
-        <DialogTitle>New event</DialogTitle>
-        <DialogDescription>
-          Events can repeat or be one-offs. Add each occurrence on its own.
-        </DialogDescription>
-      </DialogHeader>
-      <div className="grid gap-2">
-        <Label htmlFor="ev-name">Name</Label>
-        <Input
-          id="ev-name"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-            setError("");
-          }}
-          autoComplete="off"
-          autoFocus
-        />
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="grid gap-2">
-          <Label htmlFor="ev-date">Date</Label>
-          <Input id="ev-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="ev-end">
-            Last day <span className="font-normal text-muted-foreground">(optional)</span>
-          </Label>
-          <Input id="ev-end" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-        </div>
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="ev-pillar">Pillar</Label>
-        <Select value={pillarId} onValueChange={setPillarId}>
-          <SelectTrigger id="ev-pillar">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {data.pillars.map((p) => (
-              <SelectItem key={p.id} value={p.id}>
-                {p.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="ev-loc">
-          Location <span className="font-normal text-muted-foreground">(optional)</span>
-        </Label>
-        <Input id="ev-loc" value={location} onChange={(e) => setLocation(e.target.value)} />
-      </div>
-      <div className="flex items-center gap-2">
-        <Checkbox
-          id="ev-sig"
-          checked={isSignature}
-          onCheckedChange={(v) => setIsSignature(v === true)}
-        />
-        <Label htmlFor="ev-sig">Signature event</Label>
-      </div>
-      {error && (
-        <p role="alert" className="text-sm text-destructive">
-          {error}
-        </p>
-      )}
-      <DialogFooter>
-        <Button type="button" variant="outline" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button type="submit">Add event</Button>
-      </DialogFooter>
-    </form>
   );
 }

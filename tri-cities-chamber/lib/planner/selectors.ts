@@ -1,3 +1,4 @@
+import { compareEvents } from "./events";
 import { isISODateBefore, isWithinISORange, shiftISODate } from "./dates";
 import type {
   ChamberEvent,
@@ -69,12 +70,14 @@ export function filterTasks(
   });
 }
 
-/** Finds the events happening on a date. An event lasting several days shows up on each of those days. */
+/** Finds the events happening on a date, all-day first and then by start time. An event lasting several days shows up on each of those days. */
 export function eventsOnDate(
   events: ChamberEvent[],
   date: ISODate
 ): ChamberEvent[] {
-  return events.filter((e) => isWithinISORange(date, e.startDate, e.endDate));
+  return events
+    .filter((e) => isWithinISORange(date, e.startDate, e.endDate))
+    .sort(compareEvents);
 }
 
 /** The order of the statuses in a list (smaller number = comes first). */

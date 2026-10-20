@@ -11,6 +11,7 @@ import {
   shiftISODate,
   toISODate,
 } from "@/lib/planner/dates";
+import { CATEGORY_STYLES, categoryOf } from "@/lib/planner/events";
 import type { DaySummary } from "@/lib/planner/selectors";
 import type { ISODate } from "@/lib/planner/types";
 import { cn } from "@/lib/utils";
@@ -269,9 +270,10 @@ function DayCell({
                 "truncate rounded px-1 py-0.5 text-[11px] font-medium leading-tight",
                 event.isSignature
                   ? "bg-signature-soft text-signature-foreground"
-                  : "bg-secondary text-secondary-foreground"
+                  : CATEGORY_STYLES[categoryOf(event)]
               )}
             >
+              {event.startTime && <span className="font-normal opacity-75">{event.startTime} </span>}
               {event.name}
             </span>
           ))}

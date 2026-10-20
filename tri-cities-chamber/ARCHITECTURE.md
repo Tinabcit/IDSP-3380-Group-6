@@ -64,13 +64,14 @@ app/layout.tsx
 
    "/"  PlannerApp ........ components/planner/planner-app.tsx
    ├─ FilterBar ........... filter-bar.tsx
-   ├─ MonthHeader ......... month-header.tsx
+   ├─ MonthHeader ......... month-header.tsx       (arrows plus month / year picker)
    ├─ MonthGrid ........... month-grid.tsx         (draws a DayCell for each day)
    ├─ DayPanel ............ day-panel.tsx
-   │  └─ TaskItem ......... task-item.tsx
+   │  └─ TaskItem ......... task-item.tsx           (also lists events with edit / delete)
    ├─ UpcomingPanel ....... upcoming-panel.tsx
    │  └─ TaskItem
-   └─ TaskFormDialog ...... task-form-dialog.tsx   (pop-up to add/edit a task)
+   ├─ TaskFormDialog ...... task-form-dialog.tsx   (pop-up to add/edit a task)
+   └─ EventFormDialog ..... components/events/event-form-dialog.tsx   (pop-up to add/edit an event)
 
    "/contracts"  ContractsPage ... components/contracts/contracts-page.tsx
    ├─ FilterBar (same one as the calendar)
@@ -87,7 +88,7 @@ app/layout.tsx
    "/events"  EventsPage ... components/events/events-page.tsx
    ├─ FilterBar (same one)
    ├─ EventSection ........ (same file; Upcoming / Past)
-   └─ NewEventDialog -> NewEventForm
+   └─ EventFormDialog ..... event-form-dialog.tsx  (same pop-up the calendar uses)
 
    "/partners"  PartnersPage ... components/partners/partners-page.tsx
 ```
@@ -121,12 +122,12 @@ Read as: *file -> files it uses*.
 
 | File | Uses |
 | --- | --- |
-| `planner-app.tsx` | `planner-provider`, `dates`, `selectors`, `types`, + all 6 children below |
-| `day-panel.tsx` | `dates`, `types`, `lookups`, `task-item` |
+| `planner-app.tsx` | `planner-provider`, `event-form-dialog`, `dates`, `selectors`, `types`, + all 6 children below |
+| `day-panel.tsx` | `dates`, `events`, `types`, `lookups`, `task-item` |
 | `upcoming-panel.tsx` | `types`, `lookups`, `task-item` |
 | `task-item.tsx` | `dates`, `selectors`, `types`, `lookups` |
-| `month-grid.tsx` | `dates`, `selectors`, `types` |
-| `month-header.tsx` | nothing from the app |
+| `month-grid.tsx` | `dates`, `events`, `selectors`, `types` |
+| `month-header.tsx` | nothing from the app (month / year picker) |
 | `filter-bar.tsx` | `selectors`, `types` |
 | `task-form-dialog.tsx` | `dates`, `types` |
 | `lookups.ts` | `types` |
@@ -140,7 +141,8 @@ Read as: *file -> files it uses*.
 | `contract-detail.tsx` | `planner-provider`, `contracts`, `dates`, `types`, `activity-list`, `contract-card` |
 | `contract-form.tsx` | `planner-provider`, `contracts`, `dates`, `types` |
 | `activity-list.tsx` | `lookups`, `types` |
-| `events-page.tsx` | `planner-provider`, `filter-bar`, `contracts`, `dates`, `types` |
+| `events-page.tsx` | `planner-provider`, `toast-provider`, `event-form-dialog`, `filter-bar`, `contracts`, `dates`, `types` |
+| `event-form-dialog.tsx` | `planner-provider`, `events`, `types` (one add / edit pop-up for the calendar and Events page) |
 | `partners-page.tsx` | `planner-provider`, `contracts` |
 
 ### Helpers (`lib/`)
@@ -149,6 +151,7 @@ Read as: *file -> files it uses*.
 | --- | --- | --- |
 | `types.ts` | Defines the shape of all the data | nothing |
 | `dates.ts` | Date helpers ("Mar 7", "Tomorrow", month grid) | `types` |
+| `events.ts` | Event categories and colours, time text, sort order, checks for the event form | `types` |
 | `selectors.ts` | Filter / sort tasks and events, count tasks per day | `dates`, `types` |
 | `contracts.ts` | Money, due dates, filter / sort / group contracts | `dates`, `types` |
 | `reminders.ts` | Which tasks are due in 1-2 days or overdue, and the reminder text | `dates`, `types` |
@@ -167,6 +170,7 @@ Task      -> belongs to one staff member (assignee)
           -> optionally linked to an Event, a Sponsor, a Contract
 
 Event     -> belongs to one Pillar
+          -> has a category, optional start / end time and description
 ```
 
 **Contracts and tasks stay in sync** (the code is in the reducer in `use-planner-store.ts`):
@@ -174,6 +178,7 @@ Event     -> belongs to one Pillar
 - Creating a contract creates a task for each unpaid payment and unfinished deliverable. That is how they show up on the calendar.
 - Ticking the task ticks the payment/deliverable, and the other way round.
 - Deleting a contract deletes its tasks.
+- Deleting an event (`deleteEvent`) keeps its tasks and contracts but clears their `eventId`. Editing one uses `updateEvent`.
 
 ## 7. "I want to change..." (where to look)
 
@@ -186,6 +191,8 @@ Event     -> belongs to one Pillar
 | Edit the demo data | `mock-data.ts`, `mock-contracts.ts` |
 | Change the calendar's look or keyboard keys | `components/planner/month-grid.tsx` |
 | Change how filtering works | `selectors.ts` (tasks, events), `lib/planner/contracts.ts` (contracts) |
+| Add a field to the event form | `components/events/event-form-dialog.tsx`, `lib/planner/events.ts` (checks) and `types.ts` |
+| Change event categories, colours or time text | `lib/planner/events.ts` |
 | Add a field to the task form | `components/planner/task-form-dialog.tsx` (and `types.ts`) |
 | Change the new-contract form | `components/contracts/contract-form.tsx` |
 | Change how dates are written | `lib/planner/dates.ts` |
@@ -193,4 +200,4 @@ Event     -> belongs to one Pillar
 
 ## 8. Tests
 
-Run `npm test`. Tests sit next to the code they check (`*.test.ts`): `lib/planner/dates`, `selectors`, `contracts`, `reminders`, and the store's `reducer` in `hooks/use-planner-store.test.ts`. The reducer is exported so the contract <-> task sync can be tested without a browser.
+Run `npm test`. Tests sit next to the code they check (`*.test.ts`): `lib/planner/dates`, `selectors`, `contracts`, `reminders`, `events`, and the store's `reducer` in `hooks/use-planner-store.test.ts`. The reducer is exported so the contract <-> task sync can be tested without a browser.

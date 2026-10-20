@@ -23,7 +23,8 @@ npm run build
 | Easy navigation for short-term interns (5)    | Four-item nav: bottom tab bar on phones, top bar on desktop; global "Signed in as" switcher |
 | Sorting by event, pillar or partner           | `/contracts`: group by event / pillar / partner, sort by next due, value, partner, title, plus search |
 | Signature event filter                        | Filter bar on Calendar, Contracts and Events                               |
-| Calendar and reminders (not more e-blasts)    | `/`: month calendar, overdue / to-do markers, "Coming up" list, bell toasts for tasks due in 1-2 days, header bell for overdue           |
+| Calendar and reminders (not more e-blasts)    | `/`: month calendar with a month / year picker, overdue / to-do markers, "Coming up" list, bell toasts for tasks due in 1-2 days, header bell for overdue           |
+| Events on the calendar                        | Add, edit and delete events (start / end time, description, category) from the Events page or the calendar day panel; deleting an event unlinks its tasks and contracts |
 | Contract reader / summarizer                  | Summary card on each contract. **Demo only**: composed from entered fields, labelled as such |
 | Trust and transparency (5)                    | History on every contract and "Recent changes" showing who changed what    |
 | Loss prevention (2-3)                         | "Download backup" (JSON) in the footer; delete needs confirmation          |
@@ -40,7 +41,7 @@ app/                       routes: / (calendar), /contracts, /contracts/new,
                            /contracts/[id], /events, /partners
 components/app-shell/      layout, nav, PlannerProvider (shared store via context)
 components/contracts/      list, card, form, detail, activity list
-components/events/         events page + add-event dialog
+components/events/         events page + shared add / edit event dialog
 components/partners/       partners page
 components/planner/        calendar and task components
 components/ui/             shadcn/ui primitives
@@ -50,6 +51,7 @@ lib/planner/
   mock-data.ts             pillars, partners, staff, events, tasks
   mock-contracts.ts        contracts and activity
   contracts.ts             filter, sort, group, totals, demo summary and extraction
+  events.ts                event categories, times, sorting and form checks
   selectors.ts, dates.ts   task selectors and date helpers
 ```
 

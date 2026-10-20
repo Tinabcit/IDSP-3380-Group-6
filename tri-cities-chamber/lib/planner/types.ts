@@ -27,6 +27,9 @@ export interface StaffMember {
   initials: string;
 }
 
+/** The kinds of event, used for colour coding. Events without one count as "other". */
+export type EventCategory = "networking" | "workshop" | "meeting" | "fundraiser" | "other";
+
 export interface ChamberEvent {
   id: string;
   name: string;
@@ -36,7 +39,17 @@ export interface ChamberEvent {
   pillarId: string;
   isSignature: boolean;
   location?: string;
+  /** Start time as 24-hour "HH:mm". Missing means an all-day event. */
+  startTime?: string;
+  /** End time as 24-hour "HH:mm". Only used when startTime is set. */
+  endTime?: string;
+  description?: string;
+  /** Missing on events saved before categories existed; treat as "other". */
+  category?: EventCategory;
 }
+
+/** Fields the user can set when creating or editing an event. */
+export type EventInput = Omit<ChamberEvent, "id">;
 
 export interface Task {
   id: string;

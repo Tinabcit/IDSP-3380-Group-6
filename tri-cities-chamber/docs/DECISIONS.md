@@ -107,3 +107,11 @@ Context: Phase 5 asks for a bell in the top right of the home page that shows ov
 Decision: A bell in the header (all pages) shows a red count of every open overdue task, for the whole team, matching the "Coming up" panel. Clicking a task opens "/?date=<due date>", which selects that day on the calendar. "View all overdue" opens "/#upcoming-heading", the Coming up list, where overdue tasks come first.
 
 Alternatives considered: Only the signed-in person's overdue tasks (rejected: the demo user may have none and the panel is team-wide). A separate overdue page (rejected: more surface than the phase asks for).
+
+## 2026-10-19 — Event CRUD lives in the store; no API routes; Figma item dropped
+
+Context: Phase 6 first listed "API endpoints for CRUD on events" and "Match layout to Figma calendar design". The MVP is frontend-only, and no Figma file is in the repo.
+
+Decision: Events are created, edited and deleted through updateEvent/deleteEvent in hooks/use-planner-store.ts, like every other record. No app/api routes are added. The Figma item is removed from Phase 6 until a design is supplied. The Branch line is feature/calendar-events, matching the working branch.
+
+Alternatives considered: Next.js route handlers with server storage (rejected: needs a backend decision the team has not made). Keeping the Figma item with no file to work from (rejected: it cannot be checked off).
