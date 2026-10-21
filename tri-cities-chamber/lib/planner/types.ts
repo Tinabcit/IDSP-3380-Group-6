@@ -91,6 +91,7 @@ export interface ContractSummary {
   watchouts: string[];
 }
 
+
 /** A sponsorship agreement between a partner and (usually) one event. */
 export interface Contract {
   id: string;
@@ -101,6 +102,13 @@ export interface Contract {
   amount: number;
   status: ContractStatus;
   signedDate?: ISODate;
+
+  /** Date when the sponsorship contract expires. */
+  expirationDate?: ISODate;
+
+  /** Date when staff should review the contract for renewal. */
+  renewalDate?: ISODate;
+
   fileName?: string;
   payments: PaymentInstalment[];
   deliverables: Deliverable[];
@@ -108,6 +116,7 @@ export interface Contract {
   notes?: string;
   createdAt: string;
 }
+
 
 export type ContractInput = Omit<Contract, "id" | "createdAt">;
 

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useRef, useState } from "react";
@@ -65,6 +66,11 @@ export function ContractForm() {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [signedDate, setSignedDate] = useState<string>(today);
+
+  // New: dates used for contract expiration and renewal reminders.
+  const [expirationDate, setExpirationDate] = useState<string>("");
+  const [renewalDate, setRenewalDate] = useState<string>("");
+
   const [payments, setPayments] = useState<PaymentInstalment[]>([]);
   const [deliverables, setDeliverables] = useState<Deliverable[]>([]);
   const [assigneeId, setAssigneeId] = useState(data.currentUserId);
@@ -166,6 +172,11 @@ export function ContractForm() {
       amount: amountNumber,
       status: signedDate ? ("active" as const) : ("draft" as const),
       signedDate: signedDate || undefined,
+
+      // New: save the optional contract deadline dates.
+      expirationDate: expirationDate || undefined,
+      renewalDate: renewalDate || undefined,
+
       fileName,
       payments: cleanPayments,
       deliverables: cleanDeliverables,
@@ -325,6 +336,32 @@ export function ContractForm() {
               type="date"
               value={signedDate}
               onChange={(e) => setSignedDate(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* New: contract expiration and renewal date fields. */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-2">
+            <Label htmlFor="c-expiration">
+              Contract expiration date (optional)
+            </Label>
+            <Input
+              id="c-expiration"
+              type="date"
+              value={expirationDate}
+              onChange={(e) => setExpirationDate(e.target.value)}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="c-renewal">
+              Contract renewal review date (optional)
+            </Label>
+            <Input
+              id="c-renewal"
+              type="date"
+              value={renewalDate}
+              onChange={(e) => setRenewalDate(e.target.value)}
             />
           </div>
         </div>
