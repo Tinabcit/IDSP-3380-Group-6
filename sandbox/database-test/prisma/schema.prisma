@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Sponsorship sandbox models
+//
+// Paste these into your existing schema.prisma (or a file in prisma/schema/
+// if you use multi-file schemas). They map onto tables that already exist in
+// Supabase, so run `npx prisma generate` only, not `prisma migrate dev`.
+//
+// Text columns with CHECK constraints are kept as String (Prisma can't model
+// CHECKs); allowed values are noted inline.
+// ---------------------------------------------------------------------------
+
+model Sponsor {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  rank      String   @default("event_only") // pillar | annual_partner | event_only
+  status    String   @default("active") // active | inactive | prospective
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  profiles       Profile[]
+  agreements     SponsorAgreement[]
+  sponsorEvents  SponsorEvent[]
+  adDeliverables SponsorAdvertising[]
+
+  @@map("sponsors")
+}
+
+/// id is the Supabase auth.users id (that FK lives in the database, not modelled here).
+model Profile {
+  id        String   @id @db.Uuid
+  email     String?
+  fullName  String?  @map("full_name")
+  role      String   @default("guest") // admin | guest
+  sponsorId String?  @map("sponsor_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  sponsor Sponsor? @relation(fields: [sponsorId], references: [id], onDelete: SetNull)
+
+  @@index([sponsorId], map: "idx_profiles_sponsor")
+  @@map("profiles")
+}
+
+model EventSeries {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String
+  recurrence String   @default("annual") // annual
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  events Event[]
+
+  @@map("event_series")
+}
+
+model Event {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String
+  startAt           DateTime  @map("start_at") @db.Timestamptz(6)
+  endAt             DateTime? @map("end_at") @db.Timestamptz(6)
+  status            String    @default("planning") // planning | open | completed | cancelled
+  recurringSeriesId String?   @map("recurring_series_id") @db.Uuid
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  series         EventSeries?         @relation(fields: [recurringSeriesId], references: [id], onDelete: SetNull)
+  sponsorEvents  SponsorEvent[]
+  adDeliverables SponsorAdvertising[]
+
+  @@index([startAt], map: "idx_events_start")
+  @@index([recurringSeriesId], map: "idx_events_series")
+  @@map("events")
+}
+
+model SponsorAgreement {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sponsorId           String    @map("sponsor_id") @db.Uuid
+  startDate           DateTime  @map("start_date") @db.Date
+  endDate             DateTime  @map("end_date") @db.Date
+  renewalContactDueAt DateTime? @map("renewal_contact_due_at") @db.Timestamptz(6)
+  renewalDeadline     DateTime? @map("renewal_deadline") @db.Timestamptz(6)
+  status              String    @default("active") // active | pending_renewal | expired | cancelled
+  notes               String?
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  sponsor Sponsor @relation(fields: [sponsorId], references: [id], onDelete: Cascade)
+
+  @@index([sponsorId], map: "idx_agreements_sponsor")
+  @@index([renewalContactDueAt], map: "idx_agreements_renewal")
+  @@map("sponsor_agreements")
+}
+
+model SponsorEvent {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sponsorId           String    @map("sponsor_id") @db.Uuid
+  eventId             String    @map("event_id") @db.Uuid
+  sponsorshipLevel    String?   @map("sponsorship_level")
+  status              String    @default("prospective") // prospective | offered | confirmed | declined | completed
+  firstRightToRenew   Boolean   @default(false) @map("first_right_to_renew")
+  renewalContactDueAt DateTime? @map("renewal_contact_due_at") @db.Timestamptz(6)
+  renewalDeadline     DateTime? @map("renewal_deadline") @db.Timestamptz(6)
+  compedTickets       Int       @default(0) @map("comped_tickets")
+  notes               String?
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  sponsor Sponsor @relation(fields: [sponsorId], references: [id], onDelete: Cascade)
+  event   Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([sponsorId, eventId])
+  @@index([sponsorId], map: "idx_sponsor_events_sponsor")
+  @@index([eventId], map: "idx_sponsor_events_event")
+  @@index([renewalContactDueAt], map: "idx_sponsor_events_renewal")
+  @@map("sponsor_events")
+}
+
+model Advertising {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @unique
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  deliverables SponsorAdvertising[]
+
+  @@map("advertising")
+}
+
+model SponsorAdvertising {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sponsorId     String    @map("sponsor_id") @db.Uuid
+  advertisingId String    @map("advertising_id") @db.Uuid
+  eventId       String?   @map("event_id") @db.Uuid
+  quantity      Int       @default(1)
+  dueAt         DateTime? @map("due_at") @db.Timestamptz(6)
+  status        String    @default("upcoming") // upcoming | due | completed | cancelled
+  completedAt   DateTime? @map("completed_at") @db.Timestamptz(6)
+  notes         String?
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  sponsor     Sponsor     @relation(fields: [sponsorId], references: [id], onDelete: Cascade)
+  advertising Advertising @relation(fields: [advertisingId], references: [id], onDelete: NoAction)
+  event       Event?      @relation(fields: [eventId], references: [id], onDelete: SetNull)
+
+  @@index([dueAt], map: "idx_sponsor_advertising_due")
+  @@index([sponsorId], map: "idx_sponsor_advertising_sponsor")
+  @@map("sponsor_advertising")
+}
