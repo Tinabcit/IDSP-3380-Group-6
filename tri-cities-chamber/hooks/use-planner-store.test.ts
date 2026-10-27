@@ -226,3 +226,28 @@ describe('reducer: other actions', () => {
     expect(reducer(loading, { type: 'hydrate', data, currentUserId: 'staff-2' }).currentUserId).toBe('staff-2');
   });
 });
+
+describe('sponsor actions', () => {
+  it('addSponsor appends the sponsor', () => {
+    const next = reducer(emptyState(), { type: 'addSponsor', sponsor: { id: 'sp1', name: 'Northstar' } });
+    expect(next.sponsors).toEqual([{ id: 'sp1', name: 'Northstar' }]);
+  });
+
+  it('updateSponsor replaces the fields, keeps the id and writes history', () => {
+    const start = emptyState({ sponsors: [{ id: 'sp1', name: 'Northstar', status: 'draft' }] });
+    const next = reducer(start, {
+      type: 'updateSponsor',
+      id: 'sp1',
+      input: { name: 'Northstar Events', level: 'gold', status: 'active' },
+      logId: 'log1',
+    });
+    expect(next.sponsors).toEqual([{ id: 'sp1', name: 'Northstar Events', level: 'gold', status: 'active' }]);
+    expect(next.activity[0].message).toBe('Edited sponsor Northstar Events');
+  });
+
+  it('updateSponsor ignores an unknown id', () => {
+    const start = emptyState();
+    const next = reducer(start, { type: 'updateSponsor', id: 'nope', input: { name: 'X' }, logId: 'log1' });
+    expect(next).toBe(start);
+  });
+});

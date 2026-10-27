@@ -5,9 +5,13 @@ import Link from "next/link";
 import { Mail, Phone, Plus, Search } from "lucide-react";
 
 import { usePlannerData } from "@/components/app-shell/planner-provider";
+import { useToast } from "@/components/app-shell/toast-provider";
+import { SponsorFormDialog, type SponsorFormState } from "@/components/partners/sponsor-form-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { amountPaid, formatCurrency } from "@/lib/planner/contracts";
+import { isDraft, levelLabel } from "@/lib/planner/sponsors";
 
 /**
  * The partners page (/partners). Each partner shows contact details, the
@@ -16,7 +20,9 @@ import { amountPaid, formatCurrency } from "@/lib/planner/contracts";
  */
 export function PartnersPage() {
   const data = usePlannerData();
+  const toast = useToast();
   const [query, setQuery] = useState("");
+  const [form, setForm] = useState<SponsorFormState | null>(null);
 
   const partners = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -43,6 +49,14 @@ export function PartnersPage() {
             Sponsors, who to contact, and everything they have signed.
           </p>
         </div>
+        <div className="flex gap-2">
+        <Button variant="outline" onClick={() => setForm({ mode: "create" })}>
+          <Plus />
+          <span>
+            <span className="sm:hidden">Sponsor</span>
+            <span className="hidden sm:inline">New sponsor</span>
+          </span>
+        </Button>
         <Button asChild>
           <Link href="/contracts/new">
             <Plus />
@@ -52,6 +66,7 @@ export function PartnersPage() {
             </span>
           </Link>
         </Button>
+        </div>
       </header>
 
       <div className="relative">
@@ -79,7 +94,11 @@ export function PartnersPage() {
             <li key={sponsor.id} className="rounded-lg border bg-card p-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
-                  <h2 className="font-semibold">{sponsor.name}</h2>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="font-semibold">{sponsor.name}</h2>
+                    {isDraft(sponsor) && <Badge variant="outline">Draft</Badge>}
+                    {sponsor.level && <Badge variant="secondary">{levelLabel(sponsor.level)}</Badge>}
+                  </div>
                   {sponsor.contactName && (
                     <p className="text-sm text-muted-foreground">{sponsor.contactName}</p>
                   )}
@@ -105,6 +124,14 @@ export function PartnersPage() {
                   </div>
                 </div>
                 <div className="text-right">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setForm({ mode: "edit", sponsor })}
+                    aria-label={`Edit ${sponsor.name}`}
+                  >
+                    Edit
+                  </Button>
                   <div className="font-semibold">{formatCurrency(total)}</div>
                   <div className="text-xs text-muted-foreground">
                     {formatCurrency(received)} received
@@ -139,6 +166,19 @@ export function PartnersPage() {
           ))}
         </ul>
       )}
+
+      <SponsorFormDialog
+        state={form}
+        onClose={() => setForm(null)}
+        onSubmit={(input, id) => {
+          if (id) data.updateSponsor(id, input);
+          else data.addSponsor(input);
+          toast({
+            title: input.status === "draft" ? "Sponsor saved as draft" : "Sponsor published",
+            description: input.name,
+          });
+        }}
+      />
     </div>
   );
 }

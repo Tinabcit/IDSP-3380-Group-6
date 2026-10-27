@@ -13,13 +13,34 @@ export interface Pillar {
   name: string;
 }
 
+/** How much a sponsor is giving. Sponsors saved before levels existed have none. */
+export type SponsorLevel = "platinum" | "gold" | "silver" | "bronze";
+
+/** A sponsor is a draft until it is published. Sponsors saved before this existed count as active. */
+export type SponsorStatus = "draft" | "active";
+
+/** One checklist line on a sponsor, kept on the sponsor itself (not a calendar task). */
+export interface SponsorTodo {
+  id: string;
+  title: string;
+  done: boolean;
+}
+
 export interface Sponsor {
   id: string;
   name: string;
   contactName?: string;
   contactEmail?: string;
   contactPhone?: string;
+  website?: string;
+  level?: SponsorLevel;
+  notes?: string;
+  status?: SponsorStatus;
+  todos?: SponsorTodo[];
 }
+
+/** The values the sponsor form produces: everything on a sponsor except its id. */
+export type SponsorInput = Omit<Sponsor, "id">;
 
 export interface StaffMember {
   id: string;

@@ -123,3 +123,11 @@ Context: Phase 7 asks for the TuDu home page from the Figma screenshot. The team
 Decision: The whole home page (sidebar, filters, task table, pagination) is one component, components/home/home-page.tsx, with only small local helpers inside it; the pure logic lives in lib/planner/home.ts. It replaces "/", so the calendar moves to "/calendar" and the menu gains a Home link. The header bell links now point to /calendar. The sidebar uses real data: Repeat = signature events, One-off = other events, Archived = finished events. The data has no partner levels yet, so all partners sit under Pillar Partners and Annual / Program stay empty.
 
 Alternatives considered: A new /home route next to the calendar (rejected: the design is the home page). Replacing AppShell with the sidebar (rejected: other pages still need the header and menu). Splitting into many files now (rejected: the team wants one component).
+
+## 2026-10-26 — Sponsor pop up lives on /partners; Save is a draft, Publish is active
+
+Context: Phase 8 asks for the Sponsor Information pop up from docs/sponsorPopUp.png. /partners is the only page that lists sponsors. The app has no backend, so "Publish" has no server meaning.
+
+Decision: The pop up is components/partners/sponsor-form-dialog.tsx, opened from /partners with "New sponsor" and a per-card "Edit". Sponsor gains optional website, level, notes, status and todos (no localStorage key bump). Save stores the sponsor with status "draft" (shown with a Draft badge); Publish stores it as "active". The To Do List is a todos array on the sponsor, not calendar Tasks, so it needs no due date or assignee. A store action updateSponsor was added.
+
+Alternatives considered: Publish identical to Save (rejected: the button would do nothing). Creating real Task records for the to do list (rejected: they require a due date and assignee the mockup does not collect).
