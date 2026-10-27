@@ -13,6 +13,7 @@ import type {
   EventInput,
   ISODate,
   Sponsor,
+  SponsorInput,
   Task,
   TaskInput,
 } from "@/lib/planner/types";
@@ -70,6 +71,7 @@ export type Action =
   | { type: "updateEvent"; id: string; input: EventInput; logId: string }
   | { type: "deleteEvent"; id: string; logId: string }
   | { type: "addSponsor"; sponsor: Sponsor }
+  | { type: "updateSponsor"; id: string; input: SponsorInput; logId: string }
   | { type: "addContract"; contract: Contract; tasks: Task[]; logId: string }
   | { type: "toggleContractItem"; contractId: string; itemId: string; logId: string }
   | { type: "setContractStatus"; id: string; status: Contract["status"]; logId: string }
@@ -185,6 +187,14 @@ export function reducer(state: PlannerState, action: Action): PlannerState {
     }
     case "addSponsor":
       return { ...state, sponsors: [...state.sponsors, action.sponsor] };
+    case "updateSponsor": {
+      if (!state.sponsors.some((s) => s.id === action.id)) return state;
+      return {
+        ...state,
+        sponsors: state.sponsors.map((s) => (s.id === action.id ? { ...action.input, id: s.id } : s)),
+        activity: log(state, action.logId, `Edited sponsor ${action.input.name}`),
+      };
+    }
 
     case "addContract":
       return {
@@ -408,10 +418,15 @@ export function usePlannerStore() {
   }, []);
 
   /** Adds a partner (sponsor) and returns its new id. */
-  const addSponsor = useCallback((input: Omit<Sponsor, "id">): string => {
+  const addSponsor = useCallback((input: SponsorInput): string => {
     const id = createId("sponsor");
     dispatch({ type: "addSponsor", sponsor: { ...input, id } });
     return id;
+  }, []);
+
+  /** Replaces the fields of an existing sponsor. */
+  const updateSponsor = useCallback((id: string, input: SponsorInput) => {
+    dispatch({ type: "updateSponsor", id, input, logId: createId("act") });
   }, []);
 
   /**
@@ -501,6 +516,7 @@ export function usePlannerStore() {
     updateEvent,
     deleteEvent,
     addSponsor,
+    updateSponsor,
     addContract,
     toggleContractItem,
     setContractStatus,

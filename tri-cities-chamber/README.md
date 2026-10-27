@@ -42,7 +42,7 @@ app/                       routes: / (calendar), /contracts, /contracts/new,
 components/app-shell/      layout, nav, PlannerProvider (shared store via context)
 components/contracts/      list, card, form, detail, activity list
 components/events/         events page + shared add / edit event dialog
-components/partners/       partners page
+components/partners/       partners page + add / edit sponsor pop up
 components/planner/        calendar and task components
 components/ui/             shadcn/ui primitives
 hooks/use-planner-store.ts events, tasks, partners, contracts, activity + localStorage
@@ -52,6 +52,7 @@ lib/planner/
   mock-contracts.ts        contracts and activity
   contracts.ts             filter, sort, group, totals, demo summary and extraction
   events.ts                event categories, times, sorting and form checks
+  sponsors.ts              sponsor levels, default to do list, form checks
   selectors.ts, dates.ts   task selectors and date helpers
 ```
 

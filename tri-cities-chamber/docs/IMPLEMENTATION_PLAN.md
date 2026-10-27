@@ -59,13 +59,22 @@ Branch: feature/calendar-events
 - [x] Empty state for months with no events; loading state while data hydrates (no fetching in the MVP)
 - [x] Year boundary and timezone edge cases (Dec/Jan navigation, multi-day events across year end); tests for getMonthGrid, toISODate, fromISODate
 
-## Phase 7 - Home Page design (Current)
+## Phase 7 - Home Page design
 
 Branch: feature/homepage
 
 - [x] cd into tri-cities-chamber
 - [x] ![HomePage](<Screenshot 2026-10-20 152402.png>)
 - [x] From above image recreate/or make the homepage: one component (components/home/home-page.tsx), helpers in lib/planner/home.ts with tests, calendar moved to /calendar
+
+## Phase 8 - Sponsor pop up (Current)
+
+Branch: feature/sponsorPopUp
+
+- Copy the main branch and make the above branch
+- [x] cd into tri-cities-chamber
+- [x] ![SponsorPopUp](<sponsorPopUp.png>)
+- [x] From above image recreate/make the sponsorPopUp, use ShadCN, look at the whole strucutre right now and determine where the sponsor should be implemnented at. Built as components/partners/sponsor-form-dialog.tsx, opened from /partners (New sponsor, Edit); helpers and tests in lib/planner/sponsors.ts
 
 ## Backlog (not a phase yet — /phase turns these into the next phase)
 

@@ -152,7 +152,8 @@ Read as: *file -> files it uses*.
 | `activity-list.tsx` | `lookups`, `types` |
 | `events-page.tsx` | `planner-provider`, `toast-provider`, `event-form-dialog`, `filter-bar`, `contracts`, `dates`, `types` |
 | `event-form-dialog.tsx` | `planner-provider`, `events`, `types` (one add / edit pop-up for the calendar and Events page) |
-| `partners-page.tsx` | `planner-provider`, `contracts` |
+| `partners-page.tsx` | `planner-provider`, `toast-provider`, `sponsor-form-dialog`, `contracts`, `sponsors` |
+| `sponsor-form-dialog.tsx` | `sponsors`, `types`, `components/ui/*` (the Sponsor Information pop up: Save makes a draft, Publish makes it active) |
 
 ### Helpers (`lib/`)
 
@@ -161,6 +162,7 @@ Read as: *file -> files it uses*.
 | `types.ts` | Defines the shape of all the data | nothing |
 | `dates.ts` | Date helpers ("Mar 7", "Tomorrow", month grid) | `types` |
 | `events.ts` | Event categories and colours, time text, sort order, checks for the event form | `types` |
+| `sponsors.ts` | Sponsor levels, default to do list, draft check, checks for the sponsor form | `types` |
 | `selectors.ts` | Filter / sort tasks and events, count tasks per day | `dates`, `types` |
 | `contracts.ts` | Money, due dates, filter / sort / group contracts | `dates`, `types` |
 | `home.ts` | Paging, search, due-date sort, sidebar event groups and labels for the home page | `dates`, `types` |
