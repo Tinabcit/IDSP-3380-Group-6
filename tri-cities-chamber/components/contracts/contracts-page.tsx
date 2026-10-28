@@ -39,6 +39,8 @@ import {
 import { ActivityList } from "./activity-list";
 import { ContractCard } from "./contract-card";
 
+import { PaymentReminderPanel } from "./payment-reminder-panel";
+
 /** The words shown in the "group by" dropdown. */
 const GROUP_LABELS: Record<ContractGroupBy, string> = {
   none: "No grouping",
@@ -326,6 +328,9 @@ export function ContractsPage() {
           </ul>
         )}
       </section>
+
+      {/* New: Sponsorship Payment Reminder Dashboard */}
+      <PaymentReminderPanel />
 
       <div className="grid gap-3">
         <div className="relative">
