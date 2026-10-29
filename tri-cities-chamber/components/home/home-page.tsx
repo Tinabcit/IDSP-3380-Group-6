@@ -6,22 +6,16 @@ import {
   ArrowUpDown,
   Briefcase,
   CalendarDays,
-  ChevronDown,
-  ChevronRight,
-  Home,
   ListFilter,
   MoreVertical,
-  Plus,
-  Search,
-  Settings,
   User,
 } from "lucide-react";
 
+import { AppSidebar, useHomeFilters } from "@/components/app-shell/app-sidebar";
 import { useToast } from "@/components/app-shell/toast-provider";
 import { usePlannerData } from "@/components/app-shell/planner-provider";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -30,14 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatLongDate, isISODateBefore, shiftISODate } from "@/lib/planner/dates";
-import {
-  eventBadge,
-  paginate,
-  searchTasks,
-  sortByDueDate,
-  splitEvents,
-  type EventBadge,
-} from "@/lib/planner/home";
+import { paginate, searchTasks, sortByDueDate } from "@/lib/planner/home";
 import { getTaskStatus } from "@/lib/planner/selectors";
 import type { ISODate, Task } from "@/lib/planner/types";
 import { cn } from "@/lib/utils";
@@ -60,55 +47,31 @@ const DUE_OPTIONS = [
   { value: "past", label: "Already due" },
 ] as const;
 
-/** The colours of the small sidebar labels. */
-const BADGE_TONES: Record<EventBadge["tone"], string> = {
-  danger: "bg-red-600 text-white",
-  info: "bg-sky-600 text-white",
-  dark: "bg-neutral-900 text-white",
-};
-
-/** The home page: a sidebar (events and partners) next to the "Tu Do Task Table". */
+/**
+ * The home page: the "Tu Do Task Table". The sidebar (app-sidebar.tsx) is shared
+ * with every page; its search and event / partner picks filter this table.
+ */
 export function HomePage() {
   const data = usePlannerData();
   const toast = useToast();
   const { today, tasks, events, sponsors, lookups } = data;
 
+  // The search box and the event / partner picked in the sidebar (shared with every page).
+  const { search, eventId, sponsorId, setEventId, setSponsorId } = useHomeFilters();
+
   // What the user has chosen on screen.
-  const [search, setSearch] = useState("");
-  const [eventId, setEventId] = useState("all");
-  const [sponsorId, setSponsorId] = useState("all");
   const [status, setStatus] = useState<(typeof STATUS_OPTIONS)[number]["value"]>("all");
   const [due, setDue] = useState<(typeof DUE_OPTIONS)[number]["value"]>("any");
   const [direction, setDirection] = useState<"asc" | "desc">("asc");
-  const [page, setPage] = useState(0);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [closed, setClosed] = useState<Set<string>>(new Set(["archived", "annual", "program"]));
 
-  /** Opens or closes one of the sidebar sections. */
-  function toggleSection(key: string) {
-    setClosed((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-  }
-
-  /** Runs a filter change and goes back to the first page, so the user never lands on an empty page. */
-  function changeFilter(apply: () => void) {
-    apply();
-    setPage(0);
-  }
-
-  const groups = useMemo(() => splitEvents(events, today), [events, today]);
-  const openTaskCount = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const t of tasks) {
-      if (t.completed || !t.eventId) continue;
-      counts.set(t.eventId, (counts.get(t.eventId) ?? 0) + 1);
-    }
-    return counts;
-  }, [tasks]);
+  // The page number remembers which filters it was picked for. When any filter
+  // changes (here or in the sidebar), it goes back to the first page, so the
+  // user never lands on an empty page.
+  const filterKey = [search, eventId, sponsorId, status, due].join("|");
+  const [pageState, setPageState] = useState({ key: filterKey, page: 0 });
+  const page = pageState.key === filterKey ? pageState.page : 0;
+  const setPage = (next: number) => setPageState({ key: filterKey, page: next });
 
   // Apply the dropdowns and search, then sort, then cut into pages.
   const visible = useMemo(() => {
@@ -165,147 +128,9 @@ export function HomePage() {
   }
 
   return (
-    <div className="flex flex-col gap-4 lg:flex-row">
-      {/* ---------- Sidebar ---------- */}
-      <aside
-        aria-label="Home sidebar"
-        className="w-full shrink-0 rounded-lg border bg-neutral-50 p-4 lg:w-64"
-      >
-        <div className="flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-md bg-sky-600 text-white">
-            <Briefcase className="h-4 w-4" aria-hidden />
-          </span>
-          <div className="leading-tight">
-            <p className="text-sm font-semibold">TuDu</p>
-            <p className="text-[11px] text-muted-foreground">Tri-Cities Chamber</p>
-          </div>
-        </div>
-
-        <Button
-          asChild
-          className="mt-4 h-8 w-full justify-between bg-sky-600 px-3 text-xs hover:bg-sky-700"
-        >
-          <Link href="/contracts/new">
-            Upload Contract
-            <Plus aria-hidden />
-          </Link>
-        </Button>
-
-        <div className="relative mt-3">
-          <Search
-            className="pointer-events-none absolute left-2 top-2 h-3.5 w-3.5 text-muted-foreground"
-            aria-hidden
-          />
-          <Input
-            aria-label="Search tasks"
-            placeholder="Search"
-            value={search}
-            onChange={(e) => changeFilter(() => setSearch(e.target.value))}
-            className="h-7 bg-white pl-7 text-xs"
-          />
-        </div>
-
-        <nav aria-label="Home menu" className="mt-4 flex flex-col gap-0.5 text-sm">
-          <Link
-            href="/"
-            aria-current="page"
-            className="flex items-center gap-2 rounded-md bg-white px-2 py-1.5 font-medium shadow-sm"
-          >
-            <Home className="h-4 w-4" aria-hidden /> Home
-          </Link>
-          <Link
-            href="/calendar"
-            className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-white"
-          >
-            <CalendarDays className="h-4 w-4" aria-hidden /> Calendar
-          </Link>
-          <span
-            aria-disabled="true"
-            className="flex items-center gap-2 rounded-md px-2 py-1.5 text-muted-foreground"
-          >
-            <Settings className="h-4 w-4" aria-hidden /> Settings
-          </span>
-        </nav>
-
-        <SidebarSection
-          title="Repeat Events"
-          open={!closed.has("repeat")}
-          onToggle={() => toggleSection("repeat")}
-          addHref="/events"
-        >
-          {groups.repeat.map((e) => (
-            <SidebarItem
-              key={e.id}
-              label={e.name}
-              active={eventId === e.id}
-              badge={eventBadge(e, openTaskCount.get(e.id) ?? 0, today)}
-              onClick={() => changeFilter(() => setEventId(eventId === e.id ? "all" : e.id))}
-            />
-          ))}
-        </SidebarSection>
-
-        <SidebarSection
-          title="One-off Events"
-          open={!closed.has("oneoff")}
-          onToggle={() => toggleSection("oneoff")}
-          addHref="/events"
-        >
-          {groups.oneOff.map((e) => (
-            <SidebarItem
-              key={e.id}
-              label={e.name}
-              active={eventId === e.id}
-              badge={eventBadge(e, openTaskCount.get(e.id) ?? 0, today)}
-              onClick={() => changeFilter(() => setEventId(eventId === e.id ? "all" : e.id))}
-            />
-          ))}
-        </SidebarSection>
-
-        <SidebarSection
-          title="Archived Events"
-          open={!closed.has("archived")}
-          onToggle={() => toggleSection("archived")}
-        >
-          {groups.archived.map((e) => (
-            <SidebarItem
-              key={e.id}
-              label={e.name}
-              active={eventId === e.id}
-              onClick={() => changeFilter(() => setEventId(eventId === e.id ? "all" : e.id))}
-            />
-          ))}
-        </SidebarSection>
-
-        {/* The data has no partner levels yet, so every partner is listed under Pillar. */}
-        <SidebarSection
-          title="Pillar Partners"
-          open={!closed.has("pillar")}
-          onToggle={() => toggleSection("pillar")}
-          addHref="/partners"
-        >
-          {sponsors.map((s) => (
-            <SidebarItem
-              key={s.id}
-              label={s.name}
-              active={sponsorId === s.id}
-              onClick={() => changeFilter(() => setSponsorId(sponsorId === s.id ? "all" : s.id))}
-            />
-          ))}
-        </SidebarSection>
-
-        <SidebarSection
-          title="Annual Partners"
-          open={!closed.has("annual")}
-          onToggle={() => toggleSection("annual")}
-          addHref="/partners"
-        />
-        <SidebarSection
-          title="Program Partners"
-          open={!closed.has("program")}
-          onToggle={() => toggleSection("program")}
-          addHref="/partners"
-        />
-      </aside>
+    <div className="flex flex-col gap-4">
+      {/* On phones the shared sidebar is hidden, so its search and filters show above the table here. */}
+      <AppSidebar className="rounded-lg border md:hidden" />
 
       {/* ---------- Main: the task table ---------- */}
       <section aria-label="Tu Do Task Table" className="min-w-0 flex-1 rounded-lg border bg-white p-5">
@@ -319,28 +144,28 @@ export function HomePage() {
             label="Filter by event"
             icon={<ListFilter className="h-3.5 w-3.5" aria-hidden />}
             value={eventId}
-            onChange={(v) => changeFilter(() => setEventId(v))}
+            onChange={(v) => setEventId(v)}
             options={[{ value: "all", label: "All Events" }, ...events.map((e) => ({ value: e.id, label: e.name }))]}
           />
           <FilterSelect
             label="Filter by sponsor"
             icon={<User className="h-3.5 w-3.5" aria-hidden />}
             value={sponsorId}
-            onChange={(v) => changeFilter(() => setSponsorId(v))}
+            onChange={(v) => setSponsorId(v)}
             options={[{ value: "all", label: "All Sponsors" }, ...sponsors.map((s) => ({ value: s.id, label: s.name }))]}
           />
           <FilterSelect
             label="Filter by task status"
             icon={<Briefcase className="h-3.5 w-3.5" aria-hidden />}
             value={status}
-            onChange={(v) => changeFilter(() => setStatus(v as typeof status))}
+            onChange={(v) => setStatus(v as typeof status)}
             options={[...STATUS_OPTIONS]}
           />
           <FilterSelect
             label="Filter by due date"
             icon={<CalendarDays className="h-3.5 w-3.5" aria-hidden />}
             value={due}
-            onChange={(v) => changeFilter(() => setDue(v as typeof due))}
+            onChange={(v) => setDue(v as typeof due)}
             options={[...DUE_OPTIONS]}
           />
         </div>
@@ -436,78 +261,6 @@ export function HomePage() {
         </Button>
       </section>
     </div>
-  );
-}
-
-/** One collapsible group in the sidebar: a title with an open/close arrow, an optional "+" link, and its items. */
-function SidebarSection({
-  title,
-  open,
-  onToggle,
-  addHref,
-  children,
-}: {
-  title: string;
-  open: boolean;
-  onToggle: () => void;
-  addHref?: string;
-  children?: React.ReactNode;
-}) {
-  const Arrow = open ? ChevronDown : ChevronRight;
-  return (
-    <div className="mt-4 border-t pt-3">
-      <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground">
-        <button
-          type="button"
-          aria-expanded={open}
-          onClick={onToggle}
-          className="flex flex-1 items-center gap-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          {title}
-          <Arrow className="ml-auto h-3.5 w-3.5" aria-hidden />
-        </button>
-        {addHref && (
-          <Link href={addHref} aria-label={`Add to ${title}`} className="ml-2 rounded hover:bg-white">
-            <Plus className="h-3.5 w-3.5" aria-hidden />
-          </Link>
-        )}
-      </div>
-      {open && <ul className="mt-2 flex flex-col gap-1">{children}</ul>}
-    </div>
-  );
-}
-
-/** One clickable line in a sidebar section (an event or a partner), with an optional coloured label. */
-function SidebarItem({
-  label,
-  active,
-  badge,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  badge?: EventBadge;
-  onClick: () => void;
-}) {
-  return (
-    <li>
-      <button
-        type="button"
-        aria-pressed={active}
-        onClick={onClick}
-        className={cn(
-          "flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-xs hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          active && "bg-white font-semibold shadow-sm"
-        )}
-      >
-        <span className="min-w-0 flex-1 truncate">{label}</span>
-        {badge && (
-          <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[10px]", BADGE_TONES[badge.tone])}>
-            {badge.text}
-          </span>
-        )}
-      </button>
-    </li>
   );
 }
 
