@@ -23,7 +23,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { formatLongDate, isISODateBefore, shiftISODate } from "@/lib/planner/dates";
+import {
+  formatLongDate,
+  isISODateBefore,
+  shiftISODate,
+} from "@/lib/planner/dates";
 import { paginate, searchTasks, sortByDueDate } from "@/lib/planner/home";
 import { getTaskStatus } from "@/lib/planner/selectors";
 import type { ISODate, Task } from "@/lib/planner/types";
@@ -57,10 +61,12 @@ export function HomePage() {
   const { today, tasks, events, sponsors, lookups } = data;
 
   // The search box and the event / partner picked in the sidebar (shared with every page).
-  const { search, eventId, sponsorId, setEventId, setSponsorId } = useHomeFilters();
+  const { search, eventId, sponsorId, setEventId, setSponsorId } =
+    useHomeFilters();
 
   // What the user has chosen on screen.
-  const [status, setStatus] = useState<(typeof STATUS_OPTIONS)[number]["value"]>("all");
+  const [status, setStatus] =
+    useState<(typeof STATUS_OPTIONS)[number]["value"]>("all");
   const [due, setDue] = useState<(typeof DUE_OPTIONS)[number]["value"]>("any");
   const [direction, setDirection] = useState<"asc" | "desc">("asc");
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -71,7 +77,8 @@ export function HomePage() {
   const filterKey = [search, eventId, sponsorId, status, due].join("|");
   const [pageState, setPageState] = useState({ key: filterKey, page: 0 });
   const page = pageState.key === filterKey ? pageState.page : 0;
-  const setPage = (next: number) => setPageState({ key: filterKey, page: next });
+  const setPage = (next: number) =>
+    setPageState({ key: filterKey, page: next });
 
   // Apply the dropdowns and search, then sort, then cut into pages.
   const visible = useMemo(() => {
@@ -82,13 +89,29 @@ export function HomePage() {
       const s = getTaskStatus(t, today);
       if (status === "open" && s === "completed") return false;
       if (status !== "all" && status !== "open" && s !== status) return false;
-      if (due === "week" && (t.dueDate < today || t.dueDate > horizon)) return false;
+      if (due === "week" && (t.dueDate < today || t.dueDate > horizon))
+        return false;
       if (due === "past" && !isISODateBefore(t.dueDate, today)) return false;
       return true;
     });
-    const searched = searchTasks(filtered, search, lookups.eventsById, lookups.sponsorsById);
+    const searched = searchTasks(
+      filtered,
+      search,
+      lookups.eventsById,
+      lookups.sponsorsById,
+    );
     return sortByDueDate(searched, direction);
-  }, [tasks, today, eventId, sponsorId, status, due, search, direction, lookups]);
+  }, [
+    tasks,
+    today,
+    eventId,
+    sponsorId,
+    status,
+    due,
+    search,
+    direction,
+    lookups,
+  ]);
 
   const current = paginate(visible, page, PAGE_SIZE);
   const allOnPageSelected =
@@ -123,17 +146,22 @@ export function HomePage() {
     todo.forEach((t) => data.toggleTask(t.id));
     setSelected(new Set());
     toast({
-      title: todo.length === 1 ? "1 task completed" : `${todo.length} tasks completed`,
+      title:
+        todo.length === 1
+          ? "1 task completed"
+          : `${todo.length} tasks completed`,
     });
   }
 
   return (
     <div className="flex flex-col gap-4">
       {/* On phones the shared sidebar is hidden, so its search and filters show above the table here. */}
-      <AppSidebar className="rounded-lg border md:hidden" />
 
       {/* ---------- Main: the task table ---------- */}
-      <section aria-label="Tu Do Task Table" className="min-w-0 flex-1 rounded-lg border bg-white p-5">
+      <section
+        aria-label="Tu Do Task Table"
+        className="min-w-0 flex-1 rounded-lg border bg-white p-5"
+      >
         <h1 className="text-3xl font-bold tracking-tight">Tu Do Task Table</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Task details and scheduling for the current project.
@@ -145,14 +173,20 @@ export function HomePage() {
             icon={<ListFilter className="h-3.5 w-3.5" aria-hidden />}
             value={eventId}
             onChange={(v) => setEventId(v)}
-            options={[{ value: "all", label: "All Events" }, ...events.map((e) => ({ value: e.id, label: e.name }))]}
+            options={[
+              { value: "all", label: "All Events" },
+              ...events.map((e) => ({ value: e.id, label: e.name })),
+            ]}
           />
           <FilterSelect
             label="Filter by sponsor"
             icon={<User className="h-3.5 w-3.5" aria-hidden />}
             value={sponsorId}
             onChange={(v) => setSponsorId(v)}
-            options={[{ value: "all", label: "All Sponsors" }, ...sponsors.map((s) => ({ value: s.id, label: s.name }))]}
+            options={[
+              { value: "all", label: "All Sponsors" },
+              ...sponsors.map((s) => ({ value: s.id, label: s.name })),
+            ]}
           />
           <FilterSelect
             label="Filter by task status"
@@ -188,13 +222,16 @@ export function HomePage() {
                 <th className="px-3 py-2 text-xs font-semibold">
                   <button
                     type="button"
-                    onClick={() => setDirection(direction === "asc" ? "desc" : "asc")}
+                    onClick={() =>
+                      setDirection(direction === "asc" ? "desc" : "asc")
+                    }
                     className="inline-flex items-center gap-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Due Date
                     <ArrowUpDown className="h-3 w-3" aria-hidden />
                     <span className="sr-only">
-                      , sorted {direction === "asc" ? "oldest first" : "newest first"}
+                      , sorted{" "}
+                      {direction === "asc" ? "oldest first" : "newest first"}
                     </span>
                   </button>
                 </th>
@@ -206,7 +243,10 @@ export function HomePage() {
             <tbody>
               {current.items.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-3 py-10 text-center text-muted-foreground">
+                  <td
+                    colSpan={6}
+                    className="px-3 py-10 text-center text-muted-foreground"
+                  >
                     No tasks match these filters.
                   </td>
                 </tr>
@@ -218,8 +258,16 @@ export function HomePage() {
                   today={today}
                   checked={selected.has(t.id)}
                   onToggle={() => toggleRow(t.id)}
-                  eventName={t.eventId ? lookups.eventsById.get(t.eventId)?.name : undefined}
-                  sponsorName={t.sponsorId ? lookups.sponsorsById.get(t.sponsorId)?.name : undefined}
+                  eventName={
+                    t.eventId
+                      ? lookups.eventsById.get(t.eventId)?.name
+                      : undefined
+                  }
+                  sponsorName={
+                    t.sponsorId
+                      ? lookups.sponsorsById.get(t.sponsorId)?.name
+                      : undefined
+                  }
                 />
               ))}
             </tbody>
@@ -280,7 +328,10 @@ function FilterSelect({
 }) {
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger aria-label={label} className="h-7 w-auto gap-2 px-2 text-xs">
+      <SelectTrigger
+        aria-label={label}
+        className="h-7 w-auto gap-2 px-2 text-xs"
+      >
         {icon}
         <SelectValue />
       </SelectTrigger>
@@ -322,16 +373,34 @@ function TaskRow({
           className="rounded-[4px] data-[state=checked]:border-sky-600 data-[state=checked]:bg-sky-600"
         />
       </td>
-      <td className={cn("px-3 py-3 text-xs", task.completed && "text-muted-foreground line-through")}>
+      <td
+        className={cn(
+          "px-3 py-3 text-xs",
+          task.completed && "text-muted-foreground line-through",
+        )}
+      >
         {task.title}
       </td>
       <td className="px-3 py-3 text-xs">
-        {eventName ? <Chip label={eventName} color="bg-blue-600" /> : <span className="text-muted-foreground">-</span>}
+        {eventName ? (
+          <Chip label={eventName} color="bg-blue-600" />
+        ) : (
+          <span className="text-muted-foreground">-</span>
+        )}
       </td>
       <td className="px-3 py-3 text-xs">
-        {sponsorName ? <Chip label={sponsorName} color="bg-neutral-400" round /> : <span className="text-muted-foreground">-</span>}
+        {sponsorName ? (
+          <Chip label={sponsorName} color="bg-neutral-400" round />
+        ) : (
+          <span className="text-muted-foreground">-</span>
+        )}
       </td>
-      <td className={cn("px-3 py-3 text-xs", overdue ? "text-red-600" : "text-amber-600")}>
+      <td
+        className={cn(
+          "px-3 py-3 text-xs",
+          overdue ? "text-red-600" : "text-amber-600",
+        )}
+      >
         {formatLongDate(task.dueDate)}
       </td>
       <td className="px-3 py-3">
@@ -348,7 +417,15 @@ function TaskRow({
 }
 
 /** A small coloured letter badge followed by a name (used for the Event and Sponsor columns). */
-function Chip({ label, color, round }: { label: string; color: string; round?: boolean }) {
+function Chip({
+  label,
+  color,
+  round,
+}: {
+  label: string;
+  color: string;
+  round?: boolean;
+}) {
   return (
     <span className="flex items-center gap-2">
       <span
@@ -356,7 +433,7 @@ function Chip({ label, color, round }: { label: string; color: string; round?: b
         className={cn(
           "grid h-4 w-4 shrink-0 place-items-center text-[9px] font-semibold text-white",
           round ? "rounded-full" : "rounded-[3px]",
-          color
+          color,
         )}
       >
         {label.charAt(0).toUpperCase()}
