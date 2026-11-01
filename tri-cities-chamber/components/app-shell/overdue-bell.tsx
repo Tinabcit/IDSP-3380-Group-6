@@ -10,6 +10,10 @@ import { cn } from "@/lib/utils";
 
 import { useOptionalPlannerData } from "./planner-provider";
 
+/** Width of the dropdown in pixels, and the smallest gap kept to the screen edge. */
+const PANEL_WIDTH = 352;
+const EDGE_GAP = 16;
+
 /** Most overdue tasks listed in the dropdown; the rest are reached with "View all overdue". */
 const MAX_LISTED = 6;
 
@@ -23,12 +27,27 @@ export function OverdueBell({ align = "right" }: { align?: "left" | "right" }) {
   const data = useOptionalPlannerData();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  // Where the dropdown sits on screen. It is "fixed" so a scrolling sidebar cannot cut it off.
+  const [pos, setPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
 
   const tasks = data?.tasks;
   const today = data?.today;
   const overdue = useMemo(() => (tasks && today ? overdueTasks(tasks, today) : []), [tasks, today]);
 
-  // Close on Escape or when clicking anywhere outside the bell.
+  /** Opens or closes the list, working out where it goes from the bell's place on screen. */
+  function toggle() {
+    if (!open && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const width = Math.min(PANEL_WIDTH, window.innerWidth - 2 * EDGE_GAP);
+      const wanted = align === "left" ? rect.left : rect.right - width;
+      const left = Math.max(EDGE_GAP, Math.min(wanted, window.innerWidth - width - EDGE_GAP));
+      setPos({ top: rect.bottom + 8, left });
+    }
+    setOpen((o) => !o);
+  }
+
+  // Close on Escape, on resize, or when clicking anywhere outside the bell.
   useEffect(() => {
     if (!open) return;
     function onKey(e: KeyboardEvent) {
@@ -37,11 +56,16 @@ export function OverdueBell({ align = "right" }: { align?: "left" | "right" }) {
     function onClick(e: MouseEvent) {
       if (!wrapperRef.current?.contains(e.target as Node)) setOpen(false);
     }
+    function onResize() {
+      setOpen(false);
+    }
     document.addEventListener("keydown", onKey);
     document.addEventListener("mousedown", onClick);
+    window.addEventListener("resize", onResize);
     return () => {
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("mousedown", onClick);
+      window.removeEventListener("resize", onResize);
     };
   }, [open]);
 
@@ -50,8 +74,9 @@ export function OverdueBell({ align = "right" }: { align?: "left" | "right" }) {
   return (
     <div ref={wrapperRef} className="relative">
       <button
+        ref={buttonRef}
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={toggle}
         aria-expanded={open}
         aria-haspopup="true"
         aria-label={`Overdue notifications, ${overdue.length} overdue`}
@@ -72,10 +97,8 @@ export function OverdueBell({ align = "right" }: { align?: "left" | "right" }) {
         <div
           role="region"
           aria-label="Overdue tasks"
-          className={cn(
-            "absolute top-11 z-40 w-[min(22rem,calc(100vw-2rem))] rounded-md border bg-card p-2 text-card-foreground shadow-lg",
-            align === "left" ? "left-0" : "right-0"
-          )}
+          style={{ top: pos.top, left: pos.left, width: `min(${PANEL_WIDTH}px, calc(100vw - ${2 * EDGE_GAP}px))` }}
+          className="fixed z-50 max-h-[calc(100dvh-5rem)] overflow-y-auto rounded-md border bg-card p-2 text-card-foreground shadow-lg"
         >
           <p className="px-2 py-1 text-sm font-semibold">Overdue</p>
           {overdue.length === 0 ? (

@@ -131,3 +131,11 @@ Context: Phase 8 asks for the Sponsor Information pop up from docs/sponsorPopUp.
 Decision: The pop up is components/partners/sponsor-form-dialog.tsx, opened from /partners with "New sponsor" and a per-card "Edit". Sponsor gains optional website, level, notes, status and todos (no localStorage key bump). Save stores the sponsor with status "draft" (shown with a Draft badge); Publish stores it as "active". The To Do List is a todos array on the sponsor, not calendar Tasks, so it needs no due date or assignee. A store action updateSponsor was added.
 
 Alternatives considered: Publish identical to Save (rejected: the button would do nothing). Creating real Task records for the to do list (rejected: they require a due date and assignee the mockup does not collect).
+
+## 2026-11-01 — Landing page at "/", Google sign-in with Auth.js, theme by class
+
+Context: Phase 9 asks for the landing page from docs/landingPage.png with Sign Up, Login and a Theme menu. The team wants Google sign-in to validate people. This overrides the earlier "frontend-only, no backend" rule for sign-in only.
+
+Decision: The landing page is "/" (route group app/(landing)); the task table home page moved to "/home" and every other app page sits in the app/(app) group, which alone gets AppShell. Sign-in uses next-auth v5 (Auth.js) with the Google provider and JWT sessions; there is no database. Google has no separate sign-up, so Sign Up and Login run the same flow. proxy.ts redirects signed-out visitors of app pages to "/". Secrets live only in .env.local (.env.example lists the names). Theme uses a "dark" class on <html>, set before paint from localStorage; "Default" follows the computer. Dependencies added: next-auth, @radix-ui/react-dropdown-menu. The planner data and the "Signed in as" demo user switcher are unchanged; linking Google accounts to planner users is not done. A type error in components/dashboard/cardInfo.tsx (already failing the build on main) was fixed so the build passes. AppShell is wrapped in Suspense because the sidebar reads the URL.
+
+Alternatives considered: Landing at /landing (rejected: "/" is the front door). Buttons only, no route protection (rejected: sign-in would not validate anything). A hand-built theme dropdown (rejected: shadcn was requested).
