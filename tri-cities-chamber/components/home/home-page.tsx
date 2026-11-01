@@ -11,7 +11,7 @@ import {
   User,
 } from "lucide-react";
 
-import { AppSidebar, useHomeFilters } from "@/components/app-shell/app-sidebar";
+import { useHomeFilters } from "@/components/app-shell/app-sidebar";
 import { useToast } from "@/components/app-shell/toast-provider";
 import { usePlannerData } from "@/components/app-shell/planner-provider";
 import { Button } from "@/components/ui/button";
