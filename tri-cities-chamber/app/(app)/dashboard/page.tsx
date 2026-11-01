@@ -1,11 +1,23 @@
-import {CardInfo} from "@/components/dashboard/cardInfo"
+"use client";
 
-export default function page () {
+import { useOptionalPlannerData } from "@/components/app-shell/planner-provider";
+import { CardInfo } from "@/components/dashboard/cardInfo";
+
+/**
+ * Page at /dashboard. Shows summary cards for tasks, events and sponsors.
+ * The counts come from the shared planner data and show 0 until it has loaded.
+ */
+export default function Page() {
+  const data = useOptionalPlannerData();
+
   return (
-    <div>
-        <CardInfo headingText={"Date of Task"} numberInfo={9}/>
-        <CardInfo headingText={"Event & Projects"} numberInfo={4}/>
-        <CardInfo headingText={"Event & Sponsors"} numberInfo={4}/>
+    <div className="flex flex-wrap gap-4 p-6">
+      <div>
+            <CardInfo headingText="Tasks" numberInfo={data?.tasks.length ?? 0} /> 
+            <CardInfo headingText="Events" numberInfo={data?.events.length ?? 0} />
+            <CardInfo headingText="Sponsors" numberInfo={data?.sponsors.length ?? 0} />
+        </div>
+
     </div>
-  )
+  );
 }
