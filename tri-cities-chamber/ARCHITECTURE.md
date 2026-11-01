@@ -44,15 +44,18 @@ Three rules:
 
 | URL | `app/` file | Main component |
 | --- | --- | --- |
-| `/` | `app/page.tsx` | `HomePage` (sidebar + task table) |
-| `/calendar` | `app/calendar/page.tsx` | `PlannerApp` (calendar + to-do) |
-| `/contracts` | `app/contracts/page.tsx` | `ContractsPage` |
-| `/contracts/new` | `app/contracts/new/page.tsx` | `ContractForm` |
-| `/contracts/:id` | `app/contracts/[id]/page.tsx` | `ContractDetail` |
-| `/events` | `app/events/page.tsx` | `EventsPage` |
-| `/partners` | `app/partners/page.tsx` | `PartnersPage` |
+| `/` | `app/(landing)/page.tsx` | `LandingPage` (no sidebar; Sign Up, Login, Theme, Start now) |
+| `/home` | `app/(app)/home/page.tsx` | `HomePage` (sidebar + task table) |
+| `/calendar` | `app/(app)/calendar/page.tsx` | `PlannerApp` (calendar + to-do) |
+| `/contracts` | `app/(app)/contracts/page.tsx` | `ContractsPage` |
+| `/contracts/new` | `app/(app)/contracts/new/page.tsx` | `ContractForm` |
+| `/contracts/:id` | `app/(app)/contracts/[id]/page.tsx` | `ContractDetail` |
+| `/events` | `app/(app)/events/page.tsx` | `EventsPage` |
+| `/partners` | `app/(app)/partners/page.tsx` | `PartnersPage` |
 
-Every page is wrapped by `app/layout.tsx`, which adds the `PlannerProvider` and the `AppShell` (header, menu, footer).
+Every page is wrapped by `app/layout.tsx` (`PlannerProvider`, `ToastProvider`, and a script that applies the saved theme). Pages in the `(app)` group also get `AppShell` (sidebar, footer) from `app/(app)/layout.tsx`; the landing page does not.
+
+Sign-in: `auth.ts` sets up Auth.js with Google, `app/api/auth/[...nextauth]/route.ts` serves its routes, and `proxy.ts` redirects signed-out visitors of app pages to `/`. Theme: `lib/theme.ts` (pure helpers, tested) and `components/landing/theme-menu.tsx` toggle the `dark` class on `<html>`.
 Each page file also wraps its component in `DataGate`, which shows "Loading" until the data is ready.
 
 ## 4. Which component shows which (tree)

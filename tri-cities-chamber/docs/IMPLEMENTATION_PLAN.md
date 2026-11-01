@@ -67,7 +67,7 @@ Branch: feature/homepage
 - [x] ![HomePage](<Screenshot 2026-10-20 152402.png>)
 - [x] From above image recreate/or make the homepage: one component (components/home/home-page.tsx), helpers in lib/planner/home.ts with tests, calendar moved to /calendar
 
-## Phase 8 - Sponsor pop up (Current)
+## Phase 8 - Sponsor pop up
 
 Branch: feature/sponsorPopUp
 
@@ -75,6 +75,17 @@ Branch: feature/sponsorPopUp
 - [x] cd into tri-cities-chamber
 - [x] ![SponsorPopUp](<sponsorPopUp.png>)
 - [x] From above image recreate/make the sponsorPopUp, use ShadCN, look at the whole strucutre right now and determine where the sponsor should be implemnented at. Built as components/partners/sponsor-form-dialog.tsx, opened from /partners (New sponsor, Edit); helpers and tests in lib/planner/sponsors.ts
+
+## Phase 9 - Landing Page (Current)
+
+Branch: feature/landingPage
+
+- [x] cd into tri-cities-chamber
+- [x] ![LandingPage](<landingPage.png>)
+- [x] From above image make the landing page at "/": Tu Du header, Sign Up, Login, Theme menu (Default/Light/Dark, shadcn DropdownMenu), hero with "Start now". Home page moves to /home; app pages move into the (app) route group
+- [x] Theme helpers with tests in lib/theme.ts; dark colours in globals.css; saved theme applied before paint
+- [x] Google sign-in with Auth.js (Sign Up and Login run the same flow), signed-out visitors of app pages redirected to "/" by proxy.ts, .env.example added
+- [x] Create the Google OAuth client and fill .env.local (steps in README); then check sign-in end to end
 
 ## Backlog (not a phase yet — /phase turns these into the next phase)
 
