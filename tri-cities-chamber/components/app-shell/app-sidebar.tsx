@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { splitEvents } from "@/lib/planner/home";
 import type { ChamberEvent } from "@/lib/planner/types";
+import { OverdueBell } from "./overdue-bell";
 import { useOptionalPlannerData } from "./planner-provider";
 
 export function UserSelect() {
@@ -34,7 +35,7 @@ export function UserSelect() {
     <Select value={data.currentUserId} onValueChange={data.setCurrentUser}>
       <SelectTrigger
         aria-label="Signed in as"
-        className="h-9 w-full gap-2 bg-white"
+        className="h-9 w-full gap-2 bg-card"
       >
         <SelectValue />
       </SelectTrigger>
@@ -50,7 +51,7 @@ export function UserSelect() {
 }
 
 export const NAV = [
-  { href: "/", label: "Home", icon: Home },
+  { href: "/home", label: "Home", icon: Home },
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/contracts", label: "Contracts", icon: FileText },
   { href: "/events", label: "Events", icon: Star },
@@ -99,9 +100,10 @@ export function useHomeFilters(): HomeFilters {
 }
 
 export const SIDEBAR_NAV = [
-  { href: "/", label: "Home", icon: Home },
+  { href: "/home", label: "Home", icon: Home },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
+  { href: "/contracts", label: "Contracts", icon: FileText },
   { href: "/events", label: "Events", icon: Star },
   { href: "/partners", label: "Partners", icon: Handshake },
   { href: "/settings", label: "Settings", icon: Settings },
@@ -148,8 +150,8 @@ function Item({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2 rounded-md px-2 py-1 text-left text-sm hover:bg-white",
-        active && "bg-white font-medium",
+        "flex items-center gap-2 rounded-md px-2 py-1 text-left text-sm hover:bg-card",
+        active && "bg-card font-medium",
       )}
     >
       <span className="flex-1 truncate">{label}</span>
@@ -180,7 +182,7 @@ export function AppSidebar({ className }: { className?: string }) {
   }
 
   function goHome() {
-    if (pathname !== "/") router.push("/");
+    if (pathname !== "/home") router.push("/home");
   }
 
   function pickEvent(id: string) {
@@ -215,7 +217,7 @@ export function AppSidebar({ className }: { className?: string }) {
     <aside
       aria-label="Sidebar"
       className={cn(
-        "bg-neutral-50 flex flex-col divide-y [&>*]:p-4",
+        "bg-muted flex flex-col divide-y [&>*]:p-4",
         className,
       )}
     >
@@ -240,15 +242,26 @@ export function AppSidebar({ className }: { className?: string }) {
         </Link>
       </div>
 
+      {/* Who is signed in, with the overdue bell (it was removed from the desktop sidebar by mistake). */}
+      <div className="grid gap-1.5">
+        <span className="text-xs text-muted-foreground">Signed in as</span>
+        <div className="flex items-center gap-1">
+          <div className="min-w-0 flex-1">
+            <UserSelect />
+          </div>
+          <OverdueBell align="left" />
+        </div>
+      </div>
+
       <nav className="flex flex-col gap-1">
         {SIDEBAR_NAV.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
             href={href}
-            onClick={href === "/" ? clearFilters : undefined}
+            onClick={href === "/home" ? clearFilters : undefined}
             className={cn(
-              "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-white",
-              isActive(pathname, href) && "bg-white font-medium",
+              "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-card",
+              isActive(pathname, href) && "bg-card font-medium",
             )}
           >
             <Icon className="h-4 w-4" />

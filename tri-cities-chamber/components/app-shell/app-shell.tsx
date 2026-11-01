@@ -58,7 +58,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <header className="sticky top-0 z-30 border-b bg-card/95 backdrop-blur md:hidden">
             <div className="flex items-center gap-3 px-4 py-3">
               <Link
-                href="/"
+                href="/home"
                 className="min-w-0 truncate text-base font-bold leading-tight"
               >
                 Tri-Cities Chamber
