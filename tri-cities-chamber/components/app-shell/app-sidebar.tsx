@@ -37,7 +37,7 @@ import { useOptionalPlannerData } from "./planner-provider";
  * To add a new page to the menu, add a line here.
  */
 export const NAV = [
-  { href: "/", label: "Home", icon: Home },
+  { href: "/home", label: "Home", icon: Home },
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/contracts", label: "Contracts", icon: FileText },
   { href: "/events", label: "Events", icon: Star },
@@ -46,7 +46,7 @@ export const NAV = [
 
 /**
  * Checks if a menu link points to the page we are on (so it can be highlighted).
- * "/" must match exactly; other links match if the URL starts with them
+ * "/" must match exactly; other links (like "/home") match if the URL starts with them
  * (so /contracts/123 still highlights "Contracts").
  */
 export function isActive(pathname: string, href: string) {
@@ -136,7 +136,7 @@ export function AppSidebar({ className }: { className?: string }) {
   /** Changes a filter, and goes to the home page if we are not on it (that is where the results show). */
   function applyFilter(apply: () => void) {
     apply();
-    if (pathname !== "/") router.push("/");
+    if (pathname !== "/home") router.push("/home");
   }
 
   /** Picks an event, or un-picks it if it is already picked. */
@@ -145,7 +145,7 @@ export function AppSidebar({ className }: { className?: string }) {
   }
 
   return (
-    <aside aria-label="Sidebar" className={cn("bg-neutral-50 p-4", className)}>
+    <aside aria-label="Sidebar" className={cn("bg-muted p-4", className)}>
       <div className="flex items-center gap-2">
         <span className="grid h-8 w-8 place-items-center rounded-md bg-sky-600 text-white">
           <Briefcase className="h-4 w-4" aria-hidden />
@@ -176,7 +176,7 @@ export function AppSidebar({ className }: { className?: string }) {
           placeholder="Search"
           value={filters.search}
           onChange={(e) => applyFilter(() => filters.setSearch(e.target.value))}
-          className="h-7 bg-white pl-7 text-xs"
+          className="h-7 bg-card pl-7 text-xs"
         />
       </div>
 
@@ -292,7 +292,7 @@ export function UserSelect() {
   if (!data) return null;
   return (
     <Select value={data.currentUserId} onValueChange={data.setCurrentUser}>
-      <SelectTrigger aria-label="Signed in as" className="h-9 w-full gap-2 bg-white">
+      <SelectTrigger aria-label="Signed in as" className="h-9 w-full gap-2 bg-card">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -332,8 +332,8 @@ function ShellMenu({ className }: { className?: string }) {
               href={href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                active && "bg-white font-medium shadow-sm",
+                "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                active && "bg-card font-medium shadow-sm",
               )}
             >
               <Icon className="h-4 w-4" aria-hidden />
@@ -374,7 +374,7 @@ function SidebarSection({
           <Arrow className="ml-auto h-3.5 w-3.5" aria-hidden />
         </button>
         {addHref && (
-          <Link href={addHref} aria-label={`Add to ${title}`} className="ml-2 rounded hover:bg-white">
+          <Link href={addHref} aria-label={`Add to ${title}`} className="ml-2 rounded hover:bg-card">
             <Plus className="h-3.5 w-3.5" aria-hidden />
           </Link>
         )}
@@ -403,8 +403,8 @@ function SidebarItem({
         aria-pressed={active}
         onClick={onClick}
         className={cn(
-          "flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-xs hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          active && "bg-white font-semibold shadow-sm",
+          "flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-xs hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          active && "bg-card font-semibold shadow-sm",
         )}
       >
         <span className="min-w-0 flex-1 truncate">{label}</span>

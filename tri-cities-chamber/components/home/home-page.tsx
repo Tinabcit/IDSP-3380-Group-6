@@ -133,7 +133,7 @@ export function HomePage() {
       <AppSidebar className="rounded-lg border md:hidden" />
 
       {/* ---------- Main: the task table ---------- */}
-      <section aria-label="Tu Do Task Table" className="min-w-0 flex-1 rounded-lg border bg-white p-5">
+      <section aria-label="Tu Do Task Table" className="min-w-0 flex-1 rounded-lg border bg-card p-5">
         <h1 className="text-3xl font-bold tracking-tight">Tu Do Task Table</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Task details and scheduling for the current project.
@@ -172,7 +172,7 @@ export function HomePage() {
 
         <div className="mt-6 overflow-x-auto rounded-lg border">
           <table className="w-full min-w-[640px] text-left text-sm">
-            <thead className="bg-neutral-100">
+            <thead className="bg-muted">
               <tr>
                 <th className="w-10 px-3 py-2">
                   <Checkbox

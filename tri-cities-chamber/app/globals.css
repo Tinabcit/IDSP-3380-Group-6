@@ -30,10 +30,49 @@
     --done: 147 33% 37%;
     --overdue: 6 62% 43%;
     --overdue-soft: 6 70% 95%;
+
+    --landing-hero: 16 100% 87%;
+    --landing-hero-foreground: 0 0% 0%;
+    --landing-login: 200 100% 37%;
+    --landing-cta: 237 47% 28%;
+  }
+
+  .dark {
+    --background: 218 40% 8%;
+    --foreground: 210 20% 95%;
+    --card: 218 35% 12%;
+    --card-foreground: 210 20% 95%;
+    --popover: 218 35% 12%;
+    --popover-foreground: 210 20% 95%;
+    --primary: 213 70% 62%;
+    --primary-foreground: 218 46% 10%;
+    --secondary: 218 25% 20%;
+    --secondary-foreground: 210 20% 95%;
+    --muted: 218 25% 18%;
+    --muted-foreground: 214 15% 68%;
+    --accent: 218 25% 20%;
+    --accent-foreground: 210 20% 95%;
+    --destructive: 6 62% 50%;
+    --border: 218 20% 22%;
+    --input: 218 20% 28%;
+    --ring: 213 70% 62%;
+    --signature-soft: 44 40% 18%;
+    --signature-foreground: 44 90% 80%;
+    --overdue-soft: 6 40% 20%;
+
+    --landing-hero: 16 45% 22%;
+    --landing-hero-foreground: 0 0% 100%;
   }
 }
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
+  --color-landing-hero: hsl(var(--landing-hero));
+  --color-landing-hero-foreground: hsl(var(--landing-hero-foreground));
+  --color-landing-login: hsl(var(--landing-login));
+  --color-landing-cta: hsl(var(--landing-cta));
+
   --font-sans: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
 
   --color-border: hsl(var(--border));

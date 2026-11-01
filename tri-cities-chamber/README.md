@@ -15,6 +15,17 @@ npm run lint
 npm run build
 ```
 
+### Google sign-in setup
+
+The landing page (`/`) signs people in with Google (Auth.js). Copy `.env.example` to `.env.local` and fill it in:
+
+1. Run `npx auth secret` and paste the value as `AUTH_SECRET`.
+2. In Google Cloud Console go to APIs & Services, Credentials, Create credentials, OAuth client ID (Web application).
+3. Add the authorized redirect URI `http://localhost:3000/api/auth/callback/google` (and your Vercel URL with the same path).
+4. Paste the client ID and secret as `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET`. On Vercel, set all three as environment variables.
+
+Never commit `.env.local`. Without these values the app builds, but sign-in will not work and app pages redirect to `/`.
+
 ## What the client asked for, and where it is
 
 | Client need (rating)                          | In the MVP                                                                 |
