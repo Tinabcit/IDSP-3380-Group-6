@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { splitEvents } from "@/lib/planner/home";
 import type { ChamberEvent } from "@/lib/planner/types";
+import { OverdueBell } from "./overdue-bell";
 import { useOptionalPlannerData } from "./planner-provider";
 
 export function UserSelect() {
@@ -102,6 +103,7 @@ export const SIDEBAR_NAV = [
   { href: "/home", label: "Home", icon: Home },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
+  { href: "/contracts", label: "Contracts", icon: FileText },
   { href: "/events", label: "Events", icon: Star },
   { href: "/partners", label: "Partners", icon: Handshake },
   { href: "/settings", label: "Settings", icon: Settings },
@@ -238,6 +240,17 @@ export function AppSidebar({ className }: { className?: string }) {
         >
           Upload Contract
         </Link>
+      </div>
+
+      {/* Who is signed in, with the overdue bell (it was removed from the desktop sidebar by mistake). */}
+      <div className="grid gap-1.5">
+        <span className="text-xs text-muted-foreground">Signed in as</span>
+        <div className="flex items-center gap-1">
+          <div className="min-w-0 flex-1">
+            <UserSelect />
+          </div>
+          <OverdueBell align="left" />
+        </div>
       </div>
 
       <nav className="flex flex-col gap-1">
