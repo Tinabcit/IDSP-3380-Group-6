@@ -19,7 +19,7 @@ const MAX_LISTED = 6;
  * "View all overdue" opens the calendar at the "Coming up" list, which shows
  * every overdue task first.
  */
-export function OverdueBell() {
+export function OverdueBell({ align = "right" }: { align?: "left" | "right" }) {
   const data = useOptionalPlannerData();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -72,7 +72,10 @@ export function OverdueBell() {
         <div
           role="region"
           aria-label="Overdue tasks"
-          className="absolute right-0 top-11 z-40 w-[min(22rem,calc(100vw-2rem))] rounded-md border bg-card p-2 text-card-foreground shadow-lg"
+          className={cn(
+            "absolute top-11 z-40 w-[min(22rem,calc(100vw-2rem))] rounded-md border bg-card p-2 text-card-foreground shadow-lg",
+            align === "left" ? "left-0" : "right-0"
+          )}
         >
           <p className="px-2 py-1 text-sm font-semibold">Overdue</p>
           {overdue.length === 0 ? (
