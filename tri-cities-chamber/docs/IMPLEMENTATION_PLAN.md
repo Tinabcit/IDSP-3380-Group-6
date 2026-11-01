@@ -85,7 +85,7 @@ Branch: feature/landingPage
 - [x] From above image make the landing page at "/": Tu Du header, Sign Up, Login, Theme menu (Default/Light/Dark, shadcn DropdownMenu), hero with "Start now". Home page moves to /home; app pages move into the (app) route group
 - [x] Theme helpers with tests in lib/theme.ts; dark colours in globals.css; saved theme applied before paint
 - [x] Google sign-in with Auth.js (Sign Up and Login run the same flow), signed-out visitors of app pages redirected to "/" by proxy.ts, .env.example added
-- [ ] Create the Google OAuth client and fill .env.local (steps in README); then check sign-in end to end
+- [x] Create the Google OAuth client and fill .env.local (steps in README); then check sign-in end to end
 
 ## Backlog (not a phase yet — /phase turns these into the next phase)
 
