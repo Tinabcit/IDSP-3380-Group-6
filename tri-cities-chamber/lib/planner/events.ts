@@ -86,3 +86,34 @@ export function validateEventInput(input: EventInput): string | null {
   }
   return null;
 }
+
+/** The values typed on the Add Event page, all as plain text. */
+export interface EventFormValues {
+  title: string;
+  sponsor: string;
+  date: string;
+  category: string;
+  email: string;
+  phone: string;
+  address: string;
+}
+
+/**
+ * Checks the Add Event page. Every field is required. Returns a map of field
+ * name to message, empty when everything is fine.
+ */
+export function validateEventForm(values: EventFormValues): Partial<Record<keyof EventFormValues, string>> {
+  const errors: Partial<Record<keyof EventFormValues, string>> = {};
+  const required = "Field Required";
+  for (const key of Object.keys(values) as (keyof EventFormValues)[]) {
+    if (!values[key].trim()) errors[key] = required;
+  }
+  if (!errors.date && !isValidISODate(values.date)) errors.date = "Pick a valid date.";
+  if (!errors.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
+    errors.email = "Enter a valid email address.";
+  }
+  if (!errors.phone && !/^\+?[\d\s().-]{7,}$/.test(values.phone.trim())) {
+    errors.phone = "Enter a valid phone number.";
+  }
+  return errors;
+}

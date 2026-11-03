@@ -8,6 +8,7 @@ import {
   formatEventTime,
   isValidISODate,
   isValidTime,
+  validateEventForm,
   validateEventInput,
 } from './events';
 import type { ChamberEvent } from './types';
@@ -119,5 +120,39 @@ describe('demo events', () => {
     for (const event of buildMockEvents('2025-03-10')) {
       expect(validateEventInput(event), event.name).toBeNull();
     }
+  });
+});
+
+describe('validateEventForm', () => {
+  const full = {
+    title: 'Mayors BBQ',
+    sponsor: 'RBC',
+    date: '2025-03-01',
+    category: 'networking',
+    email: 'john@example.com',
+    phone: '+1 (555) 123-4567',
+    address: '123 Main st',
+  };
+
+  it('returns no errors when every field is valid', () => {
+    expect(validateEventForm(full)).toEqual({});
+  });
+
+  it('marks every empty field as required', () => {
+    const errors = validateEventForm({
+      title: '', sponsor: ' ', date: '', category: '', email: '', phone: '', address: '',
+    });
+    expect(Object.keys(errors).sort()).toEqual(
+      ['address', 'category', 'date', 'email', 'phone', 'sponsor', 'title'],
+    );
+    expect(errors.title).toBe('Field Required');
+  });
+
+  it('rejects a bad email, phone or date', () => {
+    const errors = validateEventForm({ ...full, email: 'nope', phone: 'abc', date: '2025-99-99' });
+    expect(errors.email).toBeDefined();
+    expect(errors.phone).toBeDefined();
+    expect(errors.date).toBeDefined();
+    expect(errors.title).toBeUndefined();
   });
 });

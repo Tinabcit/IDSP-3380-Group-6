@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { connection } from "next/server";
 import { ArrowRight } from "lucide-react";
 
 import { auth, signIn, signOut } from "@/auth";
@@ -21,6 +22,8 @@ async function googleSignOut() {
 
 /** The Sign Up / Login buttons, or "Go to app" / Sign out when someone is already signed in. */
 async function AuthButtons() {
+  // Wait for a real request first: reading the session uses random values that cannot be prerendered.
+  await connection();
   const session = await auth();
 
   if (session) {

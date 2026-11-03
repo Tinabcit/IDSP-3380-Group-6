@@ -76,7 +76,7 @@ Branch: feature/sponsorPopUp
 - [x] ![SponsorPopUp](<sponsorPopUp.png>)
 - [x] From above image recreate/make the sponsorPopUp, use ShadCN, look at the whole strucutre right now and determine where the sponsor should be implemnented at. Built as components/partners/sponsor-form-dialog.tsx, opened from /partners (New sponsor, Edit); helpers and tests in lib/planner/sponsors.ts
 
-## Phase 9 - Landing Page (Current)
+## Phase 9 - Landing Page
 
 Branch: feature/landingPage
 
@@ -86,6 +86,22 @@ Branch: feature/landingPage
 - [x] Theme helpers with tests in lib/theme.ts; dark colours in globals.css; saved theme applied before paint
 - [x] Google sign-in with Auth.js (Sign Up and Login run the same flow), signed-out visitors of app pages redirected to "/" by proxy.ts, .env.example added
 - [x] Create the Google OAuth client and fill .env.local (steps in README); then check sign-in end to end
+
+## Phase 10 - Add Events (Built, awaiting PR)
+
+Branch: feautre/AddEvents
+
+- [x] cd into tri-cities-chamber
+- [x] ![Event1](Events/01Event.png)
+- [x] ![Event2](Events/02Event.png)
+- [x] ![Event03](Events/03Event.png)
+- [x] ![Event04](Events/04Event.png)
+- [x] Add the Add Event in the sidebar
+- [x] Fix the calendar section, shows duplicates of Add event and task
+- [x] There should be an error if nothing is inputted, all fields are required.
+- [x] if upload fails, need to tell them Upload failed. Try again - with a refresh button, x for cancellation and a + for re-adding it
+- [x] When they upload, should show a circle happening with a upload percentage
+- [x] When upload is complete, show a green check
 
 ## Backlog (not a phase yet — /phase turns these into the next phase)
 
