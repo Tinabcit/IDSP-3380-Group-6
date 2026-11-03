@@ -57,6 +57,7 @@ export function AddEventPage() {
   const handleComplete = useCallback((name: string) => {
     setFileName(name);
     setValues((v) => (v.title.trim() ? v : { ...v, title: extractFromFileName(name).title }));
+    setErrors((e) => ({ ...e, title: undefined }));
   }, []);
 
   /** Checks every field, then saves the event or shows the errors. */
@@ -111,7 +112,7 @@ export function AddEventPage() {
   }
 
   return (
-    <form onSubmit={submit} noValidate className="mx-auto grid max-w-xl gap-5">
+    <form onSubmit={submit} noValidate className="mx-auto grid max-w-xl grid-cols-[minmax(0,1fr)] gap-5">
       <h1 className="text-xl font-bold">Add Event</h1>
       <UploadCard
         onComplete={handleComplete}
