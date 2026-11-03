@@ -67,6 +67,16 @@ export interface ChamberEvent {
   description?: string;
   /** Missing on events saved before categories existed; treat as "other". */
   category?: EventCategory;
+  /** Free-text sponsor name typed on the Add Event page. */
+  sponsorName?: string;
+  /** Contact email for the event. */
+  email?: string;
+  /** Contact phone number for the event. */
+  phone?: string;
+  /** Street address of the event. */
+  address?: string;
+  /** Name of the PDF uploaded with the event (the file itself is not stored). */
+  fileName?: string;
 }
 
 /** Fields the user can set when creating or editing an event. */
