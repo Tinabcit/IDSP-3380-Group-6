@@ -233,12 +233,18 @@ export function AppSidebar({ className }: { className?: string }) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap gap-2">
         <Link
           href="/contracts/new"
           className="w-fit rounded-md bg-sky-600 px-3 py-1.5 text-sm text-white"
         >
           Upload Contract
+        </Link>
+        <Link
+          href="/events/new"
+          className="w-fit rounded-md bg-sky-600 px-3 py-1.5 text-sm text-white"
+        >
+          Add Event +
         </Link>
       </div>
 
