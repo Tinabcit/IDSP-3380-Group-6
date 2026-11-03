@@ -343,7 +343,6 @@ export function PlannerApp() {
             tasks={dayTasks}
             lookups={lookups}
             onAddTask={openCreate}
-            onAddEvent={openAddEvent}
             onEditEvent={openEditEvent}
             onDeleteEvent={handleEventDelete}
             onToggle={handleToggle}
