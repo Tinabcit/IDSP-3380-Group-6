@@ -68,7 +68,7 @@ export function UploadCard({
   }
 
   return (
-    <div className="grid gap-3">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-3">
       <div className="flex h-40 flex-col items-center justify-center gap-3 rounded-xl bg-muted p-4">
         {state.status === "idle" ? (
           <Upload className="h-12 w-12 text-muted-foreground" aria-hidden />
@@ -89,7 +89,7 @@ export function UploadCard({
             e.target.value = "";
           }}
         />
-        <p className="text-sm text-muted-foreground">
+        <p className="truncate text-sm text-muted-foreground">
           {fileName ? fileName : "Choose a file to upload"}
         </p>
       </div>
