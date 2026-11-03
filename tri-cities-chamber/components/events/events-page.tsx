@@ -5,8 +5,6 @@ import Link from "next/link";
 import { Calendar, MapPin, Plus } from "lucide-react";
 
 import { usePlannerData } from "@/components/app-shell/planner-provider";
-import { useToast } from "@/components/app-shell/toast-provider";
-import { EventFormDialog } from "@/components/events/event-form-dialog";
 import { FilterBar } from "@/components/planner/filter-bar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,15 +16,13 @@ import { cn } from "@/lib/utils";
 /**
  * The events page (/events). It applies the filters, splits events into
  * Upcoming and Past, and shows each one with its contracts and money.
- * Has an "Add event" button. (Here the sponsor filter means "has a contract
+ * Has an "Add event" button that opens /events/new. (Here the sponsor filter means "has a contract
  * with that sponsor".)
  */
 export function EventsPage() {
   const data = usePlannerData();
   const { today } = data;
   const [filters, setFilters] = useState<PlannerFilters>(EMPTY_FILTERS);
-  const toast = useToast();
-  const [adding, setAdding] = useState(false);
 
   const { upcoming, past } = useMemo(() => {
     const visible = data.events.filter((e) => {
@@ -53,12 +49,14 @@ export function EventsPage() {
             Sponsorship for each event is added up from its contracts.
           </p>
         </div>
-        <Button onClick={() => setAdding(true)}>
-          <Plus />
-          <span>
-            <span className="sm:hidden">Add</span>
-            <span className="hidden sm:inline">Add event</span>
-          </span>
+        <Button asChild>
+          <Link href="/events/new">
+            <Plus />
+            <span>
+              <span className="sm:hidden">Add</span>
+              <span className="hidden sm:inline">Add event</span>
+            </span>
+          </Link>
         </Button>
       </header>
 
@@ -73,14 +71,6 @@ export function EventsPage() {
       <EventSection title="Upcoming" events={upcoming} empty="No upcoming events match." />
       <EventSection title="Past" events={past} empty="No past events match." />
 
-      <EventFormDialog
-        state={adding ? { mode: "create", defaultDate: today } : null}
-        onClose={() => setAdding(false)}
-        onSubmit={(input) => {
-          data.addEvent(input);
-          toast({ title: "Event added", description: input.name });
-        }}
-      />
     </div>
   );
 }
