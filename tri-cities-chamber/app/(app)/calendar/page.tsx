@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import { DataGate } from "@/components/app-shell/planner-provider";
 import { PlannerApp } from "@/components/planner/planner-app";
 
+import TaskDetails from "@/components/TaskDetails";
+
 /**
  * Page at "/calendar". Shows the calendar and to-do list.
  * DataGate waits until the data has loaded before showing it. The Suspense
