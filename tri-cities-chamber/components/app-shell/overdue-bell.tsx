@@ -9,6 +9,7 @@ import { overdueTasks } from "@/lib/planner/reminders";
 import { cn } from "@/lib/utils";
 
 import { useOptionalPlannerData } from "./planner-provider";
+import { Button } from "@/components/ui/button";
 
 /** Width of the dropdown in pixels, and the smallest gap kept to the screen edge. */
 const PANEL_WIDTH = 352;
@@ -73,14 +74,16 @@ export function OverdueBell({ align = "right" }: { align?: "left" | "right" }) {
 
   return (
     <div ref={wrapperRef} className="relative">
-      <button
+      <Button
         ref={buttonRef}
         type="button"
+        variant="ghost"
+        size="icon"
         onClick={toggle}
         aria-expanded={open}
         aria-haspopup="true"
         aria-label={`Overdue notifications, ${overdue.length} overdue`}
-        className="relative inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="relative h-9 w-9 hover:bg-secondary [&_svg]:size-5"
       >
         <Bell className="h-5 w-5" aria-hidden />
         {overdue.length > 0 && (
@@ -91,7 +94,7 @@ export function OverdueBell({ align = "right" }: { align?: "left" | "right" }) {
             {overdue.length}
           </span>
         )}
-      </button>
+      </Button>
 
       {open && (
         <div

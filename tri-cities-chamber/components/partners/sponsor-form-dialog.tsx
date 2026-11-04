@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
 import { DEFAULT_SPONSOR_TODOS, SPONSOR_LEVELS, validateSponsorInput } from "@/lib/planner/sponsors";
 import type { Sponsor, SponsorInput, SponsorLevel, SponsorStatus } from "@/lib/planner/types";
 
@@ -128,7 +129,7 @@ function SponsorForm({
       </header>
 
       <div className="grid gap-6 p-6">
-        <div className="grid gap-6 rounded-xl border p-5">
+        <Card className="grid gap-6 rounded-xl p-5 bg-transparent">
           <section className="grid gap-4" aria-labelledby="sp-contact">
             <h3 id="sp-contact" className="text-base font-semibold">
               Contact Details
@@ -190,7 +191,11 @@ function SponsorForm({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="sp-level">Sponsorship Level</Label>
-              <Select value={level} onValueChange={(v) => setLevel(v as SponsorLevel)}>
+              <Select
+                value={level || null}
+                onValueChange={(v) => setLevel(v as SponsorLevel)}
+                items={SPONSOR_LEVELS}
+              >
                 <SelectTrigger id="sp-level">
                   <SelectValue placeholder="Select level (e.g. Platinum, Gold, Silver)" />
                 </SelectTrigger>
@@ -238,7 +243,7 @@ function SponsorForm({
               ))}
             </ul>
           </section>
-        </div>
+        </Card>
 
         {error && (
           <p role="alert" className="text-sm text-destructive">

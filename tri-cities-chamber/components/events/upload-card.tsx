@@ -5,6 +5,7 @@ import { CheckCircle2, FileText, Loader2, Plus, RefreshCw, Upload, X } from "luc
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import {
   checkFile,
   formatFileSize,
@@ -129,16 +130,16 @@ function UploadChip({
         </p>
       </div>
       {failed && (
-        <button type="button" onClick={onRetry} aria-label="Retry upload" className="rounded p-1 hover:bg-muted">
+        <Button type="button" variant="ghost" size="icon" onClick={onRetry} aria-label="Retry upload" className="h-6 w-6 rounded hover:bg-muted">
           <RefreshCw className="h-4 w-4" />
-        </button>
+        </Button>
       )}
-      <button type="button" onClick={onClear} aria-label="Remove file" className="rounded p-1 hover:bg-muted">
+      <Button type="button" variant="ghost" size="icon" onClick={onClear} aria-label="Remove file" className="h-6 w-6 rounded hover:bg-muted">
         <X className="h-4 w-4" />
-      </button>
-      <button type="button" onClick={onReadd} aria-label="Choose another file" className="rounded p-1 hover:bg-muted">
+      </Button>
+      <Button type="button" variant="ghost" size="icon" onClick={onReadd} aria-label="Choose another file" className="h-6 w-6 rounded hover:bg-muted">
         <Plus className="h-4 w-4" />
-      </button>
+      </Button>
     </div>
   );
 }

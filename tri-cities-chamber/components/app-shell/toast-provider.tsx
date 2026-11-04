@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useMemo, useRef, useState } fro
 import { AlertCircle, Bell, CheckCircle2, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 /** The look of a toast: green tick, red warning, or the bell used for reminders. */
 export type ToastKind = "success" | "error" | "reminder";
@@ -100,14 +101,16 @@ function ToastCard({ toast, onDismiss }: { toast: ToastItem; onDismiss: () => vo
         <p className="text-sm font-semibold">{toast.title}</p>
         {toast.description && <p className="text-sm text-muted-foreground">{toast.description}</p>}
       </div>
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        size="icon"
         onClick={onDismiss}
         aria-label="Dismiss notification"
-        className="rounded-sm p-0.5 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="h-5 w-5 rounded-sm text-muted-foreground hover:bg-transparent hover:text-foreground"
       >
         <X className="h-4 w-4" aria-hidden />
-      </button>
+      </Button>
     </li>
   );
 }

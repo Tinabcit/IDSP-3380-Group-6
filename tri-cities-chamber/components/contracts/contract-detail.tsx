@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -27,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { amountPaid, formatCurrency } from "@/lib/planner/contracts";
 import { describeRelativeDay, formatShortDate, isISODateBefore } from "@/lib/planner/dates";
 import type { Contract } from "@/lib/planner/types";
@@ -59,9 +61,7 @@ export function ContractDetail({ id }: { id: string }) {
         <p className="text-sm text-muted-foreground">
           It may have been deleted. Head back to the list to find it.
         </p>
-        <Button asChild className="justify-self-center">
-          <Link href="/contracts">All contracts</Link>
-        </Button>
+        <Button render={<Link href="/contracts" />} nativeButton={false} className="justify-self-center">All contracts</Button>
       </div>
     );
   }
@@ -76,12 +76,10 @@ export function ContractDetail({ id }: { id: string }) {
   return (
     <div className="mx-auto grid max-w-3xl gap-6">
       <div>
-        <Button asChild variant="ghost" size="sm" className="-ml-3 mb-1 text-muted-foreground">
-          <Link href="/contracts">
+        <Button render={<Link href="/contracts" />} nativeButton={false} variant="ghost" size="sm" className="-ml-3 mb-1 text-muted-foreground">
             <ArrowLeft />
             Contracts
-          </Link>
-        </Button>
+          </Button>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-xl font-bold leading-tight">{contract.title}</h1>
@@ -106,7 +104,7 @@ export function ContractDetail({ id }: { id: string }) {
         </div>
       </div>
 
-      <section aria-label="Money" className="rounded-lg border bg-card p-4">
+      <Card role="region" aria-label="Money" className="p-4">
         <div className="flex items-baseline justify-between gap-2">
           <span className="text-2xl font-bold">{formatCurrency(contract.amount)}</span>
           <span className="text-sm text-muted-foreground">
@@ -123,10 +121,10 @@ export function ContractDetail({ id }: { id: string }) {
         >
           <div className="h-full bg-done" style={{ width: `${percent}%` }} />
         </div>
-      </section>
+      </Card>
 
       {contract.summary ? (
-        <section aria-labelledby="summary-heading" className="grid gap-3 rounded-lg border bg-card p-4">
+        <Card role="region" aria-labelledby="summary-heading" className="grid gap-3 p-4">
           <div className="flex items-center justify-between gap-2">
             <h2 id="summary-heading" className="flex items-center gap-2 text-base font-semibold">
               <Sparkles className="h-4 w-4 text-signature" aria-hidden />
@@ -155,7 +153,7 @@ export function ContractDetail({ id }: { id: string }) {
               </ul>
             </div>
           )}
-        </section>
+        </Card>
       ) : null}
 
       <Checklist
@@ -192,11 +190,11 @@ export function ContractDetail({ id }: { id: string }) {
           Contract file
         </h2>
         {contract.fileName ? (
-          <div className="flex items-center gap-3 rounded-md border bg-card px-3 py-2.5 text-sm">
+          <Card className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm">
             <FileText className="h-5 w-5 shrink-0 text-primary" aria-hidden />
             <span className="min-w-0 flex-1 truncate">{contract.fileName}</span>
             <span className="text-xs text-muted-foreground">Stored once file storage is connected</span>
-          </div>
+          </Card>
         ) : (
           <p className="text-sm text-muted-foreground">No file attached.</p>
         )}
@@ -249,6 +247,7 @@ export function ContractDetail({ id }: { id: string }) {
           <span className="text-sm text-muted-foreground">Status</span>
           <Select
             value={contract.status}
+            items={{ draft: "Draft", active: "Active", completed: "Completed" }}
             onValueChange={(v) => {
               data.setContractStatus(contract.id, v as Contract["status"]);
               toast({ title: "Status updated", description: `${contract.title} is now ${v}.` });
@@ -266,12 +265,10 @@ export function ContractDetail({ id }: { id: string }) {
         </div>
 
         <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="ghost" className="text-muted-foreground hover:text-destructive">
+          <AlertDialogTrigger render={<Button variant="ghost" className="text-muted-foreground hover:text-destructive" />}>
               <Trash2 />
               Delete contract
-            </Button>
-          </AlertDialogTrigger>
+            </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Delete this contract?</AlertDialogTitle>
@@ -357,7 +354,7 @@ function Checklist({
                   checked={item.done}
                   onCheckedChange={() => onToggle(item.id)}
                 />
-                <label
+                <Label
                   htmlFor={boxId}
                   className={cn(
                     "min-w-0 flex-1 cursor-pointer text-[15px] font-medium leading-snug",
@@ -366,7 +363,7 @@ function Checklist({
                 >
                   {item.label}
                   <span className="sr-only">{item.done ? `, ${item.doneLabel}` : ""}</span>
-                </label>
+                </Label>
                 <div className="shrink-0 text-right text-[13px]">
                   {item.detail && <div className="font-semibold">{item.detail}</div>}
                   <div className={cn("text-muted-foreground", overdue && "font-medium text-overdue")}>

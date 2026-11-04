@@ -10,6 +10,7 @@ import { SponsorFormDialog, type SponsorFormState } from "@/components/partners/
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 import { amountPaid, formatCurrency } from "@/lib/planner/contracts";
 import { isDraft, levelLabel } from "@/lib/planner/sponsors";
 
@@ -57,15 +58,13 @@ export function PartnersPage() {
             <span className="hidden sm:inline">New sponsor</span>
           </span>
         </Button>
-        <Button asChild>
-          <Link href="/contracts/new">
+        <Button render={<Link href="/contracts/new" />} nativeButton={false}>
             <Plus />
             <span>
               <span className="sm:hidden">New</span>
               <span className="hidden sm:inline">New contract</span>
             </span>
-          </Link>
-        </Button>
+          </Button>
         </div>
       </header>
 
@@ -91,7 +90,7 @@ export function PartnersPage() {
       ) : (
         <ul className="grid gap-3">
           {partners.map(({ sponsor, contracts, total, received }) => (
-            <li key={sponsor.id} className="rounded-lg border bg-card p-4">
+            <li key={sponsor.id}><Card className="p-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -162,7 +161,7 @@ export function PartnersPage() {
               ) : (
                 <p className="mt-3 border-t pt-3 text-sm text-muted-foreground">No contracts yet.</p>
               )}
-            </li>
+            </Card></li>
           ))}
         </ul>
       )}

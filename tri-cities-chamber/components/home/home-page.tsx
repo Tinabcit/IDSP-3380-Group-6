@@ -15,6 +15,7 @@ import { AppSidebar, useHomeFilters } from "@/components/app-shell/app-sidebar";
 import { useToast } from "@/components/app-shell/toast-provider";
 import { usePlannerData } from "@/components/app-shell/planner-provider";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -23,6 +24,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   formatLongDate,
   isISODateBefore,
@@ -204,28 +213,29 @@ export function HomePage() {
           />
         </div>
 
-        <div className="mt-6 overflow-x-auto rounded-lg border">
-          <table className="w-full min-w-[640px] text-left text-sm">
-            <thead className="bg-muted">
-              <tr>
-                <th className="w-10 px-3 py-2">
+        <Card className="mt-6 overflow-hidden bg-transparent">
+          <Table className="min-w-[640px] text-left">
+            <TableHeader className="bg-muted">
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="h-auto w-10 px-3 py-2 text-foreground">
                   <Checkbox
                     aria-label="Select all rows on this page"
                     checked={allOnPageSelected}
                     onCheckedChange={toggleAllOnPage}
-                    className="rounded-[4px] data-[state=checked]:border-sky-600 data-[state=checked]:bg-sky-600"
+                    className="rounded-[4px] data-[checked]:border-sky-600 data-[checked]:bg-sky-600"
                   />
-                </th>
-                <th className="px-3 py-2 font-semibold">Tu Do Task Name</th>
-                <th className="px-3 py-2 font-semibold">Event</th>
-                <th className="px-3 py-2 font-semibold">Sponsor</th>
-                <th className="px-3 py-2 text-xs font-semibold">
-                  <button
+                </TableHead>
+                <TableHead className="h-auto px-3 py-2 font-semibold text-foreground">Tu Do Task Name</TableHead>
+                <TableHead className="h-auto px-3 py-2 font-semibold text-foreground">Event</TableHead>
+                <TableHead className="h-auto px-3 py-2 font-semibold text-foreground">Sponsor</TableHead>
+                <TableHead className="h-auto px-3 py-2 text-xs font-semibold text-foreground">
+                  <Button
                     type="button"
+                    variant="ghost"
                     onClick={() =>
                       setDirection(direction === "asc" ? "desc" : "asc")
                     }
-                    className="inline-flex items-center gap-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="h-auto gap-1 rounded p-0 text-xs font-semibold hover:bg-transparent [&_svg]:size-3"
                   >
                     Due Date
                     <ArrowUpDown className="h-3 w-3" aria-hidden />
@@ -233,23 +243,23 @@ export function HomePage() {
                       , sorted{" "}
                       {direction === "asc" ? "oldest first" : "newest first"}
                     </span>
-                  </button>
-                </th>
-                <th className="w-8 px-3 py-2">
+                  </Button>
+                </TableHead>
+                <TableHead className="h-auto w-8 px-3 py-2 text-foreground">
                   <span className="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {current.items.length === 0 && (
-                <tr>
-                  <td
+                <TableRow className="hover:bg-transparent">
+                  <TableCell
                     colSpan={6}
                     className="px-3 py-10 text-center text-muted-foreground"
                   >
                     No tasks match these filters.
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               )}
               {current.items.map((t) => (
                 <TaskRow
@@ -270,9 +280,9 @@ export function HomePage() {
                   }
                 />
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
+        </Card>
 
         <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
           <p aria-live="polite">
@@ -327,7 +337,7 @@ function FilterSelect({
   options: readonly { value: string; label: string }[];
 }) {
   return (
-    <Select value={value} onValueChange={onChange}>
+    <Select value={value} onValueChange={onChange} items={options}>
       <SelectTrigger
         aria-label={label}
         className="h-7 w-auto gap-2 px-2 text-xs"
@@ -364,46 +374,46 @@ function TaskRow({
 }) {
   const overdue = getTaskStatus(task, today) === "overdue";
   return (
-    <tr className="border-t">
-      <td className="px-3 py-3">
+    <TableRow>
+      <TableCell className="px-3 py-3">
         <Checkbox
           aria-label={`Select ${task.title}`}
           checked={checked}
           onCheckedChange={onToggle}
-          className="rounded-[4px] data-[state=checked]:border-sky-600 data-[state=checked]:bg-sky-600"
+          className="rounded-[4px] data-[checked]:border-sky-600 data-[checked]:bg-sky-600"
         />
-      </td>
-      <td
+      </TableCell>
+      <TableCell
         className={cn(
           "px-3 py-3 text-xs",
           task.completed && "text-muted-foreground line-through",
         )}
       >
         {task.title}
-      </td>
-      <td className="px-3 py-3 text-xs">
+      </TableCell>
+      <TableCell className="px-3 py-3 text-xs">
         {eventName ? (
           <Chip label={eventName} color="bg-blue-600" />
         ) : (
           <span className="text-muted-foreground">-</span>
         )}
-      </td>
-      <td className="px-3 py-3 text-xs">
+      </TableCell>
+      <TableCell className="px-3 py-3 text-xs">
         {sponsorName ? (
           <Chip label={sponsorName} color="bg-neutral-400" round />
         ) : (
           <span className="text-muted-foreground">-</span>
         )}
-      </td>
-      <td
+      </TableCell>
+      <TableCell
         className={cn(
           "px-3 py-3 text-xs",
           overdue ? "text-red-600" : "text-amber-600",
         )}
       >
         {formatLongDate(task.dueDate)}
-      </td>
-      <td className="px-3 py-3">
+      </TableCell>
+      <TableCell className="px-3 py-3">
         <Link
           href={`/calendar?date=${task.dueDate}`}
           aria-label={`View ${task.title} on the calendar`}
@@ -411,8 +421,8 @@ function TaskRow({
         >
           <MoreVertical className="h-4 w-4" aria-hidden />
         </Link>
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 }
 

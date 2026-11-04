@@ -16,6 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { describeRelativeDay } from "@/lib/planner/dates";
 import { getTaskStatus } from "@/lib/planner/selectors";
 import type { ISODate, Task } from "@/lib/planner/types";
@@ -83,7 +84,7 @@ export function TaskItem({
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <label
+          <Label
             htmlFor={checkboxId}
             className={cn(
               "cursor-pointer text-[15px] font-medium leading-snug",
@@ -91,24 +92,25 @@ export function TaskItem({
             )}
           >
             {task.title}
-          </label>
+          </Label>
           {status === "overdue" && <Badge variant="overdue">Overdue</Badge>}
         </div>
 
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted-foreground">
           {showDueDate &&
             (onShowDate ? (
-              <button
+              <Button
                 type="button"
+                variant="link"
                 onClick={() => onShowDate(task.dueDate)}
                 className={cn(
-                  "inline-flex items-center gap-1 rounded underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "h-auto gap-1 rounded p-0 text-[13px] font-normal text-muted-foreground underline-offset-2 [&_svg]:size-3.5",
                   status === "overdue" && "font-medium text-overdue"
                 )}
               >
                 <CalendarDays className="h-3.5 w-3.5" aria-hidden />
                 {describeRelativeDay(task.dueDate, today)}
-              </button>
+              </Button>
             ) : (
               <span>{describeRelativeDay(task.dueDate, today)}</span>
             ))}
@@ -155,16 +157,13 @@ export function TaskItem({
           <Pencil />
         </Button>
         <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
+          <AlertDialogTrigger render={<Button
               variant="ghost"
               size="icon"
               aria-label={`Delete "${task.title}"`}
-              className="text-muted-foreground hover:text-destructive"
-            >
+              className="text-muted-foreground hover:text-destructive" />}>
               <Trash2 />
-            </Button>
-          </AlertDialogTrigger>
+            </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Delete this task?</AlertDialogTitle>

@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Card } from "@/components/ui/card";
 import {
   amountPaid,
   filterContracts,
@@ -202,8 +203,7 @@ export function ContractsPage() {
           </p>
         </div>
 
-        <Button asChild>
-          <Link href="/contracts/new">
+        <Button render={<Link href="/contracts/new" />} nativeButton={false}>
             <Plus />
             <span>
               <span className="sm:hidden">New</span>
@@ -211,8 +211,7 @@ export function ContractsPage() {
                 New contract
               </span>
             </span>
-          </Link>
-        </Button>
+          </Button>
       </header>
 
       <dl className="grid grid-cols-3 gap-3">
@@ -252,32 +251,32 @@ export function ContractsPage() {
 
         {/* New: reminder summary totals */}
         <dl className="grid grid-cols-3 gap-3">
-          <div className="rounded-md border p-3">
+          <Card className="rounded-md p-3 bg-transparent">
             <dt className="text-xs text-muted-foreground">
               Expired
             </dt>
             <dd className="text-lg font-bold text-overdue">
               {reminderTotals.expired}
             </dd>
-          </div>
+          </Card>
 
-          <div className="rounded-md border p-3">
+          <Card className="rounded-md p-3 bg-transparent">
             <dt className="text-xs text-muted-foreground">
               Urgent (0–7 days)
             </dt>
             <dd className="text-lg font-bold text-overdue">
               {reminderTotals.urgent}
             </dd>
-          </div>
+          </Card>
 
-          <div className="rounded-md border p-3">
+          <Card className="rounded-md p-3 bg-transparent">
             <dt className="text-xs text-muted-foreground">
               Upcoming (8–30 days)
             </dt>
             <dd className="text-lg font-bold">
               {reminderTotals.upcoming}
             </dd>
-          </div>
+          </Card>
         </dl>
 
         {/* New: list of contracts requiring deadline attention */}
@@ -360,6 +359,7 @@ export function ContractsPage() {
         <div className="flex flex-wrap gap-2">
           <Select
             value={groupBy}
+            items={GROUP_LABELS}
             onValueChange={(v) =>
               setGroupBy(v as ContractGroupBy)
             }
@@ -384,6 +384,7 @@ export function ContractsPage() {
 
           <Select
             value={sortBy}
+            items={SORT_LABELS}
             onValueChange={(v) =>
               setSortBy(v as ContractSortBy)
             }
@@ -491,7 +492,7 @@ function Stat({
   tone?: "normal" | "alert";
 }) {
   return (
-    <div className="rounded-lg border bg-card px-3 py-3">
+    <Card className="px-3 py-3">
       <dt className="text-xs text-muted-foreground">
         {label}
       </dt>
@@ -505,6 +506,6 @@ function Stat({
       >
         {value}
       </dd>
-    </div>
+    </Card>
   );
 }

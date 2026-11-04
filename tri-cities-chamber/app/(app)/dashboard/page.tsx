@@ -1,23 +1,16 @@
-"use client";
+import { DataGate } from "@/components/app-shell/planner-provider";
+import { DashboardPage } from "@/components/dashboard/dashboard-page";
 
-import { useOptionalPlannerData } from "@/components/app-shell/planner-provider";
-import { CardInfo } from "@/components/dashboard/cardInfo";
+export const metadata = { title: "Dashboard | Tri-Cities Chamber" };
 
-/**
- * Page at /dashboard. Shows summary cards for tasks, events and sponsors.
- * The counts come from the shared planner data and show 0 until it has loaded.
+/*
+ * Page at /dashboard. You normally do not need to change this file:
+ * the page itself is components/dashboard/dashboard-page.tsx.
  */
 export default function Page() {
-  const data = useOptionalPlannerData();
-
   return (
-    <div className="flex flex-wrap gap-4 p-6">
-      <div>
-            <CardInfo headingText="Tasks" numberInfo={data?.tasks.length ?? 0} /> 
-            <CardInfo headingText="Events" numberInfo={data?.events.length ?? 0} />
-            <CardInfo headingText="Sponsors" numberInfo={data?.sponsors.length ?? 0} />
-        </div>
-
-    </div>
+    <DataGate>
+      <DashboardPage />
+    </DataGate>
   );
 }

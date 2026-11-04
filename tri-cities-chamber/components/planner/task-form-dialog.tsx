@@ -208,6 +208,7 @@ function TaskForm({
           <Label htmlFor="task-assignee">Assigned to</Label>
           <Select
             value={values.assigneeId}
+            items={staff.map((p) => ({ value: p.id, label: p.name }))}
             onValueChange={(v) => update("assigneeId", v)}
           >
             <SelectTrigger id="task-assignee">
@@ -228,6 +229,10 @@ function TaskForm({
         <Label htmlFor="task-event">Event</Label>
         <Select
           value={values.eventId ?? NONE}
+          items={[
+            { value: NONE, label: "No event" },
+            ...sortedEvents.map((e) => ({ value: e.id, label: `${e.name} (${formatShortDate(e.startDate)})` })),
+          ]}
           onValueChange={(v) => update("eventId", v === NONE ? undefined : v)}
         >
           <SelectTrigger id="task-event">
@@ -248,6 +253,7 @@ function TaskForm({
         <Label htmlFor="task-sponsor">Sponsor</Label>
         <Select
           value={values.sponsorId ?? NONE}
+          items={[{ value: NONE, label: "No sponsor" }, ...sponsors.map((s) => ({ value: s.id, label: s.name }))]}
           onValueChange={(v) =>
             update("sponsorId", v === NONE ? undefined : v)
           }

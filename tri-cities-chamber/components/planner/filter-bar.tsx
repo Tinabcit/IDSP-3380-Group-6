@@ -71,6 +71,7 @@ export function FilterBar({
 
       <Select
         value={filters.pillarId ?? ALL}
+        items={[{ value: ALL, label: "All pillars" }, ...pillars.map((p) => ({ value: p.id, label: p.name }))]}
         onValueChange={(v) =>
           onChange({ ...filters, pillarId: v === ALL ? null : v })
         }
@@ -96,6 +97,7 @@ export function FilterBar({
 
       <Select
         value={filters.sponsorId ?? ALL}
+        items={[{ value: ALL, label: "All sponsors" }, ...sponsors.map((s) => ({ value: s.id, label: s.name }))]}
         onValueChange={(v) =>
           onChange({ ...filters, sponsorId: v === ALL ? null : v })
         }

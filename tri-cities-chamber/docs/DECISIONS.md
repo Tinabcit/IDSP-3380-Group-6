@@ -147,3 +147,27 @@ Context: Phase 10 asks for the Add Event screens in docs/Events (upload card, re
 Decision: Adding an event is the page /events/new (the modal EventFormDialog stays for editing). All seven fields are required and show "Field Required" (validateEventForm in lib/planner/events.ts). Sponsor is free text with suggestions from existing sponsors, stored as sponsorName on the event. The PDF upload is simulated: a timer fakes progress, non-PDF or over 10 MB files fail, and only the file name is saved (state machine in lib/planner/upload.ts). The Figma has no pillar field, so new events use the first pillar. The duplicate Add event / Add task buttons were removed from the calendar day panel; the page header pair stays. Work branched from main because dev was 12 commits behind it.
 
 Alternatives considered: Keep the modal (rejected: does not match the design). Pick sponsors from a dropdown only (rejected: new sponsors could not be typed).
+
+## 2026-11-04 — shadcn components run on Base UI instead of Radix; more of the app uses them
+
+Context: The team asked to take Radix UI out and use shadcn components throughout while keeping the current look. shadcn's default components are built on Radix; shadcn also supports Base UI as the underlying library.
+
+Decision: All @radix-ui/* packages were removed and @base-ui/react (1.9.0) was added. The files in components/ui keep the same component names and Tailwind classes but are built on Base UI. Differences for callers: `asChild` is gone, use `render` instead (for a Next.js Link: `<Button render={<Link href="..." />} nativeButton={false}>`); every Select passes `items` (value/label pairs) so the closed dropdown shows the label, not the raw id; Select's onValueChange is never called with null; open/checked styling uses `data-[open]`, `data-[closed]` and `data-[checked]` instead of `data-[state=...]`; Label is a plain <label>. New shadcn components Card and Table were added and replace hand-made bordered boxes, the home task table, and raw buttons. Kept as native elements: the calendar day cells in month-grid (a keyboard grid, not buttons), the hidden file input in the contract form, the link-cards in contract-card, and dashed "nothing here" messages.
+
+Alternatives considered: Keep shadcn on Radix and only add more shadcn components (rejected: Radix had to go).
+
+## 2026-11-04 — Starter templates for Landing, Event detail and Complimentary Tickets
+
+Context: A teammate who does not know TypeScript will build these three pages. The pages must stay TypeScript so they share data and types with the rest of the app.
+
+Decision: Each page is a .tsx component with a folder for its parts (components/landing/sections, components/events/detail, components/tickets/parts). Every component starts with a "TYPES (already set up)" block declaring its props, so the teammate edits JSX and copies prop lines from docs/PAGE_STARTER_GUIDE.md. New routes: /events/[id] (event names on /events link to it) and /complimentary-tickets (sidebar "Comp Tickets", protected in proxy.ts). ComplimentaryTicket and ComplimentaryTicketInput were added to lib/planner/types.ts. Tickets are page state only for now, not saved in the planner store. The pages and parts are deliberately bare (heading, typed props, TODO comments, no styling) because students will build and style them; on the landing page only the working Sign Up / Login / Theme controls are kept, unstyled.
+
+Alternatives considered: Plain .jsx files (rejected: no type checking where the pages meet shared data).
+
+## 2026-11-04 — Starter pages are Landing and Dashboard only
+
+Context: The scope changed: students will build only the Landing page and the Dashboard, not Event detail or Complimentary Tickets. This replaces the scope of the "Starter templates" entry above.
+
+Decision: /events/[id], /complimentary-tickets, their components, the ComplimentaryTicket types, the sidebar "Comp Tickets" item and the event-name links on /events were removed. The Dashboard follows the same pattern as the Landing page: app/(app)/dashboard/page.tsx wraps components/dashboard/dashboard-page.tsx in DataGate, and parts live in components/dashboard/ (cardInfo.tsx is the bare starter, with its earlier styling removed). docs/PAGE_STARTER_GUIDE.md covers both pages.
+
+Alternatives considered: Keeping the removed pages as unused starters (rejected: unused routes would confuse students).

@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { splitEvents } from "@/lib/planner/home";
 import type { ChamberEvent } from "@/lib/planner/types";
 import { OverdueBell } from "./overdue-bell";
@@ -32,7 +33,11 @@ export function UserSelect() {
   const data = useOptionalPlannerData();
   if (!data) return null;
   return (
-    <Select value={data.currentUserId} onValueChange={data.setCurrentUser}>
+    <Select
+      value={data.currentUserId}
+      onValueChange={data.setCurrentUser}
+      items={data.staff.map((p) => ({ value: p.id, label: p.name }))}
+    >
       <SelectTrigger
         aria-label="Signed in as"
         className="h-9 w-full gap-2 bg-card"
@@ -121,14 +126,16 @@ function Section({
   const [open, setOpen] = useState(startOpen);
   return (
     <div className="flex flex-col gap-1">
-      <button
+      <Button
         type="button"
+        variant="ghost"
         onClick={() => setOpen(!open)}
-        className="flex items-center justify-between text-xs font-medium text-muted-foreground"
+        aria-expanded={open}
+        className="h-auto justify-between p-0 text-xs font-medium text-muted-foreground hover:bg-transparent hover:text-muted-foreground"
       >
         {title}
         <ChevronDown className={cn("h-4 w-4", !open && "-rotate-90")} />
-      </button>
+      </Button>
       {open && children}
     </div>
   );
@@ -146,11 +153,12 @@ function Item({
   onClick: () => void;
 }) {
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2 rounded-md px-2 py-1 text-left text-sm hover:bg-card",
+        "h-auto justify-start gap-2 px-2 py-1 text-left font-normal hover:bg-card hover:text-foreground",
         active && "bg-card font-medium",
       )}
     >
@@ -160,7 +168,7 @@ function Item({
           {tasks} tasks
         </span>
       )}
-    </button>
+    </Button>
   );
 }
 
@@ -234,18 +242,20 @@ export function AppSidebar({ className }: { className?: string }) {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <Link
-          href="/contracts/new"
-          className="w-fit rounded-md bg-sky-600 px-3 py-1.5 text-sm text-white"
+        <Button
+          render={<Link href="/contracts/new" />}
+          nativeButton={false}
+          className="h-auto w-fit bg-sky-600 px-3 py-1.5 font-normal text-white hover:bg-sky-600/90"
         >
           Upload Contract
-        </Link>
-        <Link
-          href="/events/new"
-          className="w-fit rounded-md bg-sky-600 px-3 py-1.5 text-sm text-white"
+        </Button>
+        <Button
+          render={<Link href="/events/new" />}
+          nativeButton={false}
+          className="h-auto w-fit bg-sky-600 px-3 py-1.5 font-normal text-white hover:bg-sky-600/90"
         >
           Add Event +
-        </Link>
+        </Button>
       </div>
 
       {/* Who is signed in, with the overdue bell (it was removed from the desktop sidebar by mistake). */}

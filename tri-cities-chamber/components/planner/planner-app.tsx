@@ -308,8 +308,9 @@ export function PlannerApp() {
               {filtersActive ?
                 "No events match the filters this month."
               : "No events this month."}{" "}
-              <button
+              <Button
                 type='button'
+                variant='link'
                 onClick={() =>
                   openAddEvent(
                     isSameMonth(fromISODate(selectedDate), viewMonth) ?
@@ -317,10 +318,10 @@ export function PlannerApp() {
                     : toISODate(viewMonth),
                   )
                 }
-                className='font-medium text-primary underline-offset-2 hover:underline'
+                className='h-auto p-0 underline-offset-2'
               >
                 Add an event
-              </button>
+              </Button>
             </p>
           )}
           <MonthGrid

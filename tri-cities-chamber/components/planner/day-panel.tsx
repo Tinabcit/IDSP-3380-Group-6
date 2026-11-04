@@ -133,11 +133,9 @@ export function DayPanel({
                       <Pencil />
                     </Button>
                     <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" aria-label={`Delete ${event.name}`}>
+                      <AlertDialogTrigger render={<Button variant="ghost" size="icon" aria-label={`Delete ${event.name}`} />}>
                           <Trash2 />
-                        </Button>
-                      </AlertDialogTrigger>
+                        </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
                           <AlertDialogTitle>Delete this event?</AlertDialogTitle>

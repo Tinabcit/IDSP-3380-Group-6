@@ -162,7 +162,11 @@ function EventForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
           <Label htmlFor="ev-pillar">Pillar</Label>
-          <Select value={pillarId} onValueChange={setPillarId}>
+          <Select
+            value={pillarId}
+            onValueChange={setPillarId}
+            items={data.pillars.map((p) => ({ value: p.id, label: p.name }))}
+          >
             <SelectTrigger id="ev-pillar">
               <SelectValue />
             </SelectTrigger>
@@ -177,7 +181,11 @@ function EventForm({
         </div>
         <div className="grid gap-2">
           <Label htmlFor="ev-category">Category</Label>
-          <Select value={category} onValueChange={(v) => setCategory(v as EventCategory)}>
+          <Select
+            value={category}
+            onValueChange={(v) => setCategory(v as EventCategory)}
+            items={EVENT_CATEGORIES}
+          >
             <SelectTrigger id="ev-category">
               <SelectValue />
             </SelectTrigger>

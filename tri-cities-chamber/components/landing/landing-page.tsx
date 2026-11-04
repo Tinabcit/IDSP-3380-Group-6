@@ -1,11 +1,17 @@
+/*
+ * LANDING PAGE (shown at "/"). Edit the JSX in LandingPage() at the bottom of this file.
+ * The sign-in functions above it can stay as they are. Build new parts of the page in
+ * components/landing/sections/. Guide: docs/PAGE_STARTER_GUIDE.md
+ */
 import { Suspense } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
-import { ArrowRight } from "lucide-react";
 
 import { auth, signIn, signOut } from "@/auth";
+import { AUTH_DISABLED } from "@/proxy";
 import { Button } from "@/components/ui/button";
 
+import { HeroSection } from "./sections/hero-section";
 import { ThemeMenu } from "./theme-menu";
 
 /** Starts the Google sign-in and sends the person to the app afterwards. */
@@ -24,18 +30,15 @@ async function googleSignOut() {
 async function AuthButtons() {
   // Wait for a real request first: reading the session uses random values that cannot be prerendered.
   await connection();
-  const session = await auth();
+  // With auth switched off, skip the session lookup and always show "Go to app".
+  const session = AUTH_DISABLED ? true : await auth();
 
   if (session) {
     return (
       <>
-        <Button asChild variant="secondary" size="sm">
-          <Link href="/home">Go to app</Link>
-        </Button>
+        <Button render={<Link href="/home" />} nativeButton={false}>Go to app</Button>
         <form action={googleSignOut}>
-          <Button type="submit" size="sm" className="bg-landing-login text-white hover:bg-landing-login/90">
-            Sign out
-          </Button>
+          <Button type="submit">Sign out</Button>
         </form>
       </>
     );
@@ -44,45 +47,30 @@ async function AuthButtons() {
   return (
     <>
       <form action={googleSignIn}>
-        <Button type="submit" variant="secondary" size="sm">
-          Sign Up
-        </Button>
+        <Button type="submit">Sign Up</Button>
       </form>
       <form action={googleSignIn}>
-        <Button type="submit" size="sm" className="bg-landing-login text-white hover:bg-landing-login/90">
-          Login
-        </Button>
+        <Button type="submit">Login</Button>
       </form>
     </>
   );
 }
 
-/** The first page visitors see: header (Sign Up, Login, Theme) and the hero with "Start now". */
+/** The first page visitors see. Build it here: add your own sections and styles. */
 export function LandingPage() {
   return (
-    <div className="flex min-h-dvh flex-col bg-background">
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-4 sm:px-8">
-        <span className="text-xl font-bold">Tu Du</span>
-        <div className="flex flex-wrap items-center gap-3">
-          {/* The session is only known at request time, so the buttons stream in. */}
-          <Suspense fallback={null}>
-            <AuthButtons />
-          </Suspense>
-          <ThemeMenu />
-        </div>
+    <div>
+      <header>
+        <span>Tu Du</span>
+        {/* Sign Up / Login (they work already) and the Theme menu. Style or move them as you like. */}
+        <Suspense fallback={null}>
+          <AuthButtons />
+        </Suspense>
+        <ThemeMenu />
       </header>
 
-      <main className="flex flex-1 flex-col items-center justify-center bg-landing-hero px-4 py-20 text-center text-landing-hero-foreground">
-        <h1 className="max-w-2xl text-4xl font-bold leading-tight sm:text-5xl">Where teams Create together.</h1>
-        <p className="mt-10 max-w-2xl text-base sm:text-lg">
-          Capture context, find answers, and automate tasks with AI built for your team.
-        </p>
-        <Button asChild size="lg" className="mt-12 bg-landing-cta px-6 text-xl text-white hover:bg-landing-cta/90">
-          <Link href="/home">
-            Start now <ArrowRight className="h-5 w-5" aria-hidden />
-          </Link>
-        </Button>
-      </main>
+      {/* Your sections go here. Make them in components/landing/sections/. */}
+      <HeroSection title="Page title" subtitle="A short sentence about the app." />
     </div>
   );
 }
