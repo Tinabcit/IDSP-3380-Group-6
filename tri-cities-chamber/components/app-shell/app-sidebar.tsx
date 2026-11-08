@@ -227,12 +227,14 @@ export function AppSidebar({ className, user }: { className?: string; user: Disp
         <span className="grid h-8 w-8 place-items-center rounded-md bg-sky-600 text-white">
           <Briefcase className="h-4 w-4" />
         </span>
-        <div className="leading-tight">
+        <div className="min-w-0 flex-1 leading-tight">
           <p className="text-sm font-semibold">TuDu</p>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="truncate text-[11px] text-muted-foreground">
             Tri-Cities Chamber
           </p>
         </div>
+        {/* The overdue bell sits at the right end of the logo row. */}
+        <OverdueBell align="beside" />
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -248,17 +250,6 @@ export function AppSidebar({ className, user }: { className?: string; user: Disp
         >
           Add Event +
         </Link>
-      </div>
-
-      {/* Who is signed in, with the overdue bell (it was removed from the desktop sidebar by mistake). */}
-      <div className="grid gap-1.5">
-        <span className="text-xs text-muted-foreground">Signed in as</span>
-        <div className="flex items-center gap-1">
-          <div className="min-w-0 flex-1">
-            <UserSelect />
-          </div>
-          <OverdueBell align="left" />
-        </div>
       </div>
 
       <nav className="flex flex-col gap-1">
