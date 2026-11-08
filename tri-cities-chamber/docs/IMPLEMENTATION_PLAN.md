@@ -73,7 +73,7 @@ Branch: feature/sponsorPopUp
 
 - Copy the main branch and make the above branch
 - [x] cd into tri-cities-chamber
-- [x] ![SponsorPopUp](<sponsorPopUp.png>)
+- [x] ![SponsorPopUp](sponsorPopUp.png)
 - [x] From above image recreate/make the sponsorPopUp, use ShadCN, look at the whole strucutre right now and determine where the sponsor should be implemnented at. Built as components/partners/sponsor-form-dialog.tsx, opened from /partners (New sponsor, Edit); helpers and tests in lib/planner/sponsors.ts
 
 ## Phase 9 - Landing Page
@@ -81,7 +81,7 @@ Branch: feature/sponsorPopUp
 Branch: feature/landingPage
 
 - [x] cd into tri-cities-chamber
-- [x] ![LandingPage](<landingPage.png>)
+- [x] ![LandingPage](landingPage.png)
 - [x] From above image make the landing page at "/": Tu Du header, Sign Up, Login, Theme menu (Default/Light/Dark, shadcn DropdownMenu), hero with "Start now". Home page moves to /home; app pages move into the (app) route group
 - [x] Theme helpers with tests in lib/theme.ts; dark colours in globals.css; saved theme applied before paint
 - [x] Google sign-in with Auth.js (Sign Up and Login run the same flow), signed-out visitors of app pages redirected to "/" by proxy.ts, .env.example added
@@ -102,6 +102,15 @@ Branch: feautre/AddEvents
 - [x] if upload fails, need to tell them Upload failed. Try again - with a refresh button, x for cancellation and a + for re-adding it
 - [x] When they upload, should show a circle happening with a upload percentage
 - [x] When upload is complete, show a green check
+
+## Phase 11 - Add Avatar Icon Sidebar (Built, awaiting PR)
+
+Branch: feature/AvatarIconSideBar
+
+- [x] cd intro tri-cities-chamber
+- [x] ![AvatarIcon](AvatarIcon.png)
+- [x] After viewing the above, implement it using ShadCN component.
+- [x] When you implement that, when user signs in via the google stuff put there name in it, so its not hardcoded, if they are not signed in through that and just viewing the page, just show it as Unknown user with unknown@....
 
 ## Backlog (not a phase yet — /phase turns these into the next phase)
 

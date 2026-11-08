@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Download } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import type { DisplayUser } from "@/lib/planner/user";
 import { cn } from "@/lib/utils";
 
 import {
@@ -25,7 +26,7 @@ import { useToast } from "./toast-provider";
  * the sidebar (see app-sidebar.tsx), the footer (backup and reset buttons),
  * and on phones the small top bar and the bottom menu.
  */
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({ children, user }: { children: React.ReactNode; user: DisplayUser }) {
   const data = useOptionalPlannerData();
   const toast = useToast();
 
@@ -51,7 +52,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <HomeFiltersProvider>
       <div className="flex min-h-dvh">
         {/* The sidebar, down the left edge on tablet and up. It stays put while the page scrolls. */}
-        <AppSidebar className="sticky top-0 z-30 hidden h-dvh w-64 shrink-0 overflow-y-auto border-r md:block" />
+        <AppSidebar user={user} className="sticky top-0 z-30 hidden h-dvh w-64 shrink-0 overflow-y-auto border-r md:block" />
 
         <div className="flex min-w-0 flex-1 flex-col">
           {/* Phones have no sidebar, so they get a small header with the title, bell and user. */}
