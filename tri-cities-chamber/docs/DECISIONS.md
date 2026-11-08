@@ -147,3 +147,11 @@ Context: Phase 10 asks for the Add Event screens in docs/Events (upload card, re
 Decision: Adding an event is the page /events/new (the modal EventFormDialog stays for editing). All seven fields are required and show "Field Required" (validateEventForm in lib/planner/events.ts). Sponsor is free text with suggestions from existing sponsors, stored as sponsorName on the event. The PDF upload is simulated: a timer fakes progress, non-PDF or over 10 MB files fail, and only the file name is saved (state machine in lib/planner/upload.ts). The Figma has no pillar field, so new events use the first pillar. The duplicate Add event / Add task buttons were removed from the calendar day panel; the page header pair stays. Work branched from main because dev was 12 commits behind it.
 
 Alternatives considered: Keep the modal (rejected: does not match the design). Pick sponsors from a dropdown only (rejected: new sponsors could not be typed).
+
+## 2026-11-08 — Sidebar avatar footer reads the Google session on the server
+
+Context: Phase 11 adds the shadcn-style avatar footer from docs/AvatarIcon.png. Nothing on the client knew who signed in with Google; the old "Signed in as" select is the planner staff switcher.
+
+Decision: app/(app)/layout.tsx reads the session with auth() (after connection()) and passes a DisplayUser (getDisplayUser in lib/planner/user.ts) down by props to AppShell, AppSidebar and UserMenu. No SessionProvider. Without a session it shows "Unknown user" / "unknown@...". The staff switcher stays. Added @radix-ui/react-avatar and shadcn Avatar, plus DropdownMenuItem/Label/Separator. Sign in/out server actions live in components/app-shell/auth-actions.ts.
+
+Alternatives considered: SessionProvider with useSession (rejected: extra client state, props are simpler). Replacing the staff switcher (rejected: it drives planner data).

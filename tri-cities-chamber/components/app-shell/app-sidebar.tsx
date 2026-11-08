@@ -25,6 +25,8 @@ import {
 } from "@/components/ui/select";
 import { splitEvents } from "@/lib/planner/home";
 import type { ChamberEvent } from "@/lib/planner/types";
+import type { DisplayUser } from "@/lib/planner/user";
+import { UserMenu } from "./user-menu";
 import { OverdueBell } from "./overdue-bell";
 import { useOptionalPlannerData } from "./planner-provider";
 
@@ -164,7 +166,7 @@ function Item({
   );
 }
 
-export function AppSidebar({ className }: { className?: string }) {
+export function AppSidebar({ className, user }: { className?: string; user: DisplayUser }) {
   const data = useOptionalPlannerData();
   const filters = useHomeFilters();
   const pathname = usePathname();
@@ -297,6 +299,11 @@ export function AppSidebar({ className }: { className?: string }) {
         </Section>
         <Section title="Annual Partners" />
         <Section title="Program Partners" />
+      </div>
+
+      {/* Who is signed in with Google (or Unknown user), pinned to the bottom. */}
+      <div className="mt-auto">
+        <UserMenu user={user} />
       </div>
     </aside>
   );
