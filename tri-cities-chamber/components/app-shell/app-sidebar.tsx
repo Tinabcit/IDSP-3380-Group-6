@@ -234,7 +234,7 @@ export function AppSidebar({ className, user }: { className?: string; user: Disp
           </p>
         </div>
         {/* The overdue bell sits at the right end of the logo row. */}
-        <OverdueBell align="left" />
+        <OverdueBell align="beside" />
       </div>
 
       <div className="flex flex-wrap gap-2">
