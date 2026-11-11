@@ -87,6 +87,7 @@ interface TaskFormProps extends Omit<TaskFormDialogProps, "state"> {
 interface FormErrors {
   title?: string;
   dueDate?: string;
+  endTime?: string;
 }
 
 /**
@@ -111,6 +112,8 @@ function TaskForm({
           eventId: state.task.eventId,
           sponsorId: state.task.sponsorId,
           notes: state.task.notes,
+          startTime: state.task.startTime,
+          endTime: state.task.endTime,
         }
       : {
           title: "",
@@ -141,7 +144,10 @@ function TaskForm({
     const next: FormErrors = {};
     if (!title) next.title = "Enter a task name.";
     if (!values.dueDate) next.dueDate = "Choose a due date.";
-    if (next.title || next.dueDate) {
+    if (values.startTime && values.endTime && values.endTime <= values.startTime) {
+      next.endTime = "The end time must be after the start time.";
+    }
+    if (next.title || next.dueDate || next.endTime) {
       setErrors(next);
       return;
     }
@@ -150,6 +156,9 @@ function TaskForm({
         ...values,
         title,
         notes: values.notes?.trim() || undefined,
+        startTime: values.startTime || undefined,
+        // An end time means nothing without a start time.
+        endTime: values.startTime && values.endTime ? values.endTime : undefined,
       },
       state.mode === "edit" ? state.task.id : undefined
     );
@@ -221,6 +230,39 @@ function TaskForm({
               ))}
             </SelectContent>
           </Select>
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-2">
+          <Label htmlFor="task-start">
+            Start time <span className="font-normal text-muted-foreground">(optional)</span>
+          </Label>
+          <Input
+            id="task-start"
+            type="time"
+            value={values.startTime ?? ""}
+            onChange={(e) => update("startTime", e.target.value || undefined)}
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="task-end">
+            End time <span className="font-normal text-muted-foreground">(optional)</span>
+          </Label>
+          <Input
+            id="task-end"
+            type="time"
+            value={values.endTime ?? ""}
+            disabled={!values.startTime}
+            onChange={(e) => update("endTime", e.target.value || undefined)}
+            aria-invalid={Boolean(errors.endTime)}
+            aria-describedby={errors.endTime ? "task-end-error" : undefined}
+          />
+          {errors.endTime && (
+            <p id="task-end-error" className="text-sm text-destructive">
+              {errors.endTime}
+            </p>
+          )}
         </div>
       </div>
 

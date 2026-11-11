@@ -155,3 +155,11 @@ Context: Phase 11 adds the shadcn-style avatar footer from docs/AvatarIcon.png. 
 Decision: app/(app)/layout.tsx reads the session with auth() (after connection()) and passes a DisplayUser (getDisplayUser in lib/planner/user.ts) down by props to AppShell, AppSidebar and UserMenu. No SessionProvider. Without a session it shows "Unknown user" / "unknown@...". The staff switcher stays. Added @radix-ui/react-avatar and shadcn Avatar, plus DropdownMenuItem/Label/Separator. Sign in/out server actions live in components/app-shell/auth-actions.ts.
 
 Alternatives considered: SessionProvider with useSession (rejected: extra client state, props are simpler). Replacing the staff switcher (rejected: it drives planner data).
+
+## 2026-11-11 — Calendar day details pop-up: optional time and attendee fields, label-only timezone
+
+Context: Phase 12 adds the day details pop-up from docs/CalendarDayDetailsPop-up.png. The mockup shows time ranges on activities and attendee counts on events, which tasks and events did not store, and says times are shown in the user's local timezone.
+
+Decision: Task gets optional startTime/endTime and ChamberEvent gets optional attendees (all optional, so saved data still loads). The task form and edit-event form have matching inputs. Stored times stay zone-less "HH:mm" wall-clock values, so "local timezone" is a client-only GMT offset label plus the footer note; no UTC conversion. The pop-up is DayDetailsDialog, opened from a "Day details" button in the day panel (single click on a day still only selects it). Pure logic is in lib/planner/day-details.ts. Branched from main, like the previous phases.
+
+Alternatives considered: Display only what already exists (rejected: the timetable and activity times would be empty). Store UTC instants (rejected: migrates saved data and forms for no gain in a single-timezone MVP).

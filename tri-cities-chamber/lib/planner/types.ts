@@ -77,6 +77,8 @@ export interface ChamberEvent {
   address?: string;
   /** Name of the PDF uploaded with the event (the file itself is not stored). */
   fileName?: string;
+  /** How many people are expected. Missing means unknown. */
+  attendees?: number;
 }
 
 /** Fields the user can set when creating or editing an event. */
@@ -95,6 +97,10 @@ export interface Task {
   /** The payment or deliverable this task mirrors, kept in sync both ways. */
   contractItemId?: string;
   notes?: string;
+  /** Start time as 24-hour "HH:mm". Missing means the task has no set time. */
+  startTime?: string;
+  /** End time as 24-hour "HH:mm". Only used when startTime is set. */
+  endTime?: string;
   createdAt: string;
 }
 
