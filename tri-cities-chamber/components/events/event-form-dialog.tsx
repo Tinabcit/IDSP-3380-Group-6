@@ -76,6 +76,7 @@ function EventForm({
   const [category, setCategory] = useState<EventCategory>(editing ? categoryOf(editing) : "other");
   const [isSignature, setIsSignature] = useState(editing?.isSignature ?? false);
   const [location, setLocation] = useState(editing?.location ?? "");
+  const [attendees, setAttendees] = useState(editing?.attendees !== undefined ? String(editing.attendees) : "");
   const [description, setDescription] = useState(editing?.description ?? "");
   const [error, setError] = useState("");
 
@@ -93,6 +94,7 @@ function EventForm({
       category,
       isSignature,
       location: location.trim() || undefined,
+      attendees: attendees.trim() ? Number(attendees) : undefined,
       description: description.trim() || undefined,
     };
     const problem = validateEventInput(input);
@@ -196,6 +198,12 @@ function EventForm({
           Location <span className="font-normal text-muted-foreground">(optional)</span>
         </Label>
         <Input id="ev-loc" value={location} onChange={(e) => setLocation(e.target.value)} />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="ev-attendees">
+          Attendees <span className="font-normal text-muted-foreground">(optional)</span>
+        </Label>
+        <Input id="ev-attendees" type="number" min={0} step={1} value={attendees} onChange={(e) => { setAttendees(e.target.value); clearError(); }} />
       </div>
       <div className="grid gap-2">
         <Label htmlFor="ev-desc">

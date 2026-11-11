@@ -46,7 +46,7 @@ export function isValidISODate(value: string): value is ISODate {
 }
 
 /** Turns "13:00" into "1:00 PM". */
-function formatTime(value: string): string {
+export function formatTime(value: string): string {
   return format(parse(value, "HH:mm", new Date(2000, 0, 1)), "h:mm a");
 }
 
@@ -83,6 +83,12 @@ export function validateEventInput(input: EventInput): string | null {
     input.endTime < input.startTime
   ) {
     return "The end time cannot be before the start time.";
+  }
+  if (
+    input.attendees !== undefined &&
+    (!Number.isInteger(input.attendees) || input.attendees < 0)
+  ) {
+    return "Attendees must be a whole number, 0 or more.";
   }
   return null;
 }

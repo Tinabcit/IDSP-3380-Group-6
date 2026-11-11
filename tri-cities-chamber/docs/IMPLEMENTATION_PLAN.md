@@ -112,6 +112,15 @@ Branch: feature/AvatarIconSideBar
 - [x] After viewing the above, implement it using ShadCN component.
 - [x] When you implement that, when user signs in via the google stuff put there name in it, so its not hardcoded, if they are not signed in through that and just viewing the page, just show it as Unknown user with unknown@....
 
+## Phase 12 - Add Calendar day details
+
+Branch: feature/CalenderDayDetails
+
+- [x] cd into tri-cities-chamber
+- [x] ![CalenderDay](CalendarDayDetailsPop-up.png)
+- [x] Implement in the Calender section
+- [x] Times should be shown by local users timezone.
+
 ## Backlog (not a phase yet — /phase turns these into the next phase)
 
 From the README "Not built yet" list: real file storage, real AI contract reading, email/push notifications, contract comparison, real sign-in and permissions, backend.
