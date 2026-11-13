@@ -17,7 +17,7 @@
 - Read data with usePlannerData(); change it only through store functions in hooks/use-planner-store.ts.
 - Small components only show what their parent passes in.
 - Pure logic goes in lib/planner/*, so it is easy to test.
-- Frontend-only MVP with mock data. Do not add a backend unless a DECISIONS.md entry says so.
+- Data lives in Supabase (see DECISIONS.md 2026-11-13). The browser never queries it directly: the store calls server actions in lib/db/actions.ts, which check the session and call lib/db/planner-repo.ts.
 
 ## Security
 

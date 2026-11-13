@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { reducer } from '@/hooks/use-planner-store';
-import type { Action, PlannerState } from '@/hooks/use-planner-store';
+import { reducer } from '@/hooks/planner-reducer';
+import type { Action, PlannerState } from '@/hooks/planner-reducer';
 import type { Contract, Task } from '@/lib/planner/types';
 
 /** An empty, ready store to start each test from. */

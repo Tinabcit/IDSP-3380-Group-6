@@ -19,6 +19,7 @@ import {
 import { OverdueBell } from "./overdue-bell";
 import { useOptionalPlannerData } from "./planner-provider";
 import { ReminderToasts } from "./reminder-toasts";
+import { SaveErrorToast } from "./save-error-toast";
 import { useToast } from "./toast-provider";
 
 /**
@@ -80,7 +81,7 @@ export function AppShell({ children, user }: { children: React.ReactNode; user: 
           </div>
 
           <footer className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-2 px-4 pb-24 text-xs text-muted-foreground sm:px-6 md:pb-8 lg:px-8">
-            <span>Demo data is saved in this browser only.</span>
+            <span>Data is saved in the shared database.</span>
             {data && (
               <span className="flex items-center gap-4">
                 <Button
@@ -97,11 +98,13 @@ export function AppShell({ children, user }: { children: React.ReactNode; user: 
                   size="sm"
                   className="h-auto p-0 text-xs text-muted-foreground"
                   onClick={() => {
-                    data.resetDemoData();
-                    toast({ title: "Demo data reset" });
+                    data
+                      .reloadData()
+                      .then(() => toast({ title: "Data reloaded" }))
+                      .catch(() => toast({ title: "Could not reload data", kind: "error" }));
                   }}
                 >
-                  Reset demo data
+                  Reload data
                 </Button>
               </span>
             )}
@@ -109,6 +112,7 @@ export function AppShell({ children, user }: { children: React.ReactNode; user: 
         </div>
 
         <ReminderToasts />
+        <SaveErrorToast />
 
         <Suspense fallback={null}>
           <MobileNav />

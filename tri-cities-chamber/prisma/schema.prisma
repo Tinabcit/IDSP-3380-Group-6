@@ -1,0 +1,280 @@
+// Prisma schema for the Supabase database.
+//
+// Every model maps onto a table that already exists in Supabase (snake_case
+// names via @map / @@map). The tables are managed in Supabase, so do NOT run
+// `prisma migrate dev` against it. To change a table, write SQL in
+// supabase/migrations/ and run it in the Supabase SQL editor, then update this
+// file and run `npx prisma generate`.
+//
+// Columns marked "added by 0001" do not exist in the original database; the app
+// already used them, so supabase/migrations/0001_match_app_fields.sql adds them.
+//
+// Text columns that act like enums are kept as String; the allowed values are
+// noted next to each one.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Pillar {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  events Event[]
+
+  @@map("pillars")
+}
+
+/// A staff member. Rows are created automatically the first time someone signs in.
+model Profile {
+  id         String   @id @default(uuid()) @db.Uuid
+  email      String?
+  fullName   String?  @map("full_name")
+  role       String // admin | staff
+  sponsorId  String?  @map("sponsor_id") @db.Uuid
+  authUserId String?  @map("auth_user_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  sponsor  Sponsor?      @relation(fields: [sponsorId], references: [id])
+  tasks    Task[]
+  activity ActivityLog[]
+
+  @@map("profiles")
+}
+
+model Sponsor {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String
+  level        String? // platinum | gold | silver | bronze
+  rank         String // pillar | annual_partner | event_only (not used by the app yet)
+  status       String // draft | active (plus the older inactive | prospective)
+  contactName  String?  @map("contact_name")
+  contactEmail String?  @map("contact_email")
+  contactPhone String?  @map("contact_phone")
+  website      String?
+  notes        String?
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  todos              SponsorTodo[]
+  agreements         SponsorAgreement[]
+  tasks              Task[]
+  profiles           Profile[]
+  sponsorEvents      SponsorEvent[]
+  sponsorAdvertising SponsorAdvertising[]
+
+  @@map("sponsors")
+}
+
+model SponsorTodo {
+  id        String   @id @default(uuid()) @db.Uuid
+  sponsorId String   @map("sponsor_id") @db.Uuid
+  title     String
+  done      Boolean  @default(false)
+  position  Int
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  sponsor Sponsor @relation(fields: [sponsorId], references: [id], onDelete: Cascade)
+
+  @@map("sponsor_todos")
+}
+
+model EventSeries {
+  id         String   @id @default(uuid()) @db.Uuid
+  name       String
+  recurrence String
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  events Event[]
+
+  @@map("event_series")
+}
+
+model Event {
+  id                String    @id @default(uuid()) @db.Uuid
+  name              String
+  startDate         DateTime  @map("start_date") @db.Date
+  endDate           DateTime  @map("end_date") @db.Date
+  startTime         DateTime? @map("start_time") @db.Time
+  endTime           DateTime? @map("end_time") @db.Time
+  pillarId          String?   @map("pillar_id") @db.Uuid
+  isSignature       Boolean   @map("is_signature")
+  location          String?
+  description       String?
+  category          String? // networking | workshop | meeting | fundraiser | other
+  sponsorName       String?   @map("sponsor_name")
+  contactEmail      String?   @map("contact_email")
+  contactPhone      String?   @map("contact_phone")
+  address           String?
+  fileName          String?   @map("file_name")
+  attendees         Int? // added by 0001
+  status            String // planning | open | completed | cancelled (not used by the app yet)
+  recurringSeriesId String?   @map("recurring_series_id") @db.Uuid
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  pillar             Pillar?              @relation(fields: [pillarId], references: [id])
+  series             EventSeries?         @relation(fields: [recurringSeriesId], references: [id])
+  agreements         SponsorAgreement[]
+  tasks              Task[]
+  sponsorEvents      SponsorEvent[]
+  sponsorAdvertising SponsorAdvertising[]
+
+  @@map("events")
+}
+
+/// A contract in the app.
+model SponsorAgreement {
+  id               String    @id @default(uuid()) @db.Uuid
+  title            String
+  sponsorId        String    @map("sponsor_id") @db.Uuid
+  eventId          String?   @map("event_id") @db.Uuid
+  amount           Decimal   @db.Decimal
+  status           String // draft | active | completed (plus the older pending_renewal | expired | cancelled)
+  signedDate       DateTime? @map("signed_date") @db.Date
+  startDate        DateTime? @map("start_date") @db.Date
+  endDate          DateTime? @map("end_date") @db.Date
+  renewalDate      DateTime? @map("renewal_date") @db.Date
+  renewalDeadline  DateTime? @map("renewal_deadline") @db.Timestamptz
+  fileName         String?   @map("file_name")
+  notes            String?
+  summaryOverview  String?   @map("summary_overview")
+  summaryKeyTerms  String[]  @map("summary_key_terms")
+  summaryWatchouts String[]  @map("summary_watchouts")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  sponsor      Sponsor                @relation(fields: [sponsorId], references: [id])
+  event        Event?                 @relation(fields: [eventId], references: [id])
+  payments     AgreementPayment[]
+  deliverables AgreementDeliverable[]
+  tasks        Task[]
+  activity     ActivityLog[]
+
+  @@map("sponsor_agreements")
+}
+
+model AgreementPayment {
+  id          String   @id @default(uuid()) @db.Uuid
+  agreementId String   @map("agreement_id") @db.Uuid
+  label       String
+  dueDate     DateTime @map("due_date") @db.Date
+  amount      Decimal  @db.Decimal
+  paid        Boolean
+  position    Int
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  agreement SponsorAgreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  tasks     Task[]
+
+  @@map("agreement_payments")
+}
+
+model AgreementDeliverable {
+  id          String   @id @default(uuid()) @db.Uuid
+  agreementId String   @map("agreement_id") @db.Uuid
+  label       String
+  dueDate     DateTime @map("due_date") @db.Date
+  done        Boolean
+  position    Int
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  agreement SponsorAgreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  tasks     Task[]
+
+  @@map("agreement_deliverables")
+}
+
+model Task {
+  id            String    @id @default(uuid()) @db.Uuid
+  title         String
+  dueDate       DateTime  @map("due_date") @db.Date
+  startTime     DateTime? @map("start_time") @db.Time // added by 0001
+  endTime       DateTime? @map("end_time") @db.Time // added by 0001
+  completed     Boolean
+  assigneeId    String    @map("assignee_id") @db.Uuid
+  eventId       String?   @map("event_id") @db.Uuid
+  sponsorId     String?   @map("sponsor_id") @db.Uuid
+  agreementId   String?   @map("agreement_id") @db.Uuid
+  paymentId     String?   @map("payment_id") @db.Uuid
+  deliverableId String?   @map("deliverable_id") @db.Uuid
+  notes         String?
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  assignee    Profile               @relation(fields: [assigneeId], references: [id])
+  event       Event?                @relation(fields: [eventId], references: [id])
+  sponsor     Sponsor?              @relation(fields: [sponsorId], references: [id])
+  agreement   SponsorAgreement?     @relation(fields: [agreementId], references: [id])
+  payment     AgreementPayment?     @relation(fields: [paymentId], references: [id])
+  deliverable AgreementDeliverable? @relation(fields: [deliverableId], references: [id])
+
+  @@map("tasks")
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  at          DateTime @db.Timestamptz
+  userId      String   @map("user_id") @db.Uuid
+  message     String
+  agreementId String?  @map("agreement_id") @db.Uuid
+
+  user      Profile           @relation(fields: [userId], references: [id])
+  agreement SponsorAgreement? @relation(fields: [agreementId], references: [id])
+
+  @@map("activity_log")
+}
+
+// --- Tables the app does not use yet (kept so the schema matches the database) ---
+
+model SponsorEvent {
+  id                  String    @id @default(uuid()) @db.Uuid
+  sponsorId           String    @map("sponsor_id") @db.Uuid
+  eventId             String    @map("event_id") @db.Uuid
+  sponsorshipLevel    String?   @map("sponsorship_level")
+  status              String
+  firstRightToRenew   Boolean   @map("first_right_to_renew")
+  renewalContactDueAt DateTime? @map("renewal_contact_due_at") @db.Timestamptz
+  renewalDeadline     DateTime? @map("renewal_deadline") @db.Timestamptz
+  compedTickets       Int       @map("comped_tickets")
+  notes               String?
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  sponsor Sponsor @relation(fields: [sponsorId], references: [id])
+  event   Event   @relation(fields: [eventId], references: [id])
+
+  @@map("sponsor_events")
+}
+
+model Advertising {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  active      Boolean
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  sponsorAdvertising SponsorAdvertising[]
+
+  @@map("advertising")
+}
+
+model SponsorAdvertising {
+  id            String    @id @default(uuid()) @db.Uuid
+  sponsorId     String    @map("sponsor_id") @db.Uuid
+  advertisingId String    @map("advertising_id") @db.Uuid
+  eventId       String?   @map("event_id") @db.Uuid
+  quantity      Int
+  dueAt         DateTime? @map("due_at") @db.Timestamptz
+  completedAt   DateTime? @map("completed_at") @db.Timestamptz
+  status        String
+  notes         String?
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  sponsor     Sponsor     @relation(fields: [sponsorId], references: [id])
+  advertising Advertising @relation(fields: [advertisingId], references: [id])
+  event       Event?      @relation(fields: [eventId], references: [id])
+
+  @@map("sponsor_advertising")
+}

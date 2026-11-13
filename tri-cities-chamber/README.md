@@ -1,7 +1,7 @@
 # Tri-Cities Chamber: Contracts, Events and Reminders (MVP)
 
-Frontend-only MVP built from the Sept. 28 client meet and greet. Mock data,
-client-side state saved in the browser, no backend.
+MVP built from the Sept. 28 client meet and greet. Data is stored in a
+Supabase (Postgres) database through Prisma and Next.js server actions.
 
 ## Run
 
@@ -14,6 +14,14 @@ npm test        # unit tests (Vitest)
 npm run lint
 npm run build
 ```
+
+### Database setup (Supabase)
+
+1. In the Supabase SQL editor run `supabase/migrations/0001_match_app_fields.sql`, then `supabase/seed.sql` (both are safe to run again).
+2. In Supabase open Connect > ORMs > Prisma and copy the two connection strings into `.env.local` as `DATABASE_URL` (pooled, port 6543) and `DIRECT_URL` (port 5432). Set both on Vercel too.
+3. `npm install` generates the Prisma client (`npm run db:generate` does it again after editing `prisma/schema.prisma`).
+
+The tables are managed in Supabase. Do not run `prisma migrate dev` against it; put changes in a new file in `supabase/migrations/`.
 
 ### Google sign-in setup
 
@@ -56,11 +64,15 @@ components/events/         events page + shared add / edit event dialog
 components/partners/       partners page + add / edit sponsor pop up
 components/planner/        calendar and task components
 components/ui/             shadcn/ui primitives
-hooks/use-planner-store.ts events, tasks, partners, contracts, activity + localStorage
+hooks/use-planner-store.ts events, tasks, partners, contracts, activity; saves to the database
+hooks/planner-reducer.ts   the pure reducer that applies every change
+lib/db/                    actions.ts (server actions), planner-repo.ts (queries), mappers.ts, prisma.ts
+prisma/schema.prisma       the database tables as Prisma models
+supabase/                  SQL migration and seed to run in Supabase
 lib/planner/
   types.ts                 domain types (flat, id-referenced, DB-ready)
-  mock-data.ts             pillars, partners, staff, events, tasks
-  mock-contracts.ts        contracts and activity
+  ids.ts                   UUIDs for new rows
+  mock-data.ts             sample events for tests only
   contracts.ts             filter, sort, group, totals, demo summary and extraction
   events.ts                event categories, times, sorting and form checks
   sponsors.ts              sponsor levels, default to do list, form checks
@@ -70,13 +82,15 @@ lib/planner/
 Contract payments and deliverables are mirrored as tasks (linked by
 `contractItemId`). Ticking one side updates the other.
 
-## Adding the backend later
+## How data is saved
 
-Pages only talk to `usePlannerData()`, which wraps `usePlannerStore()`. Replace
-that hook's internals with database calls and the UI should not need changes.
-Types map onto tables: `events`, `tasks`, `sponsors`, `contracts`,
-`payments`, `deliverables`, `activity`. Pillars and staff are placeholder
-constants in `mock-data.ts`.
+Pages only talk to `usePlannerData()`, which wraps `usePlannerStore()`. A change
+runs through the reducer first (so the screen updates straight away), then the
+store calls a server action in `lib/db/actions.ts` to save it. If a save fails,
+the store reloads from the database and shows an error toast. Tables:
+`events`, `tasks`, `sponsors` (+ `sponsor_todos`), `sponsor_agreements`
+(contracts, + `agreement_payments`, `agreement_deliverables`), `activity_log`,
+`pillars`, `profiles` (staff; made automatically on first sign-in).
 
 ## Docs and AI workflow
 

@@ -21,6 +21,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { buildDemoSummary, formatCurrency, simulateExtraction } from "@/lib/planner/contracts";
 import { formatShortDate, shiftISODate } from "@/lib/planner/dates";
+import { newId } from "@/lib/planner/ids";
 import type { Deliverable, PaymentInstalment } from "@/lib/planner/types";
 
 /** Special dropdown value that means "no event chosen". */
@@ -28,12 +29,10 @@ const NONE = "none";
 /** Special dropdown value that means "add a new partner using the name typed in". */
 const NEW_PARTNER = "new";
 
-/**
- * Makes a unique id for each payment/deliverable row added in the form
- * (the form needs ids before the contract is saved).
+/*
+ * Each payment/deliverable row gets its id from newId() when it is added
+ * (the form needs ids before the contract is saved; the database needs UUIDs).
  */
-let rowCounter = 0;
-const rowId = (prefix: string) => `${prefix}-${Date.now()}-${rowCounter++}`;
 
 /** Error messages to show under fields that were filled in wrong. */
 interface Errors {
@@ -101,7 +100,7 @@ export function ContractForm() {
       if (guess.title) setTitle(guess.title);
       if (guess.amount) setAmount(String(guess.amount));
       if (guess.payments) {
-        setPayments(guess.payments.map((p) => ({ ...p, id: rowId("pay") })));
+        setPayments(guess.payments.map((p) => ({ ...p, id: newId() })));
       }
       setErrors({});
       setAutoFilled(true);
@@ -114,7 +113,7 @@ export function ContractForm() {
     setPayments((rows) => [
       ...rows,
       {
-        id: rowId("pay"),
+        id: newId(),
         label: rows.length === 0 ? "Full payment" : `Instalment ${rows.length + 1}`,
         dueDate: shiftISODate(today, 30),
         amount: 0,
@@ -127,7 +126,7 @@ export function ContractForm() {
   function addDeliverable() {
     setDeliverables((rows) => [
       ...rows,
-      { id: rowId("del"), label: "", dueDate: shiftISODate(today, 14), done: false },
+      { id: newId(), label: "", dueDate: shiftISODate(today, 14), done: false },
     ]);
   }
 

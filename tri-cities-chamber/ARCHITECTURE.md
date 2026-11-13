@@ -19,7 +19,7 @@ Arrow `->` means "uses / shows". Every function also has a comment in its own fi
 ## 2. The 30-second version
 
 ```text
- Browser storage (localStorage)
+ Supabase database  <- lib/db/actions.ts (server actions) -> planner-repo.ts (Prisma)
         ^   |
         |   v
  [1] Store          hooks/use-planner-store.ts      holds + changes the data
@@ -116,9 +116,14 @@ Read as: *file -> files it uses*.
 
 | File | Uses |
 | --- | --- |
-| `hooks/use-planner-store.ts` | `lib/planner/dates`, `mock-data`, `mock-contracts`, `types` |
+| `hooks/use-planner-store.ts` | `planner-reducer`, `lib/db/actions`, `lib/planner/ids`, `types` |
+| `hooks/planner-reducer.ts` | `types` (the pure reducer; every data change happens here) |
+| `lib/db/actions.ts` | `auth`, `planner-repo`, `prisma` (server only; checks the session) |
+| `lib/db/planner-repo.ts` | `mappers`, generated Prisma client (all queries) |
+| `lib/db/mappers.ts` | `types`, `ids` (database rows <-> app types) |
 | `hooks/use-today.ts` | `lib/planner/dates`, `types` |
-| `components/app-shell/planner-provider.tsx` | `use-planner-store`, `use-today`, `lookups`, `mock-data`, `types` |
+| `components/app-shell/planner-provider.tsx` | `use-planner-store`, `use-today`, `lookups`, `types` |
+| `components/app-shell/save-error-toast.tsx` | `planner-provider`, `toast-provider` (red toast when a save fails) |
 | `components/app-shell/app-shell.tsx` | `planner-provider`, `toast-provider`, `reminder-toasts`, `overdue-bell` |
 | `components/app-shell/toast-provider.tsx` | nothing (`useToast()` shows a toast top right) |
 | `components/app-shell/overdue-bell.tsx` | `planner-provider`, `lib/planner/reminders` (header bell with overdue count and list) |
@@ -170,8 +175,8 @@ Read as: *file -> files it uses*.
 | `contracts.ts` | Money, due dates, filter / sort / group contracts | `dates`, `types` |
 | `home.ts` | Paging, search, due-date sort, sidebar event groups and labels for the home page | `dates`, `types` |
 | `reminders.ts` | Which tasks are due in 1-2 days or overdue, and the reminder text | `dates`, `types` |
-| `mock-data.ts` | Demo pillars, partners, staff, events, tasks | `dates`, `types` |
-| `mock-contracts.ts` | Demo contracts and history | `dates`, `types` |
+| `ids.ts` | `newId()` and `isUuid()` (the database uses uuid ids) | nothing |
+| `mock-data.ts` | Sample events for tests only | `dates`, `types` |
 | `utils.ts` | `cn()` joins CSS class names | nothing |
 
 ## 6. The data (what links to what)
@@ -203,8 +208,8 @@ Event     -> belongs to one Pillar
 | Add a page to the menu | `NAV` list in `app-shell.tsx`, plus a new folder in `app/` |
 | Change what data looks like | `lib/planner/types.ts` |
 | Change how data is saved or edited | `hooks/use-planner-store.ts` |
-| Use a real database later | Only `hooks/use-planner-store.ts` (keep the functions it returns the same) |
-| Edit the demo data | `mock-data.ts`, `mock-contracts.ts` |
+| Change how something is saved | `lib/db/planner-repo.ts` (queries) and `hooks/use-planner-store.ts` (which action is called) |
+| Change a database table | new SQL in `supabase/migrations/`, then `prisma/schema.prisma` and `lib/db/mappers.ts` |
 | Change the calendar's look or keyboard keys | `components/planner/month-grid.tsx` |
 | Change how filtering works | `selectors.ts` (tasks, events), `lib/planner/contracts.ts` (contracts) |
 | Add a field to the event form | `components/events/event-form-dialog.tsx`, `lib/planner/events.ts` (checks) and `types.ts` |
@@ -216,4 +221,4 @@ Event     -> belongs to one Pillar
 
 ## 8. Tests
 
-Run `npm test`. Tests sit next to the code they check (`*.test.ts`): `lib/planner/dates`, `selectors`, `contracts`, `reminders`, `events`, `home`, and the store's `reducer` in `hooks/use-planner-store.test.ts`. The reducer is exported so the contract <-> task sync can be tested without a browser.
+Run `npm test`. Tests sit next to the code they check (`*.test.ts`): `lib/planner/dates`, `selectors`, `contracts`, `reminders`, `events`, `home`, the store's `reducer` (`hooks/planner-reducer.ts`) in `hooks/use-planner-store.test.ts`, and `lib/db/planner-repo.db.test.ts`, which runs the real queries only when `TEST_DATABASE_URL` points at a throwaway database. The reducer is exported so the contract <-> task sync can be tested without a browser.

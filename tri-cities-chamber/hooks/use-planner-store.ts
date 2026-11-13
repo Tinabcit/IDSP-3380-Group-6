@@ -1,10 +1,25 @@
 "use client";
 
-import { useCallback, useEffect, useReducer } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { todayISO } from "@/lib/planner/dates";
-import { buildMockEvents, buildMockTasks, SPONSORS, STAFF } from "@/lib/planner/mock-data";
-import { buildMockActivity, buildMockContracts } from "@/lib/planner/mock-contracts";
+import {
+  createContractAction,
+  createEventAction,
+  createSponsorAction,
+  createTaskAction,
+  deleteContractAction,
+  deleteEventAction,
+  deleteTaskAction,
+  loadPlannerData,
+  setContractItemDoneAction,
+  setContractStatusAction,
+  setTaskCompletedAction,
+  updateEventAction,
+  updateSponsorAction,
+  updateTaskAction,
+} from "@/lib/db/actions";
+import type { PlannerSnapshot } from "@/lib/db/planner-repo";
+import { isUuid, newId } from "@/lib/planner/ids";
 import type {
   ActivityEntry,
   ChamberEvent,
@@ -12,321 +27,54 @@ import type {
   ContractInput,
   EventInput,
   ISODate,
+  Pillar,
   Sponsor,
   SponsorInput,
+  StaffMember,
   Task,
   TaskInput,
 } from "@/lib/planner/types";
 
-/**
- * Client-side store for events, tasks, partners and contracts.
- *
- * MVP persistence: localStorage, seeded from mock data on first visit.
- * The public API (addTask, addContract, ...) is what the UI depends on, so
- * swapping the internals for database calls later won't touch components.
- *
- * Contract payments and deliverables are mirrored as tasks (linked by
- * `contractItemId`) so they show up on the calendar and in reminders. Ticking
- * either side updates the other.
- */
+import { reducer, type Action, type PlannerState } from "./planner-reducer";
 
-/**
- * The name the data is saved under in the browser's localStorage.
- * Change the version number (v2) if the shape of the saved data changes,
- * so old saved data is ignored.
- */
-const STORAGE_KEY = "partner-calendar:v2";
+// The reducer used to live in this file; re-exported so older imports keep working.
+export { reducer };
+export type { Action, PlannerState };
 
-/** The lists of data that get saved in the browser. */
-interface Data {
-  events: ChamberEvent[];
-  tasks: Task[];
-  sponsors: Sponsor[];
-  contracts: Contract[];
-  activity: ActivityEntry[];
-}
+/** The browser remembers who was picked in "Signed in as" under this name. */
+const CURRENT_USER_KEY = "partner-calendar:current-user";
 
-/**
- * Everything the store holds: the saved data, plus whether it has loaded yet
- * and who is signed in.
- */
-export interface PlannerState extends Data {
-  status: "loading" | "ready";
-  currentUserId: string;
-}
-
-/**
- * All the things that can change the data (add a task, delete a contract, ...).
- * Each one has a "type" name and the details it needs. logId is an id for the
- * history entry, made before the reducer runs so the reducer stays predictable.
- */
-export type Action =
-  | { type: "hydrate"; data: Data; currentUserId?: string }
-  | { type: "setUser"; id: string }
-  | { type: "addTask"; task: Task; logId: string }
-  | { type: "updateTask"; id: string; input: TaskInput; logId: string }
-  | { type: "toggleTask"; id: string; logId: string }
-  | { type: "deleteTask"; id: string; logId: string }
-  | { type: "addEvent"; event: ChamberEvent; logId: string }
-  | { type: "updateEvent"; id: string; input: EventInput; logId: string }
-  | { type: "deleteEvent"; id: string; logId: string }
-  | { type: "addSponsor"; sponsor: Sponsor }
-  | { type: "updateSponsor"; id: string; input: SponsorInput; logId: string }
-  | { type: "addContract"; contract: Contract; tasks: Task[]; logId: string }
-  | { type: "toggleContractItem"; contractId: string; itemId: string; logId: string }
-  | { type: "setContractStatus"; id: string; status: Contract["status"]; logId: string }
-  | { type: "deleteContract"; id: string; logId: string };
-
-/** Adds a new line to the history list (newest first). Only the latest 200 are kept. */
-function log(
-  state: PlannerState,
-  id: string,
-  message: string,
-  contractId?: string
-): ActivityEntry[] {
-  const entry: ActivityEntry = {
-    id,
-    at: new Date().toISOString(),
-    userId: state.currentUserId,
-    message,
-    contractId,
-  };
-  // Keep the history bounded so localStorage never fills up.
-  return [entry, ...state.activity].slice(0, 200);
-}
-
-/**
- * The "reducer": one function that takes the current data plus an action and
- * returns the new data. All data changes happen here. Special cases:
- * - ticking a task made from a contract also ticks the payment/deliverable
- * - ticking a payment/deliverable also ticks its task
- * - deleting a contract also deletes the tasks made from it
- */
-export function reducer(state: PlannerState, action: Action): PlannerState {
-  switch (action.type) {
-    case "hydrate":
-      return {
-        ...state,
-        ...action.data,
-        status: "ready",
-        currentUserId: action.currentUserId ?? state.currentUserId,
-      };
-    case "setUser":
-      return { ...state, currentUserId: action.id };
-
-    case "addTask":
-      return {
-        ...state,
-        tasks: [...state.tasks, action.task],
-        activity: log(state, action.logId, `Added task "${action.task.title}"`, action.task.contractId),
-      };
-    case "updateTask":
-      return {
-        ...state,
-        tasks: state.tasks.map((t) => (t.id === action.id ? { ...t, ...action.input } : t)),
-        activity: log(state, action.logId, `Edited task "${action.input.title}"`),
-      };
-    case "toggleTask": {
-      const task = state.tasks.find((t) => t.id === action.id);
-      if (!task) return state;
-      const completed = !task.completed;
-      const syncItem = task.contractId && task.contractItemId;
-      return {
-        ...state,
-        tasks: state.tasks.map((t) => (t.id === task.id ? { ...t, completed } : t)),
-        contracts: syncItem
-          ? state.contracts.map((c) =>
-              c.id === task.contractId ? setItemDone(c, task.contractItemId!, completed) : c
-            )
-          : state.contracts,
-        activity: log(
-          state,
-          action.logId,
-          `Marked "${task.title}" as ${completed ? "done" : "not done"}`,
-          task.contractId
-        ),
-      };
-    }
-    case "deleteTask": {
-      const task = state.tasks.find((t) => t.id === action.id);
-      if (!task) return state;
-      return {
-        ...state,
-        tasks: state.tasks.filter((t) => t.id !== action.id),
-        activity: log(state, action.logId, `Deleted task "${task.title}"`, task.contractId),
-      };
-    }
-
-    case "addEvent":
-      return {
-        ...state,
-        events: [...state.events, action.event],
-        activity: log(state, action.logId, `Added event ${action.event.name}`),
-      };
-    case "updateEvent": {
-      if (!state.events.some((e) => e.id === action.id)) return state;
-      return {
-        ...state,
-        events: state.events.map((e) => (e.id === action.id ? { ...action.input, id: e.id } : e)),
-        activity: log(state, action.logId, `Edited event ${action.input.name}`),
-      };
-    }
-    case "deleteEvent": {
-      const event = state.events.find((e) => e.id === action.id);
-      if (!event) return state;
-      // Tasks and contracts stay, they just stop pointing at the deleted event.
-      return {
-        ...state,
-        events: state.events.filter((e) => e.id !== action.id),
-        tasks: state.tasks.map((t) => (t.eventId === action.id ? { ...t, eventId: undefined } : t)),
-        contracts: state.contracts.map((c) =>
-          c.eventId === action.id ? { ...c, eventId: undefined } : c
-        ),
-        activity: log(state, action.logId, `Deleted event ${event.name}`),
-      };
-    }
-    case "addSponsor":
-      return { ...state, sponsors: [...state.sponsors, action.sponsor] };
-    case "updateSponsor": {
-      if (!state.sponsors.some((s) => s.id === action.id)) return state;
-      return {
-        ...state,
-        sponsors: state.sponsors.map((s) => (s.id === action.id ? { ...action.input, id: s.id } : s)),
-        activity: log(state, action.logId, `Edited sponsor ${action.input.name}`),
-      };
-    }
-
-    case "addContract":
-      return {
-        ...state,
-        contracts: [action.contract, ...state.contracts],
-        tasks: [...state.tasks, ...action.tasks],
-        activity: log(state, action.logId, `Added contract ${action.contract.title}`, action.contract.id),
-      };
-    case "toggleContractItem": {
-      const contract = state.contracts.find((c) => c.id === action.contractId);
-      if (!contract) return state;
-      const payment = contract.payments.find((p) => p.id === action.itemId);
-      const deliverable = contract.deliverables.find((d) => d.id === action.itemId);
-      const label = (payment ?? deliverable)?.label;
-      if (!label) return state;
-      const done = !(payment ? payment.paid : deliverable!.done);
-      const verb = payment ? (done ? "paid" : "unpaid") : done ? "done" : "not done";
-      return {
-        ...state,
-        contracts: state.contracts.map((c) =>
-          c.id === contract.id ? setItemDone(c, action.itemId, done) : c
-        ),
-        tasks: state.tasks.map((t) =>
-          t.contractItemId === action.itemId ? { ...t, completed: done } : t
-        ),
-        activity: log(
-          state,
-          action.logId,
-          `Marked "${label}" as ${verb} on ${contract.title}`,
-          contract.id
-        ),
-      };
-    }
-    case "setContractStatus": {
-      const contract = state.contracts.find((c) => c.id === action.id);
-      if (!contract) return state;
-      return {
-        ...state,
-        contracts: state.contracts.map((c) =>
-          c.id === action.id ? { ...c, status: action.status } : c
-        ),
-        activity: log(state, action.logId, `Set ${contract.title} to ${action.status}`, contract.id),
-      };
-    }
-    case "deleteContract": {
-      const contract = state.contracts.find((c) => c.id === action.id);
-      if (!contract) return state;
-      return {
-        ...state,
-        contracts: state.contracts.filter((c) => c.id !== action.id),
-        tasks: state.tasks.filter((t) => t.contractId !== action.id),
-        activity: log(state, action.logId, `Deleted contract ${contract.title}`),
-      };
-    }
-  }
-}
-
-/** Marks one payment as paid (or one deliverable as done) on a contract. */
-function setItemDone(contract: Contract, itemId: string, done: boolean): Contract {
-  return {
-    ...contract,
-    payments: contract.payments.map((p) => (p.id === itemId ? { ...p, paid: done } : p)),
-    deliverables: contract.deliverables.map((d) => (d.id === itemId ? { ...d, done } : d)),
-  };
-}
-
-/**
- * Makes a fresh set of demo data. Dates are based on today, so the calendar
- * always looks current.
- */
-function seed(): Data {
-  const today = todayISO();
-  return {
-    events: buildMockEvents(today),
-    tasks: buildMockTasks(today),
-    sponsors: SPONSORS,
-    contracts: buildMockContracts(today),
-    activity: buildMockActivity(),
-  };
-}
-
-/** What gets saved in the browser: the data plus who is signed in. */
-interface Stored extends Data {
-  currentUserId?: string;
-}
-
-/**
- * Reads the saved data from the browser and checks it looks right.
- * Returns null if there is none or it is broken (then we use demo data instead).
- */
-function readStorage(): Stored | null {
+/** Reads who was last picked in "Signed in as" (null if nothing saved or storage is blocked). */
+function readSavedUserId(): string | null {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<Stored> | null;
-    if (
-      parsed &&
-      Array.isArray(parsed.events) &&
-      Array.isArray(parsed.tasks) &&
-      Array.isArray(parsed.sponsors) &&
-      Array.isArray(parsed.contracts) &&
-      Array.isArray(parsed.activity)
-    ) {
-      return parsed as Stored;
-    }
-    return null;
+    return window.localStorage.getItem(CURRENT_USER_KEY);
   } catch {
     return null;
   }
 }
 
-/**
- * Saves the data in the browser. If saving fails (e.g. storage is full) it is
- * ignored, so the app still works - it just won't remember things.
- */
-function writeStorage(stored: Stored) {
+/** Remembers who was picked in "Signed in as". Failing to save is ignored. */
+function writeSavedUserId(id: string) {
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+    window.localStorage.setItem(CURRENT_USER_KEY, id);
   } catch {
-    // Storage full or blocked (private mode). The app keeps working in memory.
+    // Storage blocked (private mode). The choice just will not be remembered.
   }
 }
 
 /**
- * Makes a unique id such as "task-3f2a...". Uses a built-in generator when the
- * browser has one, otherwise the time plus a random number.
+ * The history line an action just added, so the same line can be saved to
+ * the database. Undefined when the action did not add one.
  */
-function createId(prefix: string): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return `${prefix}-${crypto.randomUUID()}`;
-  }
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+function newEntry(next: PlannerState, logId: string): ActivityEntry | undefined {
+  const first = next.activity[0];
+  return first && first.id === logId ? first : undefined;
+}
+
+/** Gives every sponsor to do a UUID (the default list uses fixed ids like "todo-logo"). */
+function withTodoIds<T extends SponsorInput>(input: T): T {
+  if (!input.todos) return input;
+  return { ...input, todos: input.todos.map((t) => (isUuid(t.id) ? t : { ...t, id: newId() })) };
 }
 
 /** Extra settings for creating a contract. */
@@ -335,115 +83,233 @@ export interface NewContractOptions {
   assigneeId: string;
 }
 
+/** What the store holds before the database has answered. */
+const INITIAL_STATE: PlannerState = {
+  status: "loading",
+  events: [],
+  tasks: [],
+  sponsors: [],
+  contracts: [],
+  activity: [],
+  currentUserId: "",
+};
+
 /**
  * The one hook that holds all the app data. It is called ONCE, in
  * PlannerProvider; other components get the data with usePlannerData().
  * It gives back the data lists plus functions to change them (add, update,
  * toggle, delete, ...).
+ *
+ * Data comes from the Supabase database through the server actions in
+ * lib/db/actions.ts. Every change is shown straight away (the reducer above
+ * runs first) and then saved to the database. If a save fails, the store
+ * reloads everything from the database so the screen matches what was really
+ * saved, and saveError is set so the app can tell the person. loadError stays
+ * set if the first load failed, so the pages can say so instead of "Loading".
  */
 export function usePlannerStore() {
-  const [state, dispatch] = useReducer(reducer, {
-    status: "loading",
-    events: [],
-    tasks: [],
-    sponsors: [],
-    contracts: [],
-    activity: [],
-    currentUserId: STAFF[0].id,
-  });
+  const [state, setState] = useState<PlannerState>(INITIAL_STATE);
+  // The latest state, readable straight away (state itself only updates on the next render).
+  const stateRef = useRef<PlannerState>(INITIAL_STATE);
+  const [pillars, setPillars] = useState<Pillar[]>([]);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  // Load on the client only, so server and client markup match.
-  useEffect(() => {
-    const stored = readStorage();
-    dispatch({
-      type: "hydrate",
-      data: stored ?? seed(),
-      currentUserId: stored?.currentUserId,
-    });
+  /** Runs an action through the reducer, shows the result, and returns the state before and after. */
+  const apply = useCallback((action: Action) => {
+    const prev = stateRef.current;
+    const next = reducer(prev, action);
+    stateRef.current = next;
+    setState(next);
+    return { prev, next };
   }, []);
 
+  /** Puts a freshly loaded database snapshot into the store. Null means nobody is signed in. */
+  const applySnapshot = useCallback(
+    (snapshot: PlannerSnapshot | null) => {
+      if (!snapshot) return; // Nobody signed in (landing page).
+      setPillars(snapshot.pillars);
+      setStaff(snapshot.staff);
+      // Keep the person picked in "Signed in as" if they still exist, otherwise use who signed in.
+      const saved = readSavedUserId();
+      const keepSaved = saved !== null && snapshot.staff.some((s) => s.id === saved);
+      apply({
+        type: "hydrate",
+        data: snapshot.data,
+        currentUserId: keepSaved ? saved : snapshot.currentProfileId,
+      });
+    },
+    [apply]
+  );
+
+  /** Loads everything from the database and replaces what the store holds. */
+  const load = useCallback(() => loadPlannerData().then(applySnapshot), [applySnapshot]);
+
+  // Load once, on the client.
   useEffect(() => {
-    if (state.status !== "ready") return;
-    const { events, tasks, sponsors, contracts, activity, currentUserId } = state;
-    writeStorage({ events, tasks, sponsors, contracts, activity, currentUserId });
-  }, [state]);
+    loadPlannerData()
+      .then(applySnapshot)
+      .catch((error) => {
+        console.error("Could not load data from the database", error);
+        const message = "Could not load data from the database. Check the connection and refresh.";
+        setLoadError(message);
+        setSaveError(message);
+      });
+  }, [applySnapshot]);
+
+  /**
+   * Waits for a database save in the background. If it fails, tells the person
+   * and reloads, so the screen does not show a change that was not saved.
+   */
+  const save = useCallback(
+    (write: Promise<unknown>) => {
+      write.catch((error) => {
+        console.error("Could not save to the database", error);
+        setSaveError("Your last change could not be saved. The page now shows what is in the database.");
+        load().catch((reloadError) => console.error("Could not reload data", reloadError));
+      });
+    },
+    [load]
+  );
+
+  /** Clears the save error once it has been shown. */
+  const clearSaveError = useCallback(() => setSaveError(null), []);
 
   /** Changes who is signed in (used in the history and as the default assignee). */
-  const setCurrentUser = useCallback((id: string) => dispatch({ type: "setUser", id }), []);
+  const setCurrentUser = useCallback(
+    (id: string) => {
+      writeSavedUserId(id);
+      apply({ type: "setUser", id });
+    },
+    [apply]
+  );
 
   /** Creates a new task (not done yet) from the form values and records it in the history. */
-  const addTask = useCallback((input: TaskInput) => {
-    dispatch({
-      type: "addTask",
-      logId: createId("act"),
-      task: {
-        ...input,
-        id: createId("task"),
-        completed: false,
-        createdAt: new Date().toISOString(),
-      },
-    });
-  }, []);
+  const addTask = useCallback(
+    (input: TaskInput) => {
+      const logId = newId();
+      const task: Task = { ...input, id: newId(), completed: false, createdAt: new Date().toISOString() };
+      const { next } = apply({ type: "addTask", task, logId });
+      save(createTaskAction(task, newEntry(next, logId)));
+    },
+    [apply, save]
+  );
 
   /** Updates the fields of an existing task. */
-  const updateTask = useCallback((id: string, input: TaskInput) => {
-    dispatch({ type: "updateTask", id, input, logId: createId("act") });
-  }, []);
+  const updateTask = useCallback(
+    (id: string, input: TaskInput) => {
+      const logId = newId();
+      const { prev, next } = apply({ type: "updateTask", id, input, logId });
+      if (prev === next) return;
+      save(updateTaskAction(id, input, newEntry(next, logId)));
+    },
+    [apply, save]
+  );
 
   /** Ticks or unticks a task (and its matching payment/deliverable, if it has one). */
-  const toggleTask = useCallback((id: string) => {
-    dispatch({ type: "toggleTask", id, logId: createId("act") });
-  }, []);
+  const toggleTask = useCallback(
+    (id: string) => {
+      const logId = newId();
+      const { prev, next } = apply({ type: "toggleTask", id, logId });
+      const task = next.tasks.find((t) => t.id === id);
+      if (prev === next || !task) return;
+      save(setTaskCompletedAction(id, task.completed, newEntry(next, logId)));
+    },
+    [apply, save]
+  );
 
   /** Deletes a task. The contract it came from is not changed. */
-  const deleteTask = useCallback((id: string) => {
-    dispatch({ type: "deleteTask", id, logId: createId("act") });
-  }, []);
+  const deleteTask = useCallback(
+    (id: string) => {
+      const logId = newId();
+      const { prev, next } = apply({ type: "deleteTask", id, logId });
+      if (prev === next) return;
+      save(deleteTaskAction(id, newEntry(next, logId)));
+    },
+    [apply, save]
+  );
 
   /** Adds an event and returns its new id. */
-  const addEvent = useCallback((input: EventInput): string => {
-    const id = createId("event");
-    dispatch({ type: "addEvent", event: { ...input, id }, logId: createId("act") });
-    return id;
-  }, []);
+  const addEvent = useCallback(
+    (input: EventInput): string => {
+      const id = newId();
+      const logId = newId();
+      const event: ChamberEvent = { ...input, id };
+      const { next } = apply({ type: "addEvent", event, logId });
+      save(createEventAction(event, newEntry(next, logId)));
+      return id;
+    },
+    [apply, save]
+  );
 
   /** Replaces the fields of an existing event. */
-  const updateEvent = useCallback((id: string, input: EventInput) => {
-    dispatch({ type: "updateEvent", id, input, logId: createId("act") });
-  }, []);
+  const updateEvent = useCallback(
+    (id: string, input: EventInput) => {
+      const logId = newId();
+      const { prev, next } = apply({ type: "updateEvent", id, input, logId });
+      if (prev === next) return;
+      save(updateEventAction(id, input, newEntry(next, logId)));
+    },
+    [apply, save]
+  );
 
   /** Deletes an event. Its tasks and contracts are kept but no longer linked to it. */
-  const deleteEvent = useCallback((id: string) => {
-    dispatch({ type: "deleteEvent", id, logId: createId("act") });
-  }, []);
+  const deleteEvent = useCallback(
+    (id: string) => {
+      const logId = newId();
+      const { prev, next } = apply({ type: "deleteEvent", id, logId });
+      if (prev === next) return;
+      save(deleteEventAction(id, newEntry(next, logId)));
+    },
+    [apply, save]
+  );
 
   /** Adds a partner (sponsor) and returns its new id. */
-  const addSponsor = useCallback((input: SponsorInput): string => {
-    const id = createId("sponsor");
-    dispatch({ type: "addSponsor", sponsor: { ...input, id } });
-    return id;
-  }, []);
+  const addSponsor = useCallback(
+    (input: SponsorInput): string => {
+      const id = newId();
+      const sponsor: Sponsor = { ...withTodoIds(input), id };
+      apply({ type: "addSponsor", sponsor });
+      save(createSponsorAction(sponsor));
+      return id;
+    },
+    [apply, save]
+  );
 
   /** Replaces the fields of an existing sponsor. */
-  const updateSponsor = useCallback((id: string, input: SponsorInput) => {
-    dispatch({ type: "updateSponsor", id, input, logId: createId("act") });
-  }, []);
+  const updateSponsor = useCallback(
+    (id: string, input: SponsorInput) => {
+      const logId = newId();
+      const fixed = withTodoIds(input);
+      const { prev, next } = apply({ type: "updateSponsor", id, input: fixed, logId });
+      if (prev === next) return;
+      save(updateSponsorAction(id, fixed, newEntry(next, logId)));
+    },
+    [apply, save]
+  );
 
   /**
    * Saves the contract and creates a reminder task for every unpaid payment
    * and unfinished deliverable, so entry is one step instead of two.
    */
   const addContract = useCallback(
-    (input: ContractInput, { assigneeId }: NewContractOptions): string => {
-      const id = createId("contract");
+    (raw: ContractInput, { assigneeId }: NewContractOptions): string => {
+      const id = newId();
       const now = new Date().toISOString();
+      // Payment and deliverable rows need UUIDs too (the form may have made other ids).
+      const input: ContractInput = {
+        ...raw,
+        payments: raw.payments.map((p) => (isUuid(p.id) ? p : { ...p, id: newId() })),
+        deliverables: raw.deliverables.map((d) => (isUuid(d.id) ? d : { ...d, id: newId() })),
+      };
       const base = { assigneeId, eventId: input.eventId, sponsorId: input.sponsorId, contractId: id };
       const tasks: Task[] = [
         ...input.payments
           .filter((p) => !p.paid)
           .map((p) => ({
             ...base,
-            id: createId("task"),
+            id: newId(),
             title: `${input.title}: ${p.label}`,
             dueDate: p.dueDate,
             completed: false,
@@ -454,7 +320,7 @@ export function usePlannerStore() {
           .filter((d) => !d.done)
           .map((d) => ({
             ...base,
-            id: createId("task"),
+            id: newId(),
             title: d.label,
             dueDate: d.dueDate,
             completed: false,
@@ -462,36 +328,56 @@ export function usePlannerStore() {
             createdAt: now,
           })),
       ];
-      dispatch({
-        type: "addContract",
-        contract: { ...input, id, createdAt: now },
-        tasks,
-        logId: createId("act"),
-      });
+      const contract: Contract = { ...input, id, createdAt: now };
+      const logId = newId();
+      const { next } = apply({ type: "addContract", contract, tasks, logId });
+      save(createContractAction(contract, tasks, newEntry(next, logId)));
       return id;
     },
-    []
+    [apply, save]
   );
 
   /** Ticks or unticks a payment/deliverable on a contract (and its matching task). */
-  const toggleContractItem = useCallback((contractId: string, itemId: string) => {
-    dispatch({ type: "toggleContractItem", contractId, itemId, logId: createId("act") });
-  }, []);
+  const toggleContractItem = useCallback(
+    (contractId: string, itemId: string) => {
+      const logId = newId();
+      const { prev, next } = apply({ type: "toggleContractItem", contractId, itemId, logId });
+      const contract = next.contracts.find((c) => c.id === contractId);
+      const payment = contract?.payments.find((p) => p.id === itemId);
+      const deliverable = contract?.deliverables.find((d) => d.id === itemId);
+      if (prev === next || (!payment && !deliverable)) return;
+      const done = payment ? payment.paid : deliverable!.done;
+      save(setContractItemDoneAction(contractId, itemId, done, newEntry(next, logId)));
+    },
+    [apply, save]
+  );
 
   /** Changes a contract's status: draft, active or completed. */
-  const setContractStatus = useCallback((id: string, status: Contract["status"]) => {
-    dispatch({ type: "setContractStatus", id, status, logId: createId("act") });
-  }, []);
+  const setContractStatus = useCallback(
+    (id: string, status: Contract["status"]) => {
+      const logId = newId();
+      const { prev, next } = apply({ type: "setContractStatus", id, status, logId });
+      if (prev === next) return;
+      save(setContractStatusAction(id, status, newEntry(next, logId)));
+    },
+    [apply, save]
+  );
 
   /** Deletes a contract and all the tasks made from it. */
-  const deleteContract = useCallback((id: string) => {
-    dispatch({ type: "deleteContract", id, logId: createId("act") });
-  }, []);
+  const deleteContract = useCallback(
+    (id: string) => {
+      const logId = newId();
+      const { prev, next } = apply({ type: "deleteContract", id, logId });
+      if (prev === next) return;
+      save(deleteContractAction(id, newEntry(next, logId)));
+    },
+    [apply, save]
+  );
 
-  /** Deletes everything and loads the demo data again. */
-  const resetDemoData = useCallback(() => {
-    dispatch({ type: "hydrate", data: seed() });
-  }, []);
+  /** Loads everything again from the database (picks up changes made by teammates). */
+  const reloadData = useCallback(async () => {
+    await load();
+  }, [load]);
 
   /** Everything the app holds, as a JSON string suitable for a backup file. */
   const exportBackup = useCallback((exportedOn: ISODate): string => {
@@ -506,7 +392,12 @@ export function usePlannerStore() {
     sponsors: state.sponsors,
     contracts: state.contracts,
     activity: state.activity,
+    pillars,
+    staff,
     currentUserId: state.currentUserId,
+    saveError,
+    loadError,
+    clearSaveError,
     setCurrentUser,
     addTask,
     updateTask,
@@ -521,7 +412,7 @@ export function usePlannerStore() {
     toggleContractItem,
     setContractStatus,
     deleteContract,
-    resetDemoData,
+    reloadData,
     exportBackup,
   };
 }

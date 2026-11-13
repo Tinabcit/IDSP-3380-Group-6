@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Prisma writes this folder (npx prisma generate); it is not hand-written code.
+    "lib/generated/**",
   ]),
 ]);
 

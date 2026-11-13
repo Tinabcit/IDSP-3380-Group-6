@@ -11,3 +11,6 @@ node_modules
 
 # bugs
 bugs
+
+# Prisma client (made by `npx prisma generate`, runs on npm install)
+**/lib/generated/prisma
