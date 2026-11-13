@@ -12,6 +12,10 @@ config();
  */
 export default defineConfig({
   schema: "prisma/schema.prisma",
+  // `npx prisma db seed` (or `npm run db:seed`) runs this. See prisma/seed.ts.
+  migrations: {
+    seed: "tsx prisma/seed.ts",
+  },
   datasource: {
     url: process.env.DIRECT_URL ?? process.env.DATABASE_URL ?? "",
   },

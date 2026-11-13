@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "postinstall": "prisma generate",
-    "db:generate": "prisma generate"
+    "db:generate": "prisma generate",
+    "db:seed": "prisma db seed"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.1",
@@ -46,6 +47,7 @@
     "eslint-config-next": "16.4.0",
     "prisma": "^7.10.1",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.0.3"
   }

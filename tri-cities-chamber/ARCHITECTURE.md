@@ -176,7 +176,9 @@ Read as: *file -> files it uses*.
 | `home.ts` | Paging, search, due-date sort, sidebar event groups and labels for the home page | `dates`, `types` |
 | `reminders.ts` | Which tasks are due in 1-2 days or overdue, and the reminder text | `dates`, `types` |
 | `ids.ts` | `newId()` and `isUuid()` (the database uses uuid ids) | nothing |
-| `mock-data.ts` | Sample events for tests only | `dates`, `types` |
+| `mock-data.ts` | Demo pillars, partners, staff, events, tasks (loaded by `npm run db:seed`; also used in tests) | `dates`, `types` |
+| `mock-contracts.ts` | Demo contracts and history (loaded by `npm run db:seed`) | `dates`, `types` |
+| `lib/db/demo-seed.ts` | Turns the demo data into fixed UUIDs and writes it (run by `prisma/seed.ts`) | `mock-data`, `mock-contracts`, `planner-repo` |
 | `utils.ts` | `cn()` joins CSS class names | nothing |
 
 ## 6. The data (what links to what)
@@ -209,6 +211,7 @@ Event     -> belongs to one Pillar
 | Change what data looks like | `lib/planner/types.ts` |
 | Change how data is saved or edited | `hooks/use-planner-store.ts` |
 | Change how something is saved | `lib/db/planner-repo.ts` (queries) and `hooks/use-planner-store.ts` (which action is called) |
+| Change the demo / seed data | `mock-data.ts`, `mock-contracts.ts`, then `npm run db:seed` |
 | Change a database table | new SQL in `supabase/migrations/`, then `prisma/schema.prisma` and `lib/db/mappers.ts` |
 | Change the calendar's look or keyboard keys | `components/planner/month-grid.tsx` |
 | Change how filtering works | `selectors.ts` (tasks, events), `lib/planner/contracts.ts` (contracts) |

@@ -17,9 +17,12 @@ npm run build
 
 ### Database setup (Supabase)
 
-1. In the Supabase SQL editor run `supabase/migrations/0001_match_app_fields.sql`, then `supabase/seed.sql` (both are safe to run again).
+1. In the Supabase SQL editor run `supabase/migrations/0001_match_app_fields.sql` (safe to run again).
 2. In Supabase open Connect > ORMs > Prisma and copy the two connection strings into `.env.local` as `DATABASE_URL` (pooled, port 6543) and `DIRECT_URL` (port 5432). Set both on Vercel too.
 3. `npm install` generates the Prisma client (`npm run db:generate` does it again after editing `prisma/schema.prisma`).
+4. Seed it:
+   - `npm run db:seed` (same as `npx prisma db seed`) adds the four pillars plus the demo partners, events, contracts, tasks and staff. Run it again any time to reset the demo rows to fresh dates; it never duplicates them and leaves rows people added alone. The demo rows are visible to everyone using that database.
+   - For a real database without demo data, run `supabase/seed.sql` in the SQL editor instead. It adds only the four pillars.
 
 The tables are managed in Supabase. Do not run `prisma migrate dev` against it; put changes in a new file in `supabase/migrations/`.
 
@@ -66,13 +69,16 @@ components/planner/        calendar and task components
 components/ui/             shadcn/ui primitives
 hooks/use-planner-store.ts events, tasks, partners, contracts, activity; saves to the database
 hooks/planner-reducer.ts   the pure reducer that applies every change
-lib/db/                    actions.ts (server actions), planner-repo.ts (queries), mappers.ts, prisma.ts
+lib/db/                    actions.ts (server actions), planner-repo.ts (queries), mappers.ts, prisma.ts,
+                           demo-seed.ts (what npm run db:seed writes)
+prisma/seed.ts             the seed command
 prisma/schema.prisma       the database tables as Prisma models
 supabase/                  SQL migration and seed to run in Supabase
 lib/planner/
   types.ts                 domain types (flat, id-referenced, DB-ready)
   ids.ts                   UUIDs for new rows
-  mock-data.ts             sample events for tests only
+  mock-data.ts             demo pillars, partners, staff, events, tasks (seed + tests)
+  mock-contracts.ts        demo contracts and history (seed + tests)
   contracts.ts             filter, sort, group, totals, demo summary and extraction
   events.ts                event categories, times, sorting and form checks
   sponsors.ts              sponsor levels, default to do list, form checks

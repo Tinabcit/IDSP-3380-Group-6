@@ -1,11 +1,77 @@
 import { shiftISODate } from "./dates";
-import type { ChamberEvent, ISODate } from "./types";
+import type {
+  ChamberEvent,
+  ISODate,
+  Pillar,
+  Sponsor,
+  StaffMember,
+  Task,
+} from "./types";
 
 /**
- * Sample events used by the unit tests only (lib/planner/events.test.ts).
- * The app itself no longer uses mock data: everything comes from the Supabase
- * database (see lib/db/). Do not import this file from app code.
+ * Demo data. The app itself does not use it any more (everything comes from
+ * the database); it is loaded INTO the database by the seed command
+ * (`npm run db:seed`, see prisma/seed.ts) and used by some unit tests.
+ * Ids here are readable names; the seed turns each one into a fixed UUID.
+ * Dates are relative to "today" so the calendar always has something to show.
  */
+
+/** The chamber's focus areas ("pillars"). Every event belongs to one. Fixed list (not saved in the browser). */
+export const PILLARS: Pillar[] = [
+  { id: "pillar-advocacy", name: "Advocacy" },
+  { id: "pillar-networking", name: "Networking" },
+  { id: "pillar-education", name: "Education" },
+  { id: "pillar-community", name: "Community" },
+];
+
+/**
+ * The starting list of partners (sponsors). Copied into the store the first time
+ * the app loads; more can be added in the app.
+ */
+export const SPONSORS: Sponsor[] = [
+  {
+    id: "sponsor-coastline",
+    name: "Coastline Credit Union",
+    contactName: "Alicia Tran",
+    contactEmail: "alicia@coastlinecu.example",
+    contactPhone: "604-555-0142",
+  },
+  {
+    id: "sponsor-harbour",
+    name: "Harbour Insurance",
+    contactName: "Greg Mahler",
+    contactEmail: "greg@harbourins.example",
+    contactPhone: "604-555-0178",
+  },
+  {
+    id: "sponsor-ridgeway",
+    name: "Ridgeway Builders",
+    contactName: "Samira Qureshi",
+    contactEmail: "samira@ridgeway.example",
+    contactPhone: "604-555-0109",
+  },
+  {
+    id: "sponsor-northshore",
+    name: "North Shore Dental",
+    contactName: "Dr. Paul Lee",
+    contactEmail: "office@northshoredental.example",
+  },
+  {
+    id: "sponsor-pacific",
+    name: "Pacific Print Co.",
+    contactName: "Jenna Wirth",
+    contactEmail: "jenna@pacificprint.example",
+    contactPhone: "604-555-0166",
+  },
+];
+
+/** The staff members who can be "signed in" and be given tasks. Fixed list. */
+export const STAFF: StaffMember[] = [
+  { id: "staff-maria", name: "Maria Chen", initials: "MC" },
+  { id: "staff-daniel", name: "Daniel Okafor", initials: "DO" },
+  { id: "staff-priya", name: "Priya Sandhu", initials: "PS" },
+  { id: "staff-intern", name: "Intern", initials: "IN" },
+];
 
 /** Makes the demo events. Dates are based on today so the calendar always has something to show. */
 export function buildMockEvents(today: ISODate): ChamberEvent[] {
@@ -91,6 +157,117 @@ export function buildMockEvents(today: ISODate): ChamberEvent[] {
       category: "networking",
       startTime: "17:00",
       endTime: "19:00",
+    },
+  ];
+}
+
+/**
+ * Makes the demo tasks (some overdue, some done). Dates are based on today.
+ * They point to events, sponsors and staff using ids.
+ */
+export function buildMockTasks(today: ISODate): Task[] {
+  const d = (offset: number) => shiftISODate(today, offset);
+  const createdAt = new Date().toISOString();
+  return [
+    {
+      id: "task-1",
+      title: "Collect logo files for gala program",
+      dueDate: d(-1),
+      completed: false,
+      assigneeId: "staff-priya",
+      eventId: "event-gala",
+      sponsorId: "sponsor-coastline",
+      contractId: "contract-gala-coastline",
+      notes: "Need vector (SVG or EPS). Printer deadline is firm.",
+      createdAt,
+    },
+    {
+      id: "task-2",
+      title: "Confirm table count with sponsor",
+      dueDate: d(0),
+      completed: false,
+      assigneeId: "staff-maria",
+      eventId: "event-gala",
+      sponsorId: "sponsor-harbour",
+      createdAt,
+    },
+    {
+      id: "task-3",
+      title: "Send breakfast sponsor recognition slide",
+      dueDate: d(0),
+      completed: true,
+      assigneeId: "staff-intern",
+      eventId: "event-breakfast",
+      sponsorId: "sponsor-northshore",
+      createdAt,
+    },
+    {
+      id: "task-4",
+      title: "Signage proof approval",
+      dueDate: d(3),
+      completed: false,
+      assigneeId: "staff-daniel",
+      eventId: "event-gala",
+      sponsorId: "sponsor-pacific",
+      createdAt,
+    },
+    {
+      id: "task-5",
+      title: "Invoice second sponsorship instalment",
+      dueDate: d(4),
+      completed: false,
+      assigneeId: "staff-maria",
+      sponsorId: "sponsor-ridgeway",
+      contractId: "contract-golf-ridgeway",
+      notes: "Per contract, 50% due 30 days before golf classic.",
+      createdAt,
+    },
+    {
+      id: "task-6",
+      title: "Hole sponsor sign list to printer",
+      dueDate: d(14),
+      completed: false,
+      assigneeId: "staff-priya",
+      eventId: "event-golf",
+      sponsorId: "sponsor-ridgeway",
+      createdAt,
+    },
+    {
+      id: "task-7",
+      title: "Post-summit thank-you to sponsors",
+      dueDate: d(-3),
+      completed: true,
+      assigneeId: "staff-daniel",
+      eventId: "event-summit",
+      sponsorId: "sponsor-coastline",
+      createdAt,
+    },
+    {
+      id: "task-8",
+      title: "Book workshop speaker AV",
+      dueDate: d(-2),
+      completed: false,
+      assigneeId: "staff-intern",
+      eventId: "event-workshop",
+      createdAt,
+    },
+    {
+      id: "task-9",
+      title: "Draft roundtable briefing note",
+      dueDate: d(11),
+      completed: false,
+      assigneeId: "staff-daniel",
+      eventId: "event-policy",
+      createdAt,
+    },
+    {
+      id: "task-10",
+      title: "Confirm gala catering headcount",
+      dueDate: d(1),
+      completed: false,
+      assigneeId: "staff-maria",
+      eventId: "event-gala",
+      createdAt,
     },
   ];
 }
