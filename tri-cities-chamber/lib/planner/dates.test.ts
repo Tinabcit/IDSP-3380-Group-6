@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   describeRelativeDay,
+  formatOrdinalDate,
   formatShortDate,
   fromISODate,
   getMonthGrid,
@@ -8,6 +9,16 @@ import {
   shiftISODate,
   toISODate,
 } from '@/lib/planner/dates';
+
+// Tests for formatOrdinalDate: "October 5th, 2024" style dates.
+describe('formatOrdinalDate', () => {
+  it('writes the month in full with an ordinal day and the year', () => {
+    expect(formatOrdinalDate('2024-10-05')).toBe('October 5th, 2024');
+    expect(formatOrdinalDate('2024-10-01')).toBe('October 1st, 2024');
+    expect(formatOrdinalDate('2024-10-22')).toBe('October 22nd, 2024');
+    expect(formatOrdinalDate('2024-10-13')).toBe('October 13th, 2024');
+  });
+});
 
 // Tests for the date helpers: they are pure functions, so they are the easiest place to start.
 describe('dates', () => {
