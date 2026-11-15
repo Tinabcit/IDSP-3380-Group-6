@@ -31,6 +31,7 @@ import {
 import { paginate, searchTasks, sortByDueDate } from "@/lib/planner/home";
 import { getTaskStatus } from "@/lib/planner/selectors";
 import type { ISODate, Task } from "@/lib/planner/types";
+import TaskDetails, {type TaskInfo, } from "@/components/TaskDetails";
 import { cn } from "@/lib/utils";
 
 /** How many rows the table shows per page. */
@@ -70,6 +71,8 @@ export function HomePage() {
   const [due, setDue] = useState<(typeof DUE_OPTIONS)[number]["value"]>("any");
   const [direction, setDirection] = useState<"asc" | "desc">("asc");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const [selectedTask, setSelectedTask] = useState<TaskInfo | null>(null);
 
   // The page number remembers which filters it was picked for. When any filter
   // changes (here or in the sidebar), it goes back to the first page, so the
@@ -256,6 +259,19 @@ export function HomePage() {
                   key={t.id}
                   task={t}
                   today={today}
+                  onViewDetails={() => {
+                    setSelectedTask({
+                       id: t.id,
+                       title: t.title,
+                       description: "",
+                       priority: "Medium",
+                       dueDate: t.dueDate,
+                       assignedTo: "",
+                       event: t.eventId
+                       ? lookups.eventsById.get(t.eventId)?.name || ""
+                       : "",
+                      });
+                    }}
                   checked={selected.has(t.id)}
                   onToggle={() => toggleRow(t.id)}
                   eventName={
@@ -308,6 +324,17 @@ export function HomePage() {
           Mark as Complete
         </Button>
       </section>
+      {selectedTask && (
+        <TaskDetails
+        key={selectedTask.id}
+        task={selectedTask}
+        onClose={() => setSelectedTask(null)}
+        onSave={(updatedTask) => {
+          setSelectedTask(updatedTask);
+        }}
+        />
+
+      )}
     </div>
   );
 }
@@ -352,6 +379,7 @@ function TaskRow({
   today,
   checked,
   onToggle,
+  onViewDetails,
   eventName,
   sponsorName,
 }: {
@@ -359,6 +387,7 @@ function TaskRow({
   today: ISODate;
   checked: boolean;
   onToggle: () => void;
+  onViewDetails: () => void;
   eventName?: string;
   sponsorName?: string;
 }) {
@@ -375,9 +404,18 @@ function TaskRow({
       </td>
       <td
         className={cn(
-          "px-3 py-3 text-xs",
+          "px-3 py-3 text-xs cursor-pointer",
           task.completed && "text-muted-foreground line-through",
         )}
+        onClick={onViewDetails}
+        onKeyDown={(e) => {
+          if(e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onViewDetails();
+          }
+        }}
+        role="button"
+        tabIndex={0}
       >
         {task.title}
       </td>
