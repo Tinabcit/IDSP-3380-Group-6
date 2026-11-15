@@ -33,6 +33,7 @@ import {
   type TaskInput,
 } from "@/lib/planner/types";
 
+import { DayDetailsDialog } from "./day-details-dialog";
 import { DayPanel } from "./day-panel";
 import { FilterBar } from "./filter-bar";
 import { MonthGrid } from "./month-grid";
@@ -65,6 +66,7 @@ export function PlannerApp() {
   const [filters, setFilters] = useState<PlannerFilters>(EMPTY_FILTERS);
   const [formState, setFormState] = useState<TaskFormState | null>(null);
   const [eventForm, setEventForm] = useState<EventFormState | null>(null);
+  const [detailsDate, setDetailsDate] = useState<ISODate | null>(null);
   const [announcement, setAnnouncement] = useState("");
 
   // Opening "/calendar?date=2025-03-07" (from the header bell) jumps to that day. This
@@ -343,6 +345,7 @@ export function PlannerApp() {
             tasks={dayTasks}
             lookups={lookups}
             onAddTask={openCreate}
+            onOpenDetails={setDetailsDate}
             onEditEvent={openEditEvent}
             onDeleteEvent={handleEventDelete}
             onToggle={handleToggle}
@@ -360,6 +363,20 @@ export function PlannerApp() {
           />
         </aside>
       </main>
+
+      <DayDetailsDialog
+        date={detailsDate}
+        events={visibleEvents}
+        tasks={visibleTasks}
+        lookups={lookups}
+        onClose={() => setDetailsDate(null)}
+        onChangeDate={setDetailsDate}
+        onAddEvent={(date) => {
+          setDetailsDate(null);
+          openAddEvent(date);
+        }}
+        onToggle={handleToggle}
+      />
 
       <TaskFormDialog
         state={formState}

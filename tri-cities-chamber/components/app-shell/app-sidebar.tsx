@@ -25,6 +25,8 @@ import {
 } from "@/components/ui/select";
 import { splitEvents } from "@/lib/planner/home";
 import type { ChamberEvent } from "@/lib/planner/types";
+import type { DisplayUser } from "@/lib/planner/user";
+import { UserMenu } from "./user-menu";
 import { OverdueBell } from "./overdue-bell";
 import { useOptionalPlannerData } from "./planner-provider";
 
@@ -164,7 +166,7 @@ function Item({
   );
 }
 
-export function AppSidebar({ className }: { className?: string }) {
+export function AppSidebar({ className, user }: { className?: string; user: DisplayUser }) {
   const data = useOptionalPlannerData();
   const filters = useHomeFilters();
   const pathname = usePathname();
@@ -225,12 +227,14 @@ export function AppSidebar({ className }: { className?: string }) {
         <span className="grid h-8 w-8 place-items-center rounded-md bg-sky-600 text-white">
           <Briefcase className="h-4 w-4" />
         </span>
-        <div className="leading-tight">
+        <div className="min-w-0 flex-1 leading-tight">
           <p className="text-sm font-semibold">TuDu</p>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="truncate text-[11px] text-muted-foreground">
             Tri-Cities Chamber
           </p>
         </div>
+        {/* The overdue bell sits at the right end of the logo row. */}
+        <OverdueBell align="beside" />
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -246,17 +250,6 @@ export function AppSidebar({ className }: { className?: string }) {
         >
           Add Event +
         </Link>
-      </div>
-
-      {/* Who is signed in, with the overdue bell (it was removed from the desktop sidebar by mistake). */}
-      <div className="grid gap-1.5">
-        <span className="text-xs text-muted-foreground">Signed in as</span>
-        <div className="flex items-center gap-1">
-          <div className="min-w-0 flex-1">
-            <UserSelect />
-          </div>
-          <OverdueBell align="left" />
-        </div>
       </div>
 
       <nav className="flex flex-col gap-1">
@@ -297,6 +290,11 @@ export function AppSidebar({ className }: { className?: string }) {
         </Section>
         <Section title="Annual Partners" />
         <Section title="Program Partners" />
+      </div>
+
+      {/* Who is signed in with Google (or Unknown user), pinned to the bottom. */}
+      <div className="mt-auto">
+        <UserMenu user={user} />
       </div>
     </aside>
   );

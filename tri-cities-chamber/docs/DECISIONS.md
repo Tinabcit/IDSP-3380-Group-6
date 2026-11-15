@@ -147,3 +147,19 @@ Context: Phase 10 asks for the Add Event screens in docs/Events (upload card, re
 Decision: Adding an event is the page /events/new (the modal EventFormDialog stays for editing). All seven fields are required and show "Field Required" (validateEventForm in lib/planner/events.ts). Sponsor is free text with suggestions from existing sponsors, stored as sponsorName on the event. The PDF upload is simulated: a timer fakes progress, non-PDF or over 10 MB files fail, and only the file name is saved (state machine in lib/planner/upload.ts). The Figma has no pillar field, so new events use the first pillar. The duplicate Add event / Add task buttons were removed from the calendar day panel; the page header pair stays. Work branched from main because dev was 12 commits behind it.
 
 Alternatives considered: Keep the modal (rejected: does not match the design). Pick sponsors from a dropdown only (rejected: new sponsors could not be typed).
+
+## 2026-11-08 — Sidebar avatar footer reads the Google session on the server
+
+Context: Phase 11 adds the shadcn-style avatar footer from docs/AvatarIcon.png. Nothing on the client knew who signed in with Google; the old "Signed in as" select is the planner staff switcher.
+
+Decision: app/(app)/layout.tsx reads the session with auth() (after connection()) and passes a DisplayUser (getDisplayUser in lib/planner/user.ts) down by props to AppShell, AppSidebar and UserMenu. No SessionProvider. Without a session it shows "Unknown user" / "unknown@...". The staff switcher stays. Added @radix-ui/react-avatar and shadcn Avatar, plus DropdownMenuItem/Label/Separator. Sign in/out server actions live in components/app-shell/auth-actions.ts.
+
+Alternatives considered: SessionProvider with useSession (rejected: extra client state, props are simpler). Replacing the staff switcher (rejected: it drives planner data).
+
+## 2026-11-11 — Calendar day details pop-up: optional time and attendee fields, label-only timezone
+
+Context: Phase 12 adds the day details pop-up from docs/CalendarDayDetailsPop-up.png. The mockup shows time ranges on activities and attendee counts on events, which tasks and events did not store, and says times are shown in the user's local timezone.
+
+Decision: Task gets optional startTime/endTime and ChamberEvent gets optional attendees (all optional, so saved data still loads). The task form and edit-event form have matching inputs. Stored times stay zone-less "HH:mm" wall-clock values, so "local timezone" is a client-only GMT offset label plus the footer note; no UTC conversion. The pop-up is DayDetailsDialog, opened from a "Day details" button in the day panel (single click on a day still only selects it). Pure logic is in lib/planner/day-details.ts. Branched from main, like the previous phases.
+
+Alternatives considered: Display only what already exists (rejected: the timetable and activity times would be empty). Store UTC instants (rejected: migrates saved data and forms for no gain in a single-timezone MVP).

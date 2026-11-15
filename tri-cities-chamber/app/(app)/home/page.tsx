@@ -1,6 +1,6 @@
+
 import { DataGate } from "@/components/app-shell/planner-provider";
 import { HomePage } from "@/components/home/home-page";
-
 
 /**
  * Page at "/home". Shows the to-do task table with the sidebar.

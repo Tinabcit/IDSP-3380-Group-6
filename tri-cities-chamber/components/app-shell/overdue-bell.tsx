@@ -23,7 +23,7 @@ const MAX_LISTED = 6;
  * "View all overdue" opens the calendar at the "Coming up" list, which shows
  * every overdue task first.
  */
-export function OverdueBell({ align = "right" }: { align?: "left" | "right" }) {
+export function OverdueBell({ align = "right" }: { align?: "left" | "right" | "beside" }) {
   const data = useOptionalPlannerData();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -40,9 +40,10 @@ export function OverdueBell({ align = "right" }: { align?: "left" | "right" }) {
     if (!open && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       const width = Math.min(PANEL_WIDTH, window.innerWidth - 2 * EDGE_GAP);
-      const wanted = align === "left" ? rect.left : rect.right - width;
+      // "beside" puts the list on the right of the bell, level with it (used in the sidebar).
+      const wanted = align === "beside" ? rect.right + 8 : align === "left" ? rect.left : rect.right - width;
       const left = Math.max(EDGE_GAP, Math.min(wanted, window.innerWidth - width - EDGE_GAP));
-      setPos({ top: rect.bottom + 8, left });
+      setPos({ top: align === "beside" ? Math.max(EDGE_GAP, rect.top) : rect.bottom + 8, left });
     }
     setOpen((o) => !o);
   }

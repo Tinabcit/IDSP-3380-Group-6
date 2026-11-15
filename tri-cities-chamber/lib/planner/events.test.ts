@@ -84,6 +84,13 @@ describe('validateEventInput', () => {
   it('needs a name', () => {
     expect(validateEventInput({ ...base, name: '  ' })).toMatch(/name/i);
   });
+
+  it('accepts a whole-number attendee count and rejects negative or fractional ones', () => {
+    expect(validateEventInput({ ...base, attendees: 0 })).toBeNull();
+    expect(validateEventInput({ ...base, attendees: 25 })).toBeNull();
+    expect(validateEventInput({ ...base, attendees: -1 })).toMatch(/attendees/i);
+    expect(validateEventInput({ ...base, attendees: 2.5 })).toMatch(/attendees/i);
+  });
   it('rejects an end date before the start date, including across a year end', () => {
     expect(validateEventInput({ ...base, startDate: '2025-01-02', endDate: '2025-01-01' })).toMatch(/end date/i);
     expect(validateEventInput({ ...base, startDate: '2024-12-31', endDate: '2025-01-01' })).toBeNull();
