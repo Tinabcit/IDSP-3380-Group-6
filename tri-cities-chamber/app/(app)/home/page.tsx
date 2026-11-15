@@ -11,7 +11,6 @@ export default function Home() {
   return (
     <DataGate>
       <HomePage />
-        <TaskDetails />
     </DataGate>
   );
 }
