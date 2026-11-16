@@ -50,7 +50,7 @@ export function AppShell({ children, user }: { children: React.ReactNode; user: 
 
   return (
     <HomeFiltersProvider>
-      <div className="flex min-h-dvh">
+      <div className="flex min-h-dvh bg-background text-foreground">
         {/* The sidebar, down the left edge on tablet and up. It stays put while the page scrolls. */}
         <AppSidebar user={user} className="sticky top-0 z-30 hidden h-dvh w-64 shrink-0 overflow-y-auto border-r md:block" />
 

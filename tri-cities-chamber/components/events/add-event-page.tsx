@@ -75,8 +75,8 @@ export function AddEventPage() {
       isSignature: false,
       category: values.category as EventCategory,
       sponsorName: values.sponsor.trim(),
-      email: values.email.trim(),
-      phone: values.phone.trim(),
+      // email: values.email.trim(),
+      // phone: values.phone.trim(),
       address: values.address.trim(),
       location: values.address.trim(),
       fileName,
@@ -150,8 +150,8 @@ export function AddEventPage() {
           </p>
         )}
       </div>
-      {field("email", "Email", "john@example.com", "email")}
-      {field("phone", "Phone", "+1 (555) 123-4567", "tel")}
+      {/* {field("email", "Email", "john@example.com", "email")}
+      {field("phone", "Phone", "+1 (555) 123-4567", "tel")} */}
       {field("address", "Address", "123 Main st")}
       <div className="flex justify-center gap-3">
         <Button type="button" variant="outline" onClick={() => router.back()}>
