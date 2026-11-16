@@ -6,20 +6,26 @@
  */
 
 import { usePlannerData } from "@/components/app-shell/planner-provider";
+import { getTasksPerDay, getUploadedDocuments } from "@/lib/planner/dashboard";
 import { CardInfo } from "./cardInfo";
+import { UpcomingDueDates } from "./upcoming-due-dates";
+import { UploadedDocuments } from "./UploadedDocument";
 
-/** The dashboard: a summary of the app's data. */
 export function DashboardPage() {
-  // All the app's data (already typed): events, sponsors, contracts, tasks, staff, today...
   const data = usePlannerData();
-
+  const days = getTasksPerDay(data.tasks, data.today);
+  const docs = getUploadedDocuments(data.contracts);
   return (
-    <div>
-      <h1>Dashboard</h1>
-      {/* TODO: build the page */}
-      <CardInfo headingText="Tasks" numberInfo={data.tasks.length} />
-      <CardInfo headingText="Events" numberInfo={data.events.length} />
-      <CardInfo headingText="Sponsors" numberInfo={data.sponsors.length} />
+
+    <div className="flex flex-col gap-4">
+      <h1 className="text-xl font-semibold">TUDO Dashboard</h1>
+      <div className="flex w-fit max-w-full overflow-x-auto rounded-lg border bg-card text-card-foreground">
+        <CardInfo headingText="Tasks" numberInfo={data.tasks.length} />
+        <CardInfo headingText="Events" numberInfo={data.events.length} />
+        <CardInfo headingText="Sponsors" numberInfo={data.sponsors.length} />
+      </div>
+      <UploadedDocuments docs={docs} />
+      <UpcomingDueDates />
     </div>
   );
 }
