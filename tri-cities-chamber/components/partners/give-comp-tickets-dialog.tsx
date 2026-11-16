@@ -98,11 +98,21 @@ export default function GiveCompTicketsDialog({
     onClose();
   }
 
+  // Styles that work in both light and dark mode
   const inputStyle =
-    "w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500";
+    "w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary";
 
   const sectionStyle =
-    "rounded-xl border border-slate-200 p-4 space-y-3";
+    "space-y-3 rounded-xl border border-border bg-card p-4 text-card-foreground";
+
+  const optionStyle =
+    "rounded-full bg-muted px-4 py-2 text-sm text-foreground hover:bg-accent";
+
+  const selectedStyle =
+    "rounded-full bg-blue-700 px-4 py-2 text-sm text-white dark:bg-blue-600";
+
+  const footerButtonStyle =
+    "rounded-md border border-border bg-background px-4 py-2 text-sm text-foreground hover:bg-accent";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -110,22 +120,27 @@ export default function GiveCompTicketsDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="comp-ticket-title"
-        className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-2xl bg-white shadow-xl"
+        className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-2xl border border-border bg-background text-foreground shadow-xl"
       >
         {/* Header */}
-        <div className="flex items-start justify-between border-b p-5">
+        <div className="flex items-start justify-between gap-3 border-b border-border p-5">
           <div className="flex items-center gap-3">
-            <Ticket className="text-blue-700" size={26} />
+            <Ticket
+              className="shrink-0 text-blue-700 dark:text-blue-400"
+              size={26}
+            />
+
             <div>
               <h2
                 id="comp-ticket-title"
-                className="text-xl font-bold"
+                className="text-xl font-bold text-foreground"
               >
                 Give Comp Tickets
               </h2>
-              <p className="text-sm text-slate-500">
-                Issue complimentary event tickets to
-                guests, sponsors, and staff.
+
+              <p className="text-sm text-muted-foreground">
+                Issue complimentary event tickets to guests,
+                sponsors, and staff.
               </p>
             </div>
           </div>
@@ -134,6 +149,7 @@ export default function GiveCompTicketsDialog({
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
+            className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <X size={20} />
           </button>
@@ -141,6 +157,7 @@ export default function GiveCompTicketsDialog({
 
         {/* Form */}
         <div className="space-y-4 overflow-y-auto p-5">
+          {/* Recipient */}
           <section className={sectionStyle}>
             <h3 className="font-semibold">Recipient</h3>
 
@@ -149,12 +166,16 @@ export default function GiveCompTicketsDialog({
                 <button
                   type="button"
                   key={name}
-                  onClick={() => setRecipient(name)}
-                  className={`rounded-full px-4 py-2 text-sm ${
+                  onClick={() => {
+                    setRecipient(name);
+                    setError("");
+                  }}
+                  aria-pressed={recipient === name}
+                  className={
                     recipient === name
-                      ? "bg-blue-700 text-white"
-                      : "bg-slate-100 text-slate-700"
-                  }`}
+                      ? selectedStyle
+                      : optionStyle
+                  }
                 >
                   {name}
                 </button>
@@ -162,27 +183,43 @@ export default function GiveCompTicketsDialog({
             </div>
           </section>
 
+          {/* Sponsor Details */}
           <section className={sectionStyle}>
-            <h3 className="font-semibold">Sponsor Details</h3>
+            <h3 className="font-semibold">
+              Sponsor Details
+            </h3>
 
             <div className="grid gap-3 sm:grid-cols-[1fr_130px]">
               <div>
-                <label className="mb-1 block text-sm">
+                <label
+                  htmlFor="comp-sponsor"
+                  className="mb-1 block text-sm"
+                >
                   Sponsor Name
                 </label>
+
                 <input
+                  id="comp-sponsor"
                   className={inputStyle}
                   value={sponsor}
-                  onChange={(e) => setSponsor(e.target.value)}
+                  onChange={(e) => {
+                    setSponsor(e.target.value);
+                    setError("");
+                  }}
                   placeholder="Enter sponsor name"
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-sm">
+                <label
+                  htmlFor="comp-quantity"
+                  className="mb-1 block text-sm"
+                >
                   Number of Tickets
                 </label>
+
                 <input
+                  id="comp-quantity"
                   type="number"
                   min="1"
                   step="1"
@@ -196,8 +233,11 @@ export default function GiveCompTicketsDialog({
             </div>
           </section>
 
+          {/* Ticket Details */}
           <section className={sectionStyle}>
-            <h3 className="font-semibold">Ticket Details</h3>
+            <h3 className="font-semibold">
+              Ticket Details
+            </h3>
 
             <div className="flex flex-wrap gap-2">
               {ticketTypes.map((type) => (
@@ -205,11 +245,12 @@ export default function GiveCompTicketsDialog({
                   type="button"
                   key={type}
                   onClick={() => setTicketType(type)}
-                  className={`rounded-full px-4 py-2 text-sm ${
+                  aria-pressed={ticketType === type}
+                  className={
                     ticketType === type
-                      ? "bg-blue-700 text-white"
-                      : "bg-slate-100 text-slate-700"
-                  }`}
+                      ? selectedStyle
+                      : optionStyle
+                  }
                 >
                   {type}
                 </button>
@@ -217,40 +258,69 @@ export default function GiveCompTicketsDialog({
             </div>
           </section>
 
+          {/* Event Details */}
           <section className={sectionStyle}>
-            <h3 className="font-semibold">Event Details</h3>
+            <h3 className="font-semibold">
+              Event Details
+            </h3>
 
-            <label className="block text-sm">
-              Event Name
-            </label>
-            <input
-              className={inputStyle}
-              placeholder="Enter event name"
-              value={eventName}
-              onChange={(e) => setEventName(e.target.value)}
-            />
+            <div>
+              <label
+                htmlFor="comp-event"
+                className="mb-1 block text-sm"
+              >
+                Event Name
+              </label>
 
-            <div className="flex items-center gap-2 text-sm">
-              <MapPin size={18} className="text-blue-700" />
-              <span>Event Location</span>
+              <input
+                id="comp-event"
+                className={inputStyle}
+                placeholder="Enter event name"
+                value={eventName}
+                onChange={(e) =>
+                  setEventName(e.target.value)
+                }
+              />
             </div>
 
-            <input
-              className={inputStyle}
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-            />
+            <div>
+              <label
+                htmlFor="comp-location"
+                className="mb-1 flex items-center gap-2 text-sm"
+              >
+                <MapPin
+                  size={18}
+                  className="text-blue-700 dark:text-blue-400"
+                />
+                Event Location
+              </label>
+
+              <input
+                id="comp-location"
+                className={inputStyle}
+                value={location}
+                onChange={(e) =>
+                  setLocation(e.target.value)
+                }
+              />
+            </div>
           </section>
 
+          {/* Permissions */}
           <section className={sectionStyle}>
-            <h3 className="font-semibold">Permissions</h3>
+            <h3 className="font-semibold">
+              Permissions
+            </h3>
 
             <div className="flex flex-wrap gap-4 text-sm">
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
                   checked={plusOne}
-                  onChange={(e) => setPlusOne(e.target.checked)}
+                  onChange={(e) =>
+                    setPlusOne(e.target.checked)
+                  }
+                  className="accent-blue-700"
                 />
                 Allow Plus One
               </label>
@@ -259,7 +329,10 @@ export default function GiveCompTicketsDialog({
                 <input
                   type="checkbox"
                   checked={vipLounge}
-                  onChange={(e) => setVipLounge(e.target.checked)}
+                  onChange={(e) =>
+                    setVipLounge(e.target.checked)
+                  }
+                  className="accent-blue-700"
                 />
                 VIP Lounge Access
               </label>
@@ -268,37 +341,49 @@ export default function GiveCompTicketsDialog({
                 <input
                   type="checkbox"
                   checked={backstage}
-                  onChange={(e) => setBackstage(e.target.checked)}
+                  onChange={(e) =>
+                    setBackstage(e.target.checked)
+                  }
+                  className="accent-blue-700"
                 />
                 Backstage Pass
               </label>
             </div>
           </section>
 
+          {/* Internal Notes */}
           <section className={sectionStyle}>
-            <h3 className="font-semibold">Internal Notes</h3>
+            <h3 className="font-semibold">
+              Internal Notes
+            </h3>
 
             <textarea
               className={`${inputStyle} min-h-28`}
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={(e) =>
+                setNotes(e.target.value)
+              }
               placeholder="Add any specific instructions for the box office or event staff..."
             />
           </section>
 
+          {/* Error message */}
           {error && (
-            <p role="alert" className="text-sm text-red-600">
+            <p
+              role="alert"
+              className="text-sm text-red-600 dark:text-red-400"
+            >
               {error}
             </p>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-2 border-t p-4">
+        <div className="flex flex-wrap justify-end gap-2 border-t border-border p-4">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md border px-4 py-2 text-sm"
+            className={footerButtonStyle}
           >
             Close
           </button>
@@ -306,7 +391,7 @@ export default function GiveCompTicketsDialog({
           <button
             type="button"
             onClick={() => handleSave("Draft")}
-            className="rounded-md border px-4 py-2 text-sm"
+            className={footerButtonStyle}
           >
             Save
           </button>
@@ -314,7 +399,7 @@ export default function GiveCompTicketsDialog({
           <button
             type="button"
             onClick={() => handleSave("Issued")}
-            className="flex items-center gap-2 rounded-md bg-blue-800 px-4 py-2 text-sm text-white"
+            className="flex items-center gap-2 rounded-md bg-blue-700 px-4 py-2 text-sm text-white hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-700"
           >
             <Plus size={16} />
             Issue Tickets

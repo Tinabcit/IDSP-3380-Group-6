@@ -34,7 +34,7 @@ export default function TaskDetails({
   useEffect(() => {
     setEditedTask(task);
     setIsEditing(false);
-  }, [task.id]);
+  }, [task]);
 
   // Update one field
   function updateField(field: keyof TaskInfo, value: string) {
@@ -70,7 +70,7 @@ export default function TaskDetails({
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        onClose();
+        handleClose();
       }
     }
 
@@ -81,9 +81,13 @@ export default function TaskDetails({
     };
   }, [onClose]);
 
+  // Input styling for light and dark mode
+  const inputStyle =
+    "w-full rounded-md border border-[#a7b4a0] bg-[#eef2eb] px-3 py-2 text-sm text-black outline-none focus:ring-2 focus:ring-[#0d7d8e] disabled:opacity-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-cyan-500 dark:[color-scheme:dark]";
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 dark:bg-black/70"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) {
           handleClose();
@@ -95,28 +99,28 @@ export default function TaskDetails({
         role="dialog"
         aria-modal="true"
         aria-labelledby="task-details-title"
-        className="w-full max-w-3xl rounded-2xl border border-[#d3ddcc] bg-[#f8faf5] p-5 shadow-xl sm:p-6"
+        className="w-full max-w-3xl rounded-2xl border border-[#d3ddcc] bg-[#f8faf5] p-5 text-[#252525] shadow-xl sm:p-6 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
       >
         {/* Header */}
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-4 border-b border-[#d3ddcc] pb-4">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-4 border-b border-[#d3ddcc] pb-4 dark:border-slate-700">
           <div className="flex items-center gap-3">
             {/* Task icon */}
-            <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[#d3ddcc] bg-[#eef2eb]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[#d3ddcc] bg-[#eef2eb] dark:border-slate-600 dark:bg-slate-800">
               <ClipboardList
                 size={24}
-                className="text-[#292d68]"
+                className="text-[#292d68] dark:text-cyan-400"
               />
             </div>
 
             <div>
               <h1
                 id="task-details-title"
-                className="text-2xl font-bold text-[#252525]"
+                className="text-2xl font-bold text-[#252525] dark:text-slate-100"
               >
                 Task Details
               </h1>
 
-              <p className="mt-1 text-xs text-gray-600">
+              <p className="mt-1 text-xs text-gray-600 dark:text-slate-400">
                 View the details of the selected task and its
                 current status.
               </p>
@@ -128,7 +132,7 @@ export default function TaskDetails({
             <button
               type="button"
               onClick={handleClose}
-              className="rounded-md border border-[#d3ddcc] bg-[#e7eee0] px-3 py-2 text-xs text-black hover:bg-[#dce6d5]"
+              className="rounded-md border border-[#d3ddcc] bg-[#e7eee0] px-3 py-2 text-xs text-black hover:bg-[#dce6d5] dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600"
             >
               Close
             </button>
@@ -136,7 +140,7 @@ export default function TaskDetails({
             <button
               type="button"
               onClick={isEditing ? handleSave : handleEdit}
-              className="rounded-md bg-[#0d7d8e] px-3 py-2 text-xs text-white hover:bg-[#096675]"
+              className="rounded-md bg-[#0d7d8e] px-3 py-2 text-xs text-white hover:bg-[#096675] dark:bg-cyan-700 dark:hover:bg-cyan-600"
             >
               {isEditing ? "Save Task" : "Edit Task"}
             </button>
@@ -145,7 +149,7 @@ export default function TaskDetails({
               type="button"
               onClick={handleClose}
               aria-label="Close Task Details"
-              className="ml-1 text-gray-500 hover:text-black"
+              className="ml-1 text-gray-500 hover:text-black dark:text-slate-400 dark:hover:text-white"
             >
               <X size={18} />
             </button>
@@ -153,10 +157,10 @@ export default function TaskDetails({
         </div>
 
         {/* Main content */}
-        <div className="max-h-[70vh] overflow-y-auto rounded-xl border border-[#d3ddcc] p-4 sm:p-5">
+        <div className="max-h-[70vh] overflow-y-auto rounded-xl border border-[#d3ddcc] p-4 sm:p-5 dark:border-slate-700 dark:bg-slate-900">
 
           {/* Task Overview */}
-          <h2 className="mb-4 text-sm font-semibold text-[#252525]">
+          <h2 className="mb-4 text-sm font-semibold text-[#252525] dark:text-slate-100">
             Task Overview
           </h2>
 
@@ -164,7 +168,7 @@ export default function TaskDetails({
           <div className="mb-4">
             <label
               htmlFor="task-title"
-              className="mb-1 block text-xs font-semibold text-black"
+              className="mb-1 block text-xs font-semibold text-black dark:text-slate-200"
             >
               Task Title
             </label>
@@ -177,7 +181,7 @@ export default function TaskDetails({
                 updateField("title", e.target.value)
               }
               disabled={!isEditing}
-              className="w-full rounded-md border border-[#a7b4a0] bg-[#eef2eb] px-3 py-2 text-sm text-black disabled:opacity-100"
+              className={inputStyle}
             />
           </div>
 
@@ -185,7 +189,7 @@ export default function TaskDetails({
           <div className="mb-5">
             <label
               htmlFor="task-description"
-              className="mb-1 block text-xs font-semibold text-black"
+              className="mb-1 block text-xs font-semibold text-black dark:text-slate-200"
             >
               Task Description
             </label>
@@ -198,12 +202,12 @@ export default function TaskDetails({
               }
               disabled={!isEditing}
               rows={4}
-              className="w-full resize-none rounded-lg border border-[#d3ddcc] bg-[#eef2eb] p-3 text-sm text-black disabled:opacity-100"
+              className={`${inputStyle} resize-none`}
             />
           </div>
 
           {/* Task Details */}
-          <h2 className="mb-4 text-sm font-semibold text-[#252525]">
+          <h2 className="mb-4 text-sm font-semibold text-[#252525] dark:text-slate-100">
             Task Details
           </h2>
 
@@ -211,7 +215,7 @@ export default function TaskDetails({
           <div className="mb-4">
             <label
               htmlFor="task-priority"
-              className="mb-1 block text-xs font-semibold text-black"
+              className="mb-1 block text-xs font-semibold text-black dark:text-slate-200"
             >
               Priority
             </label>
@@ -223,7 +227,7 @@ export default function TaskDetails({
                 updateField("priority", e.target.value)
               }
               disabled={!isEditing}
-              className="w-full rounded-md border border-[#a7b4a0] bg-[#eef2eb] px-3 py-2 text-sm text-black"
+              className={inputStyle}
             >
               <option value="Low">Low</option>
               <option value="Medium">Medium</option>
@@ -235,7 +239,7 @@ export default function TaskDetails({
           <div className="mb-4">
             <label
               htmlFor="task-date"
-              className="mb-1 block text-xs font-semibold text-black"
+              className="mb-1 block text-xs font-semibold text-black dark:text-slate-200"
             >
               Due Date
             </label>
@@ -248,7 +252,7 @@ export default function TaskDetails({
                 updateField("dueDate", e.target.value)
               }
               disabled={!isEditing}
-              className="w-full rounded-md border border-[#a7b4a0] bg-[#eef2eb] px-3 py-2 text-sm text-black"
+              className={inputStyle}
             />
           </div>
 
@@ -256,7 +260,7 @@ export default function TaskDetails({
           <div className="mb-4">
             <label
               htmlFor="task-assigned"
-              className="mb-1 block text-xs font-semibold text-black"
+              className="mb-1 block text-xs font-semibold text-black dark:text-slate-200"
             >
               Assigned To
             </label>
@@ -269,7 +273,7 @@ export default function TaskDetails({
                 updateField("assignedTo", e.target.value)
               }
               disabled={!isEditing}
-              className="w-full rounded-md border border-[#a7b4a0] bg-[#eef2eb] px-3 py-2 text-sm text-black disabled:opacity-100"
+              className={inputStyle}
             />
           </div>
 
@@ -277,7 +281,7 @@ export default function TaskDetails({
           <div>
             <label
               htmlFor="task-event"
-              className="mb-1 block text-xs font-semibold text-black"
+              className="mb-1 block text-xs font-semibold text-black dark:text-slate-200"
             >
               Event
             </label>
@@ -289,23 +293,28 @@ export default function TaskDetails({
                 updateField("event", e.target.value)
               }
               disabled={!isEditing}
-              className="w-full rounded-md border border-[#a7b4a0] bg-[#eef2eb] px-3 py-2 text-sm text-black"
+              className={inputStyle}
             >
               <option value={editedTask.event}>
                 {editedTask.event || "No event selected"}
               </option>
+
               <option value="Business Excellence Gala">
                 Business Excellence Gala
               </option>
+
               <option value="Digital Marketing Workshop">
                 Digital Marketing Workshop
               </option>
+
               <option value="Small Business Summit">
                 Small Business Summit
               </option>
+
               <option value="Networking Breakfast">
                 Networking Breakfast
               </option>
+
               <option value="Municipal Policy Roundtable">
                 Municipal Policy Roundtable
               </option>
