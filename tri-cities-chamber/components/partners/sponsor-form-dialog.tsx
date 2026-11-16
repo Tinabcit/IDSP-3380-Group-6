@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import type { CompTicket } from "@/components/partners/give-comp-tickets-dialog";
 import { DEFAULT_SPONSOR_TODOS, SPONSOR_LEVELS, validateSponsorInput } from "@/lib/planner/sponsors";
 import type { Sponsor, SponsorInput, SponsorLevel, SponsorStatus } from "@/lib/planner/types";
 
@@ -29,13 +30,26 @@ interface SponsorFormDialogProps {
   onClose: () => void;
   /** Called with the checked values; sponsorId is set when editing. Save makes a draft, Publish makes it active. */
   onSubmit: (input: SponsorInput, sponsorId?: string) => void;
+  /** Comp tickets already given to the sponsor being edited. */
+  compTickets?: CompTicket[];
+  /** Turns an event name into a short date like "Dec 12, 2026", or undefined if unknown. */
+  eventDateFor?: (eventName: string) => string | undefined;
+  /** Called with the sponsor name when "Issue Comp Tickets" is clicked. */
+  onIssueCompTickets?: (sponsorName: string) => void;
 }
 
 /**
  * The "Sponsor Information" pop-up. The form inside is only created while the
  * pop-up is open, so it starts fresh each time.
  */
-export function SponsorFormDialog({ state, onClose, onSubmit }: SponsorFormDialogProps) {
+export function SponsorFormDialog({
+  state,
+  onClose,
+  onSubmit,
+  compTickets = [],
+  eventDateFor,
+  onIssueCompTickets,
+}: SponsorFormDialogProps) {
   return (
     <Dialog open={state !== null} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[90vh] gap-0 overflow-y-auto p-0 sm:max-w-2xl">
@@ -45,6 +59,9 @@ export function SponsorFormDialog({ state, onClose, onSubmit }: SponsorFormDialo
             state={state}
             onClose={onClose}
             onSubmit={onSubmit}
+            compTickets={compTickets}
+            eventDateFor={eventDateFor}
+            onIssueCompTickets={onIssueCompTickets}
           />
         )}
       </DialogContent>
@@ -57,10 +74,16 @@ function SponsorForm({
   state,
   onClose,
   onSubmit,
+  compTickets,
+  eventDateFor,
+  onIssueCompTickets,
 }: {
   state: SponsorFormState;
   onClose: () => void;
   onSubmit: SponsorFormDialogProps["onSubmit"];
+  compTickets: CompTicket[];
+  eventDateFor?: SponsorFormDialogProps["eventDateFor"];
+  onIssueCompTickets?: SponsorFormDialogProps["onIssueCompTickets"];
 }) {
   const editing = state.mode === "edit" ? state.sponsor : null;
   const [name, setName] = useState(editing?.name ?? "");
@@ -71,6 +94,8 @@ function SponsorForm({
   const [notes, setNotes] = useState(editing?.notes ?? "");
   const [todos, setTodos] = useState(editing?.todos ?? DEFAULT_SPONSOR_TODOS);
   const [error, setError] = useState("");
+  const totalComps = compTickets.reduce((n, t) => n + t.quantity, 0);
+  const eventCount = new Set(compTickets.map((t) => t.eventName || t.id)).size;
 
   /** Checks the values, then passes them up with the chosen status and closes the pop-up. */
   function submit(status: SponsorStatus) {
@@ -94,6 +119,11 @@ function SponsorForm({
   /** Clears the error message when the person starts fixing the form. */
   function clearError() {
     setError("");
+  }
+
+  /** Asks the page to open the comp ticket form for this sponsor. */
+  function issueComps() {
+    onIssueCompTickets?.(name.trim());
   }
 
   /** Ticks or unticks one to do line. */
@@ -214,6 +244,65 @@ function SponsorForm({
                 placeholder="Add any specific requirements or instructions for the sponsor..."
               />
             </div>
+          </section>
+
+          <section className="grid gap-3" aria-labelledby="sp-comps">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 id="sp-comps" className="text-base font-semibold">
+                  Comp Tickets by Event
+                </h3>
+                <p className="text-sm">All events with complimentary tickets allocated to this sponsor.</p>
+              </div>
+              <Button type="button" size="sm" onClick={issueComps}>
+                Issue Comp Tickets
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-x-24 gap-y-2 py-3 text-sm">
+              <p>
+                <span className="mr-2 text-2xl">{eventCount}</span>Events with comp tickets
+              </p>
+              <p>
+                <span className="mr-2 text-2xl">{totalComps}</span>Total comp tickets
+              </p>
+            </div>
+            {compTickets.length === 0 ? (
+              <p className="rounded-md border border-dashed px-4 py-6 text-center text-sm text-muted-foreground">
+                No comp tickets issued yet.
+              </p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-muted/60 text-xs text-muted-foreground">
+                    <tr>
+                      <th className="px-4 py-3 font-normal">Event</th>
+                      <th className="px-4 py-3 font-normal">Ticket type</th>
+                      <th className="px-4 py-3 font-normal">Tickets</th>
+                      <th className="px-4 py-3 font-normal">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {compTickets.map((t) => {
+                      const date = t.eventName ? eventDateFor?.(t.eventName) : undefined;
+                      return (
+                        <tr key={t.id}>
+                          <td className="px-4 py-4">
+                            <div>{t.eventName || "No event"}</div>
+                            {date && <div className="text-xs text-muted-foreground">{date}</div>}
+                          </td>
+                          <td className="px-4 py-4">{t.ticketType}</td>
+                          <td className="px-4 py-4 font-semibold">{t.quantity}</td>
+                          <td className="px-4 py-4 text-xs text-muted-foreground">{t.status}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            <p className="text-sm">
+              Showing all {eventCount} events &middot; {totalComps} comp tickets
+            </p>
           </section>
 
           <section className="grid gap-3" aria-labelledby="sp-todos">

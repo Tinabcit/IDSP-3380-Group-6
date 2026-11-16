@@ -3,6 +3,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { format } from "date-fns";
 import { Mail, Phone, Plus, Search, Ticket } from "lucide-react";
 
 import { usePlannerData } from "@/components/app-shell/planner-provider";
@@ -15,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { amountPaid, formatCurrency } from "@/lib/planner/contracts";
+import { fromISODate } from "@/lib/planner/dates";
 import { isDraft, levelLabel } from "@/lib/planner/sponsors";
 
 import GiveCompTicketsDialog, {
@@ -387,6 +389,19 @@ export function PartnersPage() {
       <SponsorFormDialog
         state={form}
         onClose={() => setForm(null)}
+        compTickets={
+          form?.mode === "edit"
+            ? compTickets.filter((t) => t.sponsorName === form.sponsor.name)
+            : []
+        }
+        eventDateFor={(eventName) => {
+          const event = data.events.find((e) => e.name === eventName);
+          return event ? format(fromISODate(event.startDate), "MMM d, yyyy") : undefined;
+        }}
+        onIssueCompTickets={(sponsorName) => {
+          setForm(null);
+          openCompTickets(sponsorName);
+        }}
         onSubmit={(input, id) => {
           if (id) {
             data.updateSponsor(id, input);
