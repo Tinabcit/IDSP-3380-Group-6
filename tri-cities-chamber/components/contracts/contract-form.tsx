@@ -19,8 +19,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import ReviewTasksDialog from "@/components/review-tasks-dialog/review-tasks-dialog";
 import { buildDemoSummary, formatCurrency, simulateExtraction } from "@/lib/planner/contracts";
 import { formatShortDate, shiftISODate } from "@/lib/planner/dates";
+import { suggestTasks, toTaskInput, type ProposedTask } from "@/lib/planner/proposed-tasks";
 import type { Deliverable, PaymentInstalment } from "@/lib/planner/types";
 
 /** Special dropdown value that means "no event chosen". */
@@ -59,6 +61,9 @@ export function ContractForm() {
   const [fileName, setFileName] = useState<string | undefined>();
   const [reading, setReading] = useState(false);
   const [autoFilled, setAutoFilled] = useState(false);
+  const [proposed, setProposed] = useState<ProposedTask[]>([]);
+  const [kept, setKept] = useState<ProposedTask[]>([]);
+  const [reviewOpen, setReviewOpen] = useState(false);
 
   const [sponsorId, setSponsorId] = useState<string>("");
   const [newPartner, setNewPartner] = useState("");
@@ -83,7 +88,8 @@ export function ContractForm() {
 
   /**
    * Runs when a file is chosen. After a short pretend "reading" delay it fills
-   * the form with best guesses (see simulateExtraction).
+   * the form with best guesses (see simulateExtraction), then opens the Review
+   * tasks dialog with tasks read from the file.
    */
   function handleFile(file: File | undefined) {
     if (!file) return;
@@ -103,10 +109,28 @@ export function ContractForm() {
       if (guess.payments) {
         setPayments(guess.payments.map((p) => ({ ...p, id: rowId("pay") })));
       }
+      const guessedSponsor = data.sponsors.find((s) => s.id === guess.sponsorId);
+      const guessedEvent = data.events.find((e) => e.id === guess.eventId);
+      setProposed(
+        suggestTasks({
+          fileName: file.name,
+          eventName: guessedEvent?.name ?? guess.title ?? "",
+          sponsorName: guessedSponsor?.name ?? "",
+          eventDate: guessedEvent?.startDate ?? shiftISODate(today, 45),
+        })
+      );
+      setKept([]);
+      setReviewOpen(true);
       setErrors({});
       setAutoFilled(true);
       setReading(false);
     }, 900);
+  }
+
+  /** Closes the dialog and remembers the saved tasks until the contract is saved. */
+  function handleReviewDone(saved: ProposedTask[]) {
+    setKept(saved);
+    setReviewOpen(false);
   }
 
   /** Adds an empty payment row, due in 30 days. */
@@ -187,7 +211,16 @@ export function ContractForm() {
       { ...input, summary: buildDemoSummary(input, sponsorName, event?.name) },
       { assigneeId }
     );
-    toast({ title: "Contract created", description: input.title });
+    for (const task of kept) {
+      data.addTask(toTaskInput(task, { assigneeId, eventId: event?.id, sponsorId: finalSponsorId }));
+    }
+    toast({
+      title: "Contract created",
+      description:
+        kept.length > 0
+          ? `${input.title} and ${kept.length} ${kept.length === 1 ? "task" : "tasks"}`
+          : input.title,
+    });
     router.push(`/contracts/${id}`);
   }
 
@@ -249,6 +282,18 @@ export function ContractForm() {
               The finished version will read the contract itself.
             </span>
           </p>
+        )}
+        {proposed.length > 0 && (
+          <div className="flex items-center justify-between gap-3 rounded-md border bg-card px-3 py-2 text-sm">
+            <p role="status">
+              {kept.length > 0
+                ? `${kept.length} ${kept.length === 1 ? "task" : "tasks"} from the file will be added with this contract.`
+                : "No tasks from the file saved yet."}
+            </p>
+            <Button type="button" variant="outline" size="sm" onClick={() => setReviewOpen(true)}>
+              Review tasks
+            </Button>
+          </div>
         )}
       </section>
 
@@ -514,6 +559,12 @@ export function ContractForm() {
           Save contract
         </Button>
       </div>
+      <ReviewTasksDialog
+        open={reviewOpen}
+        tasks={proposed}
+        onDone={handleReviewDone}
+        onClose={() => setReviewOpen(false)}
+      />
     </form>
   );
 }
