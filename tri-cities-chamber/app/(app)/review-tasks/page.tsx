@@ -1,9 +1,18 @@
-
 "use client";
 
 import { useState } from "react";
 import ReviewTasksDialog from "@/components/review-tasks-dialog/review-tasks-dialog";
+import { suggestTasks } from "@/lib/planner/proposed-tasks";
 
+/** Sample tasks so the dialog can be looked at without uploading anything. */
+const SAMPLE = suggestTasks({
+  fileName: "mayors-bbq.pdf",
+  eventName: "Mayor's BBQ",
+  sponsorName: "RBC",
+  eventDate: "2026-06-20",
+});
+
+/** A demo page for the Review tasks dialog with sample tasks. */
 export default function ReviewTasksPage() {
   const [open, setOpen] = useState(false);
 
@@ -23,6 +32,8 @@ export default function ReviewTasksPage() {
 
       <ReviewTasksDialog
         open={open}
+        tasks={SAMPLE}
+        onDone={() => setOpen(false)}
         onClose={() => setOpen(false)}
       />
     </div>

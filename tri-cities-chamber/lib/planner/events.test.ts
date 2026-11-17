@@ -8,6 +8,7 @@ import {
   formatEventTime,
   isValidISODate,
   isValidTime,
+  cleanSponsors,
   validateEventForm,
   validateEventInput,
 } from './events';
@@ -133,33 +134,49 @@ describe('demo events', () => {
 describe('validateEventForm', () => {
   const full = {
     title: 'Mayors BBQ',
-    sponsor: 'RBC',
+    sponsors: ['RBC'],
     date: '2025-03-01',
-    category: 'networking',
-    email: 'john@example.com',
-    phone: '+1 (555) 123-4567',
+    isSignature: false,
+    category: '',
     address: '123 Main st',
   };
 
-  it('returns no errors when every field is valid', () => {
+  it('returns no errors when every needed field is valid', () => {
     expect(validateEventForm(full)).toEqual({});
+  });
+
+  it('does not ask for a category on a normal event', () => {
+    expect(validateEventForm({ ...full, category: '' }).category).toBeUndefined();
+  });
+
+  it('asks for a category on a signature event', () => {
+    expect(validateEventForm({ ...full, isSignature: true }).category).toBe('Field Required');
+    expect(validateEventForm({ ...full, isSignature: true, category: 'networking' })).toEqual({});
+  });
+
+  it('accepts as many sponsors as are added, and needs at least one', () => {
+    expect(validateEventForm({ ...full, sponsors: ['RBC', 'BCIT', 'Telus'] })).toEqual({});
+    expect(validateEventForm({ ...full, sponsors: [' ', ''] }).sponsors).toBe('Field Required');
+    expect(validateEventForm({ ...full, sponsors: [] }).sponsors).toBe('Field Required');
   });
 
   it('marks every empty field as required', () => {
     const errors = validateEventForm({
-      title: '', sponsor: ' ', date: '', category: '', email: '', phone: '', address: '',
+      title: '', sponsors: [''], date: '', isSignature: false, category: '', address: '',
     });
-    expect(Object.keys(errors).sort()).toEqual(
-      ['address', 'category', 'date', 'email', 'phone', 'sponsor', 'title'],
-    );
+    expect(Object.keys(errors).sort()).toEqual(['address', 'date', 'sponsors', 'title']);
     expect(errors.title).toBe('Field Required');
   });
 
-  it('rejects a bad email, phone or date', () => {
-    const errors = validateEventForm({ ...full, email: 'nope', phone: 'abc', date: '2025-99-99' });
-    expect(errors.email).toBeDefined();
-    expect(errors.phone).toBeDefined();
+  it('rejects a bad date', () => {
+    const errors = validateEventForm({ ...full, date: '2025-99-99' });
     expect(errors.date).toBeDefined();
     expect(errors.title).toBeUndefined();
+  });
+});
+
+describe('cleanSponsors', () => {
+  it('trims names, drops blanks and repeats', () => {
+    expect(cleanSponsors([' RBC ', '', 'rbc', 'BCIT'])).toEqual(['RBC', 'BCIT']);
   });
 });

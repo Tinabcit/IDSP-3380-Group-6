@@ -1,256 +1,260 @@
 
 "use client";
 
-import { useState } from "react";
-import { Check, ChevronDown, ChevronRight, Pencil, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  Pencil,
+  X,
+} from "lucide-react";
 
-type Task = {
-  id: number;
-  title: string;
-  event: string;
-  dueDate: string;
-  description: string;
-  sponsor: string;
-};
+import { format, isValid, parseISO } from "date-fns";
+
+import type { ProposedTask } from "@/lib/planner/proposed-tasks";
+import { cn } from "@/lib/utils";
 
 type ReviewTasksDialogProps = {
   open: boolean;
+  tasks: ProposedTask[];
+  onDone: (kept: ProposedTask[]) => void;
   onClose: () => void;
 };
 
-const sampleTasks: Task[] = [
-  {
-    id: 1,
-    title: "Optimize images",
-    event: "Website Redesign",
-    dueDate: "2024-10-05",
-    description: "Optimize website images to improve loading speed.",
-    sponsor: "N/A",
-  },
-  {
-    id: 2,
-    title: "Integrate CMS",
-    event: "Website Redesign",
-    dueDate: "2024-10-06",
-    description: "Connect the content management system to the website.",
-    sponsor: "N/A",
-  },
-  {
-    id: 3,
-    title: "Implement user authentication",
-    event: "Website Redesign",
-    dueDate: "2024-10-07",
-    description: "Add user login and authentication.",
-    sponsor: "N/A",
-  },
-  {
-    id: 4,
-    title: "Create app wireframes",
-    event: "Mobile App Development",
-    dueDate: "2024-10-09",
-    description: "Create wireframes for the mobile application.",
-    sponsor: "N/A",
-  },
-  {
-    id: 5,
-    title: "Design UI components",
-    event: "Mobile App Development",
-    dueDate: "2024-10-10",
-    description: "Design reusable components for the application.",
-    sponsor: "N/A",
-  },
-  {
-    id: 6,
-    title: "Six Complimentary Tickets",
-    event: "Business Excellence Awards",
-    dueDate: "2024-10-11",
-    description:
-      "Allocate six complimentary tickets to RBC for the Business Excellence Awards. Confirm guest names and requirements, then send the registration details to the sponsor contact.",
-    sponsor: "RBC",
-  },
-  {
-    id: 7,
-    title: "Four Complimentary Tickets",
-    event: "Business Excellence Awards",
-    dueDate: "2024-10-12",
-    description: "Arrange four complimentary tickets for the event.",
-    sponsor: "N/A",
-  },
-  {
-    id: 8,
-    title: "Sponsorship Funding 2026",
-    event: "Mayor's BBQ",
-    dueDate: "2024-10-13",
-    description: "Review sponsorship funding details for 2026.",
-    sponsor: "N/A",
-  },
-  {
-    id: 9,
-    title: "Comp Tickets 6/6",
-    event: "Mayor's BBQ",
-    dueDate: "2024-10-14",
-    description: "Confirm six complimentary tickets for the event.",
-    sponsor: "N/A",
-  },
-];
+// Format the due date
+function formatDate(value: string, pattern: string): string {
+  const date = parseISO(value);
+  return isValid(date) ? format(date, pattern) : value;
+}
 
-export default function ReviewTasksDialog({
-  open,
+// Shared button styles
+const ICON_BUTTON =
+  "flex size-8 items-center justify-center rounded-md " +
+  "border border-gray-300 bg-white text-gray-900 " +
+  "hover:bg-gray-100 " +
+  "dark:border-gray-600 dark:bg-gray-700 " +
+  "dark:text-white dark:hover:bg-gray-600";
+
+// Shared input styles
+const INPUT_STYLE =
+  "w-full rounded-md border border-gray-300 bg-white " +
+  "px-3 py-2 text-sm text-gray-900 outline-none " +
+  "focus:border-blue-500 focus:ring-1 focus:ring-blue-500 " +
+  "dark:border-gray-600 dark:bg-gray-800 " +
+  "dark:text-white dark:focus:border-blue-400 " +
+  "dark:focus:ring-blue-400 dark:[color-scheme:dark]";
+
+export default function ReviewTasksDialog(
+  props: ReviewTasksDialogProps
+) {
+  return props.open ? <DialogBody {...props} /> : null;
+}
+
+function DialogBody({
+  tasks: initial,
+  onDone,
   onClose,
 }: ReviewTasksDialogProps) {
-  const [tasks, setTasks] = useState<Task[]>(sampleTasks);
-  const [expandedTask, setExpandedTask] = useState<number | null>(6);
-  const [editingTask, setEditingTask] = useState<number | null>(null);
-  const [savedTasks, setSavedTasks] = useState<number[]>([]);
-  const [message, setMessage] = useState("");
+  const [tasks, setTasks] = useState<ProposedTask[]>(initial);
+  const [expandedId, setExpandedId] = useState<string | null>(
+    null
+  );
+  const [editingId, setEditingId] = useState<string | null>(
+    null
+  );
+  const [savedIds, setSavedIds] = useState<string[]>([]);
 
-  function toggleTask(id: number) {
-    setExpandedTask(expandedTask === id ? null : id);
-  }
-
-  function saveTask(id: number) {
-    if (!savedTasks.includes(id)) {
-      setSavedTasks([...savedTasks, id]);
+  // Close using Escape
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        onClose();
+      }
     }
-    setMessage("Task saved successfully.");
+
+    window.addEventListener("keydown", onKey);
+
+    return () => {
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
+  // Sort tasks by due date
+  const sorted = [...tasks].sort((a, b) =>
+    a.dueDate.localeCompare(b.dueDate)
+  );
+
+  // Save or unsave a task
+  function toggleSaved(id: string) {
+    setSavedIds((ids) =>
+      ids.includes(id)
+        ? ids.filter((x) => x !== id)
+        : [...ids, id]
+    );
   }
 
-  function dismissTask(id: number) {
-    setTasks(tasks.filter((task) => task.id !== id));
-    setMessage("Task dismissed.");
+  // Remove a task
+  function dismiss(id: string) {
+    setTasks((all) => all.filter((t) => t.id !== id));
+    setSavedIds((ids) => ids.filter((x) => x !== id));
   }
 
-  function updateTask(id: number, field: keyof Task, value: string) {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, [field]: value } : task
+  // Edit a task field
+  function change(
+    id: string,
+    field: keyof ProposedTask,
+    value: string
+  ) {
+    setTasks((all) =>
+      all.map((t) =>
+        t.id === id ? { ...t, [field]: value } : t
       )
     );
   }
 
-  function formatDate(date: string) {
-    return new Date(date + "T12:00:00").toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+  // Send saved tasks to the parent page
+  function done() {
+    onDone(sorted.filter((t) => savedIds.includes(t.id)));
   }
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 dark:bg-black/70">
+      {/* Main dialog */}
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="review-tasks-title"
-        className="flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-[#d0d8c8] bg-[#f8faf5] shadow-xl"
+        className="flex max-h-[90vh] w-full max-w-[1040px] flex-col overflow-hidden rounded-xl border border-gray-200 bg-white text-gray-900 shadow-xl dark:border-gray-700 dark:bg-gray-900 dark:text-white"
       >
         {/* Header */}
-        <div className="flex items-start justify-between p-5">
-          <div>
-            <p className="mb-2 text-xs text-gray-500">
+        <div className="flex items-start justify-between gap-4 border-b border-gray-200 p-6 dark:border-gray-700">
+          <div className="grid gap-2">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               TuDu / Tri-Cities Chamber
             </p>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               <h2
                 id="review-tasks-title"
-                className="text-2xl font-bold text-gray-900"
+                className="text-2xl font-bold leading-8 text-gray-900 dark:text-white"
               >
                 Review tasks
               </h2>
 
-              <span className="rounded-full bg-[#e4ebdc] px-3 py-1 text-xs text-gray-600">
-                {tasks.length} tasks
+              <span className="flex h-[22px] items-center rounded-full bg-gray-100 px-2 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-200">
+                {tasks.length}{" "}
+                {tasks.length === 1 ? "task" : "tasks"}
               </span>
             </div>
 
-            <p className="mt-2 text-sm text-gray-700">
-              Choose which tasks to keep. Click a task title to expand its
-              information.
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              Choose which tasks to keep. Click a task
+              title to expand its information.
             </p>
           </div>
 
+          {/* Close button */}
           <button
             type="button"
             onClick={onClose}
             aria-label="Close review tasks"
-            className="rounded-md border border-[#cbd5c2] p-2 hover:bg-[#e4ebdc]"
+            className={cn(
+              ICON_BUTTON,
+              "shrink-0 text-[19px]"
+            )}
           >
-            <X size={18} />
+            <X size={16} aria-hidden />
           </button>
         </div>
 
-        {/* Task table */}
-        <div className="overflow-auto">
-          <table className="w-full min-w-lg border-collapse text-left text-sm">
-            <thead className="bg-[#e3eadb] text-xs text-gray-700">
-              <tr>
-                <th className="px-5 py-3 font-medium">
-                  Task title · click to expand
-                </th>
-                <th className="px-3 py-3 font-medium">Event</th>
-                <th className="px-3 py-3 font-medium">Due date ↑</th>
-                <th className="px-3 py-3 text-center font-medium">Save</th>
-                <th className="px-3 py-3 text-center font-medium">Edit</th>
-                <th className="px-3 py-3 text-center font-medium">Dismiss</th>
-              </tr>
-            </thead>
+        {/* Task list */}
+        <div className="min-h-0 flex-1 overflow-auto">
+          <div className="min-w-[760px]">
+            {/* Table header */}
+            <div className="flex h-9 items-center gap-4 bg-gray-100 px-6 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+              <p className="min-w-0 flex-1">
+                Task title · click to expand
+              </p>
 
-            <tbody>
-              {tasks.map((task) => (
-                <FragmentRow
-                  key={task.id}
-                  task={task}
-                  expanded={expandedTask === task.id}
-                  editing={editingTask === task.id}
-                  saved={savedTasks.includes(task.id)}
-                  onToggle={() => toggleTask(task.id)}
-                  onSave={() => saveTask(task.id)}
-                  onEdit={() => {
-                    setEditingTask(
-                      editingTask === task.id ? null : task.id
-                    );
-                    setExpandedTask(task.id);
-                  }}
-                  onDismiss={() => dismissTask(task.id)}
-                  onChange={(field, value) =>
-                    updateTask(task.id, field, value)
-                  }
-                  formatDate={formatDate}
-                />
-              ))}
-            </tbody>
-          </table>
+              <p className="w-[220px] shrink-0">
+                Event
+              </p>
 
-          {tasks.length === 0 && (
-            <p className="p-8 text-center text-sm text-gray-500">
-              No tasks left to review.
-            </p>
-          )}
+              <p className="w-[100px] shrink-0">
+                Due date ↑
+              </p>
+
+              <p className="w-10 shrink-0 text-center">
+                Save
+              </p>
+
+              <p className="w-10 shrink-0 text-center">
+                Edit
+              </p>
+
+              <p className="w-12 shrink-0 text-center">
+                Dismiss
+              </p>
+            </div>
+
+            {/* Task rows */}
+            {sorted.map((task) => (
+              <TaskRow
+                key={task.id}
+                task={task}
+                expanded={expandedId === task.id}
+                editing={editingId === task.id}
+                saved={savedIds.includes(task.id)}
+                onToggle={() =>
+                  setExpandedId(
+                    expandedId === task.id ? null : task.id
+                  )
+                }
+                onSave={() => toggleSaved(task.id)}
+                onEdit={() => {
+                  setEditingId(
+                    editingId === task.id ? null : task.id
+                  );
+                  setExpandedId(task.id);
+                }}
+                onDismiss={() => dismiss(task.id)}
+                onChange={(field, value) =>
+                  change(task.id, field, value)
+                }
+              />
+            ))}
+
+            {tasks.length === 0 && (
+              <p className="p-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                No tasks left to review.
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-[#d4dccd] p-5">
-          <div>
-            <p className="text-xs font-medium text-gray-800">
-              {tasks.length} tasks to review
+        <div className="flex items-center justify-between gap-4 border-t border-gray-200 px-6 py-[18px] dark:border-gray-700">
+          <div className="grid gap-1 text-xs">
+            <p className="font-medium text-gray-900 dark:text-white">
+              {tasks.length}{" "}
+              {tasks.length === 1 ? "task" : "tasks"} to
+              review
             </p>
-            <p className="mt-1 text-xs text-gray-500">
-              Sample tasks · Original October 2024 due dates
+
+            <p
+              role="status"
+              className="text-gray-500 dark:text-gray-400"
+            >
+              {savedIds.length} saved · only saved tasks
+              are added to the calendar
             </p>
-            {message && (
-              <p role="status" className="mt-1 text-xs text-teal-700">
-                {message}
-              </p>
-            )}
           </div>
 
           <button
             type="button"
-            onClick={onClose}
-            className="rounded-md bg-[#168a91] px-8 py-2 text-sm font-medium text-white hover:bg-[#116e74]"
+            onClick={done}
+            className="h-8 w-[84px] rounded-md bg-[#0088c9] text-xs font-medium text-white hover:bg-[#0079b3] dark:bg-blue-600 dark:hover:bg-blue-500"
           >
             Done
           </button>
@@ -260,20 +264,8 @@ export default function ReviewTasksDialog({
   );
 }
 
-type RowProps = {
-  task: Task;
-  expanded: boolean;
-  editing: boolean;
-  saved: boolean;
-  onToggle: () => void;
-  onSave: () => void;
-  onEdit: () => void;
-  onDismiss: () => void;
-  onChange: (field: keyof Task, value: string) => void;
-  formatDate: (date: string) => string;
-};
-
-function FragmentRow({
+// Each task row and its expanded details
+function TaskRow({
   task,
   expanded,
   editing,
@@ -283,182 +275,258 @@ function FragmentRow({
   onEdit,
   onDismiss,
   onChange,
-  formatDate,
-}: RowProps) {
+}: {
+  task: ProposedTask;
+  expanded: boolean;
+  editing: boolean;
+  saved: boolean;
+  onToggle: () => void;
+  onSave: () => void;
+  onEdit: () => void;
+  onDismiss: () => void;
+  onChange: (
+    field: keyof ProposedTask,
+    value: string
+  ) => void;
+}) {
   return (
-    <>
-      <tr className="border-b border-[#d4dccd] bg-[#f0f4ec]">
-        <td className="px-5 py-3">
-          <button
-            type="button"
-            onClick={onToggle}
-            aria-expanded={expanded}
-            className="flex items-center gap-2 text-left font-medium text-[#29285f] hover:underline"
-          >
-            {expanded ? (
-              <ChevronDown size={16} />
-            ) : (
-              <ChevronRight size={16} />
-            )}
+    <div className="border-b border-gray-200 dark:border-gray-700">
+      {/* Task summary row */}
+      <div className="flex h-[52px] items-center gap-4 bg-gray-100 px-6 dark:bg-gray-800">
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={expanded}
+          className={cn(
+            "flex min-w-0 flex-1 items-center gap-2 text-left text-sm text-blue-700 hover:underline dark:text-blue-400",
+            expanded ? "font-semibold" : "font-medium"
+          )}
+        >
+          {expanded ? (
+            <ChevronDown
+              size={16}
+              className="shrink-0"
+              aria-hidden
+            />
+          ) : (
+            <ChevronRight
+              size={16}
+              className="shrink-0"
+              aria-hidden
+            />
+          )}
+
+          <span className="truncate">
             {task.title}
-          </button>
-        </td>
+          </span>
+        </button>
 
-        <td className="px-3 py-3 text-xs text-gray-600">
-          {task.event}
-        </td>
+        <p className="w-[220px] shrink-0 truncate text-xs text-gray-600 dark:text-gray-300">
+          {task.eventName}
+        </p>
 
-        <td className="px-3 py-3 text-xs text-gray-600">
-          {formatDate(task.dueDate)}
-        </td>
+        <p className="w-[100px] shrink-0 text-xs text-gray-600 dark:text-gray-300">
+          {formatDate(task.dueDate, "MMM d, yyyy")}
+        </p>
 
-        <td className="px-3 py-3 text-center">
+        {/* Save */}
+        <div className="flex w-10 shrink-0 justify-center">
           <button
             type="button"
             onClick={onSave}
-            aria-label={`Save ${task.title}`}
-            className={`rounded-md border p-2 ${
-              saved
-                ? "border-teal-500 bg-teal-100 text-teal-700"
-                : "border-[#cbd5c2] bg-[#e4ebdc] text-gray-800"
-            }`}
+            aria-label={`${saved ? "Unsave" : "Save"} ${task.title}`}
+            aria-pressed={saved}
+            className={cn(
+              ICON_BUTTON,
+              saved &&
+                "border-green-600 bg-green-50 text-green-700 hover:bg-green-100 dark:border-green-500 dark:bg-green-900 dark:text-green-300 dark:hover:bg-green-800"
+            )}
           >
-            <Check size={16} />
+            <Check size={16} aria-hidden />
           </button>
-        </td>
+        </div>
 
-        <td className="px-3 py-3 text-center">
+        {/* Edit */}
+        <div className="flex w-10 shrink-0 justify-center">
           <button
             type="button"
             onClick={onEdit}
             aria-label={`Edit ${task.title}`}
-            className="rounded-md border border-[#cbd5c2] bg-[#e4ebdc] p-2"
+            className={ICON_BUTTON}
           >
-            <Pencil size={16} />
+            <Pencil size={16} aria-hidden />
           </button>
-        </td>
+        </div>
 
-        <td className="px-3 py-3 text-center">
+        {/* Dismiss */}
+        <div className="flex w-12 shrink-0 justify-center">
           <button
             type="button"
             onClick={onDismiss}
             aria-label={`Dismiss ${task.title}`}
-            className="rounded-md border border-[#cbd5c2] bg-[#e4ebdc] p-2"
+            className={ICON_BUTTON}
           >
-            <X size={16} />
+            <X size={16} aria-hidden />
           </button>
-        </td>
-      </tr>
+        </div>
+      </div>
 
+      {/* Expanded Task Details */}
       {expanded && (
-        <tr className="bg-[#f8faf5]">
-          <td colSpan={6} className="px-10 py-5">
-            {editing ? (
-              <div className="space-y-3">
-                <div>
-                  <label className="mb-1 block text-xs">Task title</label>
-                  <input
-                    value={task.title}
-                    onChange={(e) =>
-                      onChange("title", e.target.value)
-                    }
-                    className="w-full rounded border p-2 text-sm"
-                  />
-                </div>
+        <div className="bg-white pb-[22px] pl-12 pr-6 pt-5 text-gray-900 dark:bg-gray-900 dark:text-white">
+          {editing ? (
+            <div className="grid gap-3">
+              {/* Task Title */}
+              <Field
+                label="Task title"
+                value={task.title}
+                onChange={(value) =>
+                  onChange("title", value)
+                }
+              />
 
-                <div>
-                  <label className="mb-1 block text-xs">Description</label>
-                  <textarea
-                    value={task.description}
-                    onChange={(e) =>
-                      onChange("description", e.target.value)
-                    }
-                    className="w-full rounded border p-2 text-sm"
-                    rows={3}
-                  />
-                </div>
+              {/* Task Description */}
+              <label className="grid gap-1 text-xs text-gray-600 dark:text-gray-300">
+                Task information
 
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <div>
-                    <label className="mb-1 block text-xs">Sponsor</label>
-                    <input
-                      value={task.sponsor}
-                      onChange={(e) =>
-                        onChange("sponsor", e.target.value)
-                      }
-                      className="w-full rounded border p-2 text-sm"
-                    />
-                  </div>
+                <textarea
+                  value={task.description}
+                  onChange={(e) =>
+                    onChange(
+                      "description",
+                      e.target.value
+                    )
+                  }
+                  rows={3}
+                  className={`${INPUT_STYLE} resize-none`}
+                />
+              </label>
 
-                  <div>
-                    <label className="mb-1 block text-xs">Event</label>
-                    <input
-                      value={task.event}
-                      onChange={(e) =>
-                        onChange("event", e.target.value)
-                      }
-                      className="w-full rounded border p-2 text-sm"
-                    />
-                  </div>
+              {/* Sponsor, Event, Due Date */}
+              <div className="grid gap-3 sm:grid-cols-3">
+                <Field
+                  label="Sponsor"
+                  value={task.sponsorName}
+                  onChange={(value) =>
+                    onChange("sponsorName", value)
+                  }
+                />
 
-                  <div>
-                    <label className="mb-1 block text-xs">Due date</label>
-                    <input
-                      type="date"
-                      value={task.dueDate}
-                      onChange={(e) =>
-                        onChange("dueDate", e.target.value)
-                      }
-                      className="w-full rounded border p-2 text-sm"
-                    />
-                  </div>
-                </div>
+                <Field
+                  label="Event"
+                  value={task.eventName}
+                  onChange={(value) =>
+                    onChange("eventName", value)
+                  }
+                />
 
+                <Field
+                  label="Due date"
+                  type="date"
+                  value={task.dueDate}
+                  onChange={(value) =>
+                    onChange("dueDate", value)
+                  }
+                />
+              </div>
+
+              {/* Done Editing */}
+              <div>
                 <button
                   type="button"
                   onClick={onEdit}
-                  className="rounded bg-[#168a91] px-4 py-2 text-xs text-white"
+                  className="h-8 rounded-md bg-[#0088c9] px-3 text-xs font-medium text-white hover:bg-[#0079b3] dark:bg-blue-600 dark:hover:bg-blue-500"
                 >
                   Done editing
                 </button>
               </div>
-            ) : (
-              <>
-                <p className="mb-2 text-xs text-gray-600">
+            </div>
+          ) : (
+            <div className="grid gap-[18px]">
+              {/* Task Information */}
+              <div className="grid gap-1.5">
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
                   Task information
                 </p>
 
-                <p className="mb-4 text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
                   {task.description}
                 </p>
+              </div>
 
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <div>
-                    <p className="text-xs text-gray-500">Sponsor</p>
-                    <p className="mt-1 text-sm font-medium">
-                      {task.sponsor}
-                    </p>
-                  </div>
+              {/* Task Details */}
+              <div className="grid gap-6 sm:grid-cols-3">
+                <Detail
+                  label="Sponsor"
+                  value={task.sponsorName || "None"}
+                />
 
-                  <div>
-                    <p className="text-xs text-gray-500">Event</p>
-                    <p className="mt-1 text-sm font-medium">
-                      {task.event}
-                    </p>
-                  </div>
+                <Detail
+                  label="Event"
+                  value={task.eventName}
+                />
 
-                  <div>
-                    <p className="text-xs text-gray-500">Due date</p>
-                    <p className="mt-1 text-sm font-medium">
-                      {formatDate(task.dueDate)}
-                    </p>
-                  </div>
-                </div>
-              </>
-            )}
-          </td>
-        </tr>
+                <Detail
+                  label="Due date"
+                  value={formatDate(
+                    task.dueDate,
+                    "MMMM d, yyyy"
+                  )}
+                />
+              </div>
+            </div>
+          )}
+        </div>
       )}
-    </>
+    </div>
+  );
+}
+
+// Details shown when the task is expanded
+function Detail({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="grid gap-1.5">
+      <p className="text-xs text-gray-500 dark:text-gray-400">
+        {label}
+      </p>
+
+      <p className="text-sm font-medium text-gray-900 dark:text-white">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+// Editable input field
+function Field({
+  label,
+  value,
+  onChange,
+  type = "text",
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  type?: string;
+}) {
+  return (
+    <label className="grid gap-1 text-xs text-gray-600 dark:text-gray-300">
+      {label}
+
+      <input
+        type={type}
+        value={value}
+        onChange={(e) =>
+          onChange(e.target.value)
+        }
+        className={`${INPUT_STYLE} h-9`}
+      />
+    </label>
   );
 }

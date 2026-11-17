@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { Ticket, X, MapPin, Plus } from "lucide-react";
 
+// Information for each complimentary ticket
 export type CompTicket = {
   id: string;
   recipient: string;
@@ -19,6 +20,7 @@ export type CompTicket = {
   status: "Draft" | "Issued";
 };
 
+// Information received from the parent page
 type Props = {
   open: boolean;
   onClose: () => void;
@@ -65,13 +67,14 @@ export default function GiveCompTicketsDialog({
     "placeholder:text-gray-400 outline-none " +
     "focus:border-blue-600 focus:ring-1 focus:ring-blue-600 " +
     "dark:border-gray-600 dark:bg-gray-800 " +
-    "dark:text-white dark:placeholder:text-gray-400";
+    "dark:text-white dark:placeholder:text-gray-400 " +
+    "dark:focus:border-blue-400 dark:focus:ring-blue-400";
 
   // Section styling
   const sectionStyle =
     "space-y-3 rounded-xl border border-gray-200 " +
     "bg-white p-4 text-gray-900 " +
-    "dark:border-gray-700 dark:bg-gray-900 dark:text-white";
+    "dark:border-gray-700 dark:bg-gray-800 dark:text-white";
 
   // Unselected buttons
   const optionStyle =
@@ -94,6 +97,7 @@ export default function GiveCompTicketsDialog({
     "dark:bg-gray-800 dark:text-white " +
     "dark:hover:bg-gray-700";
 
+  // Save draft or issue tickets
   function handleSave(status: "Draft" | "Issued") {
     if (!sponsor.trim()) {
       setError("Please enter a sponsor name.");
@@ -132,7 +136,8 @@ export default function GiveCompTicketsDialog({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 dark:bg-black/70">
+      {/* Main Dialog */}
       <div
         role="dialog"
         aria-modal="true"
@@ -162,6 +167,7 @@ export default function GiveCompTicketsDialog({
             </div>
           </div>
 
+          {/* Close Icon */}
           <button
             type="button"
             onClick={onClose}
@@ -174,7 +180,6 @@ export default function GiveCompTicketsDialog({
 
         {/* Form */}
         <div className="space-y-4 overflow-y-auto p-5">
-
           {/* Recipient */}
           <section className={sectionStyle}>
             <h3 className="font-semibold">
@@ -210,7 +215,7 @@ export default function GiveCompTicketsDialog({
             </h3>
 
             <div className="grid gap-3 sm:grid-cols-[1fr_130px]">
-
+              {/* Sponsor Name */}
               <div>
                 <label
                   htmlFor="comp-sponsor"
@@ -231,6 +236,7 @@ export default function GiveCompTicketsDialog({
                 />
               </div>
 
+              {/* Number of Tickets */}
               <div>
                 <label
                   htmlFor="comp-quantity"
@@ -286,6 +292,7 @@ export default function GiveCompTicketsDialog({
               Event Details
             </h3>
 
+            {/* Event Name */}
             <div>
               <label
                 htmlFor="comp-event"
@@ -299,10 +306,13 @@ export default function GiveCompTicketsDialog({
                 className={inputStyle}
                 placeholder="Enter event name"
                 value={eventName}
-                onChange={(e) => setEventName(e.target.value)}
+                onChange={(e) =>
+                  setEventName(e.target.value)
+                }
               />
             </div>
 
+            {/* Event Location */}
             <div>
               <label
                 htmlFor="comp-location"
@@ -319,7 +329,9 @@ export default function GiveCompTicketsDialog({
                 id="comp-location"
                 className={inputStyle}
                 value={location}
-                onChange={(e) => setLocation(e.target.value)}
+                onChange={(e) =>
+                  setLocation(e.target.value)
+                }
               />
             </div>
           </section>
@@ -331,7 +343,7 @@ export default function GiveCompTicketsDialog({
             </h3>
 
             <div className="flex flex-wrap gap-4 text-sm text-gray-700 dark:text-gray-200">
-
+              {/* Plus One */}
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -339,11 +351,12 @@ export default function GiveCompTicketsDialog({
                   onChange={(e) =>
                     setPlusOne(e.target.checked)
                   }
-                  className="accent-blue-700"
+                  className="accent-blue-700 dark:accent-blue-500"
                 />
                 Allow Plus One
               </label>
 
+              {/* VIP Lounge */}
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -351,11 +364,12 @@ export default function GiveCompTicketsDialog({
                   onChange={(e) =>
                     setVipLounge(e.target.checked)
                   }
-                  className="accent-blue-700"
+                  className="accent-blue-700 dark:accent-blue-500"
                 />
                 VIP Lounge Access
               </label>
 
+              {/* Backstage */}
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -363,11 +377,10 @@ export default function GiveCompTicketsDialog({
                   onChange={(e) =>
                     setBackstage(e.target.checked)
                   }
-                  className="accent-blue-700"
+                  className="accent-blue-700 dark:accent-blue-500"
                 />
                 Backstage Pass
               </label>
-
             </div>
           </section>
 
@@ -380,7 +393,9 @@ export default function GiveCompTicketsDialog({
             <textarea
               className={`${inputStyle} min-h-28`}
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={(e) =>
+                setNotes(e.target.value)
+              }
               placeholder="Add any specific instructions for the box office or event staff..."
             />
           </section>
@@ -398,7 +413,7 @@ export default function GiveCompTicketsDialog({
 
         {/* Footer */}
         <div className="flex flex-wrap justify-end gap-2 border-t border-gray-200 p-4 dark:border-gray-700">
-
+          {/* Close */}
           <button
             type="button"
             onClick={onClose}
@@ -407,6 +422,7 @@ export default function GiveCompTicketsDialog({
             Close
           </button>
 
+          {/* Save Draft */}
           <button
             type="button"
             onClick={() => handleSave("Draft")}
@@ -415,6 +431,7 @@ export default function GiveCompTicketsDialog({
             Save
           </button>
 
+          {/* Issue Tickets */}
           <button
             type="button"
             onClick={() => handleSave("Issued")}
@@ -423,7 +440,6 @@ export default function GiveCompTicketsDialog({
             <Plus size={16} />
             Issue Tickets
           </button>
-
         </div>
       </div>
     </div>
