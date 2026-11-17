@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { addMonths, endOfMonth, isSameMonth, startOfMonth } from "date-fns";
 import { Plus } from "lucide-react";
@@ -68,6 +68,10 @@ export function PlannerApp() {
   const [eventForm, setEventForm] = useState<EventFormState | null>(null);
   const [detailsDate, setDetailsDate] = useState<ISODate | null>(null);
   const [announcement, setAnnouncement] = useState("");
+
+  // Next keeps a page's state alive while it is hidden after you navigate away,
+  // so clear the filters when the calendar is left (the cleanup runs on hide / unmount).
+  useEffect(() => () => setFilters(EMPTY_FILTERS), []);
 
   // Opening "/calendar?date=2025-03-07" (from the header bell) jumps to that day. This
   // adjusts state while rendering, once per new value of the URL.
