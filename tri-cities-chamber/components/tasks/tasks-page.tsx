@@ -3,14 +3,17 @@
 import { useMemo, useState } from "react";
 import { Briefcase, CalendarDays, ListFilter, User } from "lucide-react";
 
-import { AppSidebar, useHomeFilters } from "@/components/app-shell/app-sidebar";
+import {
+  AppSidebar,
+  useTasksFilters,
+} from "@/components/app-shell/app-sidebar";
 import { useToast } from "@/components/app-shell/toast-provider";
 import { usePlannerData } from "@/components/app-shell/planner-provider";
 import { Button } from "@/components/ui/button";
 import { FilterSelect } from "@/components/tasks/filter-select";
 import { TaskTable } from "@/components/tasks/task-table";
 import { isISODateBefore, shiftISODate } from "@/lib/planner/dates";
-import { paginate, searchTasks, sortByDueDate } from "@/lib/planner/home";
+import { paginate, searchTasks, sortByDueDate } from "@/lib/planner/tasks";
 import { getTaskStatus } from "@/lib/planner/selectors";
 import TaskDetails, { type TaskInfo } from "@/components/TaskDetails";
 
@@ -33,17 +36,17 @@ const DUE_OPTIONS = [
 ] as const;
 
 /**
- * The home page: the "Tu Do Task Table". The sidebar (app-sidebar.tsx) is shared
+ * The tasks page: the "Tu Do Task Table". The sidebar (app-sidebar.tsx) is shared
  * with every page; its search and event / partner picks filter this table.
  */
-export function HomePage() {
+export function TasksPage() {
   const data = usePlannerData();
   const toast = useToast();
   const { today, tasks, events, sponsors, lookups } = data;
 
   // The search box and the event / partner picked in the sidebar (shared with every page).
   const { search, eventId, sponsorId, setEventId, setSponsorId, viewKey } =
-    useHomeFilters();
+    useTasksFilters();
 
   // What the user has chosen on screen.
   const [status, setStatus] =
@@ -218,12 +221,15 @@ export function HomePage() {
                 priority: "Medium",
                 dueDate: t.dueDate,
                 assignedTo: "",
-                event: t.eventId ? lookups.eventsById.get(t.eventId)?.name || "" : "",
+                event: t.eventId
+                  ? lookups.eventsById.get(t.eventId)?.name || ""
+                  : "",
               })
             }
             sort={{
               direction,
-              onToggle: () => setDirection(direction === "asc" ? "desc" : "asc"),
+              onToggle: () =>
+                setDirection(direction === "asc" ? "desc" : "asc"),
             }}
           />
         </div>
@@ -264,14 +270,13 @@ export function HomePage() {
       </section>
       {selectedTask && (
         <TaskDetails
-        key={selectedTask.id}
-        task={selectedTask}
-        onClose={() => setSelectedTask(null)}
-        onSave={(updatedTask) => {
-          setSelectedTask(updatedTask);
-        }}
+          key={selectedTask.id}
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onSave={(updatedTask) => {
+            setSelectedTask(updatedTask);
+          }}
         />
-
       )}
     </div>
   );

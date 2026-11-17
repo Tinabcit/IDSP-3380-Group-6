@@ -1,5 +1,5 @@
 import { isISODateBefore, shiftISODate } from "@/lib/planner/dates";
-import { sortByDueDate } from "@/lib/planner/home";
+import { sortByDueDate } from "@/lib/planner/tasks";
 import type { Contract, ISODate, Task } from "@/lib/planner/types";
 
 /** One uploaded contract file, ready to show as a row. */

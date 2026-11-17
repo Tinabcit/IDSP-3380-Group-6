@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 
 /** The pages that need a signed-in person. */
-const PROTECTED = ["/home", "/calendar", "/contracts", "/events", "/partners", "/dashboard", "/settings"];
+const PROTECTED = ["/home", "/tasks", "/calendar", "/contracts", "/events", "/partners", "/settings"];
 
 /** Temporary dev switch: true lets everyone into every page without signing in. Set to false to turn login back on. */
 export const AUTH_DISABLED = true;
