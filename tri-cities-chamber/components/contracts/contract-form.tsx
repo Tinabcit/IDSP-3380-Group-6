@@ -479,7 +479,7 @@ export function ContractForm() {
       </fieldset>
 
       <fieldset className="grid gap-3">
-        <legend className="mb-1 text-base font-semibold">What we owe the partner</legend>
+        <legend className="mb-1 text-base font-semibold">Deliverables</legend>
         {deliverables.length === 0 && (
           <p className="text-sm text-muted-foreground">
             Logo placement, tickets, a speaking slot, anything promised in the contract.
