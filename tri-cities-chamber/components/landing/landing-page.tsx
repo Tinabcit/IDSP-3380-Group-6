@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { connection } from "next/server";
 import { ArrowRight } from "lucide-react";
@@ -62,7 +63,10 @@ export function LandingPage() {
   return (
     <div className="flex min-h-dvh flex-col bg-background">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-4 sm:px-8">
-        <span className="text-xl font-bold">Tu Du</span>
+        <span className="flex items-center gap-2 text-xl font-bold">
+          <Image src="/tudu-logo.png" alt="" width={407} height={408} className="h-10 w-10" />
+          Tu Du
+        </span>
         <div className="flex flex-wrap items-center gap-3">
           {/* The session is only known at request time, so the buttons stream in. */}
           <Suspense fallback={null}>
