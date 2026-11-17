@@ -184,7 +184,7 @@ export default function ReviewTasksDialog({
 
         {/* Task table */}
         <div className="overflow-auto">
-          <table className="w-full min-w-[760px] border-collapse text-left text-sm">
+          <table className="w-full min-w-lg border-collapse text-left text-sm">
             <thead className="bg-[#e3eadb] text-xs text-gray-700">
               <tr>
                 <th className="px-5 py-3 font-medium">
