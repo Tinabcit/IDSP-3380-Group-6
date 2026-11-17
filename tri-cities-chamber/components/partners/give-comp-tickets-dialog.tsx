@@ -2,12 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Ticket,
-  X,
-  MapPin,
-  Plus,
-} from "lucide-react";
+import { Ticket, X, MapPin, Plus } from "lucide-react";
 
 export type CompTicket = {
   id: string;
@@ -55,13 +50,49 @@ export default function GiveCompTicketsDialog({
   const [ticketType, setTicketType] = useState("General Admission");
   const [eventName, setEventName] = useState("");
   const [location, setLocation] = useState("Main Hall");
+
   const [plusOne, setPlusOne] = useState(false);
   const [vipLounge, setVipLounge] = useState(false);
   const [backstage, setBackstage] = useState(false);
+
   const [notes, setNotes] = useState("");
   const [error, setError] = useState("");
 
-  if (!open) return null;
+  // Input styling for light and dark mode
+  const inputStyle =
+    "w-full rounded-md border border-gray-300 bg-white " +
+    "px-3 py-2 text-sm text-gray-900 " +
+    "placeholder:text-gray-400 outline-none " +
+    "focus:border-blue-600 focus:ring-1 focus:ring-blue-600 " +
+    "dark:border-gray-600 dark:bg-gray-800 " +
+    "dark:text-white dark:placeholder:text-gray-400";
+
+  // Section styling
+  const sectionStyle =
+    "space-y-3 rounded-xl border border-gray-200 " +
+    "bg-white p-4 text-gray-900 " +
+    "dark:border-gray-700 dark:bg-gray-900 dark:text-white";
+
+  // Unselected buttons
+  const optionStyle =
+    "rounded-full bg-gray-100 px-4 py-2 " +
+    "text-sm text-gray-700 hover:bg-gray-200 " +
+    "dark:bg-gray-700 dark:text-gray-100 " +
+    "dark:hover:bg-gray-600";
+
+  // Selected buttons
+  const selectedStyle =
+    "rounded-full bg-blue-700 px-4 py-2 " +
+    "text-sm text-white hover:bg-blue-800 " +
+    "dark:bg-blue-600 dark:hover:bg-blue-700";
+
+  // Footer buttons
+  const footerButtonStyle =
+    "rounded-md border border-gray-300 bg-white " +
+    "px-4 py-2 text-sm text-gray-800 " +
+    "hover:bg-gray-100 dark:border-gray-600 " +
+    "dark:bg-gray-800 dark:text-white " +
+    "dark:hover:bg-gray-700";
 
   function handleSave(status: "Draft" | "Issued") {
     if (!sponsor.trim()) {
@@ -98,21 +129,7 @@ export default function GiveCompTicketsDialog({
     onClose();
   }
 
-  // Styles that work in both light and dark mode
-  const inputStyle =
-    "w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary";
-
-  const sectionStyle =
-    "space-y-3 rounded-xl border border-border bg-card p-4 text-card-foreground";
-
-  const optionStyle =
-    "rounded-full bg-muted px-4 py-2 text-sm text-foreground hover:bg-accent";
-
-  const selectedStyle =
-    "rounded-full bg-blue-700 px-4 py-2 text-sm text-white dark:bg-blue-600";
-
-  const footerButtonStyle =
-    "rounded-md border border-border bg-background px-4 py-2 text-sm text-foreground hover:bg-accent";
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -120,25 +137,25 @@ export default function GiveCompTicketsDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="comp-ticket-title"
-        className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-2xl border border-border bg-background text-foreground shadow-xl"
+        className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-2xl border border-gray-200 bg-white text-gray-900 shadow-xl dark:border-gray-700 dark:bg-gray-900 dark:text-white"
       >
         {/* Header */}
-        <div className="flex items-start justify-between gap-3 border-b border-border p-5">
+        <div className="flex items-start justify-between gap-3 border-b border-gray-200 p-5 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <Ticket
-              className="shrink-0 text-blue-700 dark:text-blue-400"
               size={26}
+              className="shrink-0 text-blue-700 dark:text-blue-400"
             />
 
             <div>
               <h2
                 id="comp-ticket-title"
-                className="text-xl font-bold text-foreground"
+                className="text-xl font-bold text-gray-900 dark:text-white"
               >
                 Give Comp Tickets
               </h2>
 
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Issue complimentary event tickets to guests,
                 sponsors, and staff.
               </p>
@@ -149,7 +166,7 @@ export default function GiveCompTicketsDialog({
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
-            className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="rounded-md p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
           >
             <X size={20} />
           </button>
@@ -157,9 +174,12 @@ export default function GiveCompTicketsDialog({
 
         {/* Form */}
         <div className="space-y-4 overflow-y-auto p-5">
+
           {/* Recipient */}
           <section className={sectionStyle}>
-            <h3 className="font-semibold">Recipient</h3>
+            <h3 className="font-semibold">
+              Recipient
+            </h3>
 
             <div className="flex flex-wrap gap-2">
               {recipients.map((name) => (
@@ -190,10 +210,11 @@ export default function GiveCompTicketsDialog({
             </h3>
 
             <div className="grid gap-3 sm:grid-cols-[1fr_130px]">
+
               <div>
                 <label
                   htmlFor="comp-sponsor"
-                  className="mb-1 block text-sm"
+                  className="mb-1 block text-sm text-gray-700 dark:text-gray-200"
                 >
                   Sponsor Name
                 </label>
@@ -213,7 +234,7 @@ export default function GiveCompTicketsDialog({
               <div>
                 <label
                   htmlFor="comp-quantity"
-                  className="mb-1 block text-sm"
+                  className="mb-1 block text-sm text-gray-700 dark:text-gray-200"
                 >
                   Number of Tickets
                 </label>
@@ -225,9 +246,10 @@ export default function GiveCompTicketsDialog({
                   step="1"
                   className={inputStyle}
                   value={quantity}
-                  onChange={(e) =>
-                    setQuantity(Number(e.target.value))
-                  }
+                  onChange={(e) => {
+                    setQuantity(Number(e.target.value));
+                    setError("");
+                  }}
                 />
               </div>
             </div>
@@ -267,7 +289,7 @@ export default function GiveCompTicketsDialog({
             <div>
               <label
                 htmlFor="comp-event"
-                className="mb-1 block text-sm"
+                className="mb-1 block text-sm text-gray-700 dark:text-gray-200"
               >
                 Event Name
               </label>
@@ -277,16 +299,14 @@ export default function GiveCompTicketsDialog({
                 className={inputStyle}
                 placeholder="Enter event name"
                 value={eventName}
-                onChange={(e) =>
-                  setEventName(e.target.value)
-                }
+                onChange={(e) => setEventName(e.target.value)}
               />
             </div>
 
             <div>
               <label
                 htmlFor="comp-location"
-                className="mb-1 flex items-center gap-2 text-sm"
+                className="mb-1 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200"
               >
                 <MapPin
                   size={18}
@@ -299,9 +319,7 @@ export default function GiveCompTicketsDialog({
                 id="comp-location"
                 className={inputStyle}
                 value={location}
-                onChange={(e) =>
-                  setLocation(e.target.value)
-                }
+                onChange={(e) => setLocation(e.target.value)}
               />
             </div>
           </section>
@@ -312,7 +330,8 @@ export default function GiveCompTicketsDialog({
               Permissions
             </h3>
 
-            <div className="flex flex-wrap gap-4 text-sm">
+            <div className="flex flex-wrap gap-4 text-sm text-gray-700 dark:text-gray-200">
+
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -348,6 +367,7 @@ export default function GiveCompTicketsDialog({
                 />
                 Backstage Pass
               </label>
+
             </div>
           </section>
 
@@ -360,14 +380,12 @@ export default function GiveCompTicketsDialog({
             <textarea
               className={`${inputStyle} min-h-28`}
               value={notes}
-              onChange={(e) =>
-                setNotes(e.target.value)
-              }
+              onChange={(e) => setNotes(e.target.value)}
               placeholder="Add any specific instructions for the box office or event staff..."
             />
           </section>
 
-          {/* Error message */}
+          {/* Error Message */}
           {error && (
             <p
               role="alert"
@@ -379,7 +397,8 @@ export default function GiveCompTicketsDialog({
         </div>
 
         {/* Footer */}
-        <div className="flex flex-wrap justify-end gap-2 border-t border-border p-4">
+        <div className="flex flex-wrap justify-end gap-2 border-t border-gray-200 p-4 dark:border-gray-700">
+
           <button
             type="button"
             onClick={onClose}
@@ -404,6 +423,7 @@ export default function GiveCompTicketsDialog({
             <Plus size={16} />
             Issue Tickets
           </button>
+
         </div>
       </div>
     </div>
