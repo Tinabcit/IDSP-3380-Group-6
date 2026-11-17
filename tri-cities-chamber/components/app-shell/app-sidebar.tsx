@@ -271,18 +271,18 @@ export function AppSidebar({ className, user }: { className?: string; user: Disp
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col divide-y overflow-y-auto [&>*]:p-4">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex gap-2">
         <Link
           href="/contracts/new"
-          className="w-fit rounded-md bg-sky-600 px-3 py-1.5 text-sm text-white"
+          className="flex-1 whitespace-nowrap rounded-md bg-sky-600 px-2 py-1.5 text-center text-xs text-white"
         >
           Upload Contract
         </Link>
         <Link
           href="/events/new"
-          className="w-fit rounded-md bg-sky-600 px-3 py-1.5 text-sm text-white"
+          className="flex-1 whitespace-nowrap rounded-md bg-sky-600 px-2 py-1.5 text-center text-xs text-white"
         >
-          Add Event +
+          Add Event
         </Link>
       </div>
 
