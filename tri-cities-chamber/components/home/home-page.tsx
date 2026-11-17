@@ -62,7 +62,7 @@ export function HomePage() {
   const { today, tasks, events, sponsors, lookups } = data;
 
   // The search box and the event / partner picked in the sidebar (shared with every page).
-  const { search, eventId, sponsorId, setEventId, setSponsorId } =
+  const { search, eventId, sponsorId, setEventId, setSponsorId, viewKey } =
     useHomeFilters();
 
   // What the user has chosen on screen.
@@ -72,10 +72,12 @@ export function HomePage() {
   const [direction, setDirection] = useState<"asc" | "desc">("asc");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  // Picking a different sponsor (here or in the sidebar) clears the other task filters.
-  const [seenSponsorId, setSeenSponsorId] = useState(sponsorId);
-  if (sponsorId !== seenSponsorId) {
-    setSeenSponsorId(sponsorId);
+  // Picking a different sponsor (here or in the sidebar), or any sidebar event / sponsor,
+  // clears the other task filters.
+  const resetKey = `${sponsorId}|${viewKey}`;
+  const [seenResetKey, setSeenResetKey] = useState(resetKey);
+  if (resetKey !== seenResetKey) {
+    setSeenResetKey(resetKey);
     setStatus("all");
     setDue("any");
     setSelected(new Set());

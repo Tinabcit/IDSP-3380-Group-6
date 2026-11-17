@@ -72,6 +72,11 @@ type HomeFilters = {
   setSearch: (value: string) => void;
   setEventId: (value: string) => void;
   setSponsorId: (value: string) => void;
+  /** Sidebar pick: shows just this event (or sponsor) and clears every other filter. */
+  pickEvent: (id: string) => void;
+  pickSponsor: (id: string) => void;
+  /** Goes up every time the sidebar picks a view, so the task table can reset its own dropdowns. */
+  viewKey: number;
 };
 
 const HomeFiltersContext = createContext<HomeFilters | null>(null);
@@ -95,6 +100,22 @@ export function HomeFiltersProvider({
     },
     [sponsorId],
   );
+  const [viewKey, setViewKey] = useState(0);
+  // Picking an event or sponsor in the sidebar is a fresh view: only that one is highlighted.
+  const pickView = useCallback((event: string, sponsor: string) => {
+    setEventId(event);
+    setSponsorId(sponsor);
+    setSearch("");
+    setViewKey((k) => k + 1);
+  }, []);
+  const pickEvent = useCallback(
+    (id: string) => pickView(eventId === id ? "all" : id, "all"),
+    [pickView, eventId],
+  );
+  const pickSponsor = useCallback(
+    (id: string) => pickView("all", sponsorId === id ? "all" : id),
+    [pickView, sponsorId],
+  );
   const value = useMemo(
     () => ({
       search,
@@ -103,8 +124,11 @@ export function HomeFiltersProvider({
       setSearch,
       setEventId,
       setSponsorId: switchSponsor,
+      pickEvent,
+      pickSponsor,
+      viewKey,
     }),
-    [search, eventId, sponsorId, switchSponsor],
+    [search, eventId, sponsorId, switchSponsor, pickEvent, pickSponsor, viewKey],
   );
   return (
     <HomeFiltersContext.Provider value={value}>
@@ -202,17 +226,20 @@ export function AppSidebar({ className, user }: { className?: string; user: Disp
     ).length;
   }
 
+  // An event or sponsor is picked: it holds the highlight, so Home does not.
+  const viewPicked = filters.eventId !== "all" || filters.sponsorId !== "all";
+
   function goHome() {
     if (pathname !== "/home") router.push("/home");
   }
 
   function pickEvent(id: string) {
-    filters.setEventId(filters.eventId === id ? "all" : id);
+    filters.pickEvent(id);
     goHome();
   }
 
   function pickPartner(id: string) {
-    filters.setSponsorId(filters.sponsorId === id ? "all" : id);
+    filters.pickSponsor(id);
     goHome();
   }
 
@@ -302,7 +329,9 @@ export function AppSidebar({ className, user }: { className?: string; user: Disp
             onClick={clearFilters}
             className={cn(
               "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-card",
-              isActive(pathname, href) && "bg-card font-medium",
+              isActive(pathname, href) &&
+                !(href === "/home" && viewPicked) &&
+                "bg-card font-medium",
             )}
           >
             <Icon className="h-4 w-4" />
