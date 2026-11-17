@@ -318,9 +318,7 @@ export function DayDetailsDialog({
               <p className="text-xs text-muted-foreground">
                 All times shown in your local timezone.
               </p>
-              <DialogClose asChild>
-                <Button variant="outline">Close</Button>
-              </DialogClose>
+              <DialogClose render={<Button variant="outline" />}>Close</DialogClose>
             </DialogFooter>
           </>
         )}

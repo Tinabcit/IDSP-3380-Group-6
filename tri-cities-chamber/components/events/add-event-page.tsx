@@ -288,7 +288,11 @@ export function AddEventPage() {
       {values.isSignature && (
         <div className="grid gap-1.5">
           <Label htmlFor="ev-category">Category</Label>
-          <Select value={values.category} onValueChange={(v) => set("category", v)}>
+          <Select
+            value={values.category || null}
+            onValueChange={(v) => set("category", v)}
+            items={EVENT_CATEGORIES}
+          >
             <SelectTrigger
               id="ev-category"
               aria-invalid={errors.category ? true : undefined}

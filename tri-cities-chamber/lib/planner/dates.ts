@@ -12,7 +12,7 @@ import {
   startOfWeek,
 } from 'date-fns';
 
-import type { ISODate } from './types';
+import type { ISODate, Task } from './types';
 
 /** Which day the calendar week starts on (0 = Sunday). Use 1 for Monday. */
 export const WEEK_STARTS_ON = 0; // Sunday
@@ -86,6 +86,11 @@ export function formatLongDate(value: ISODate): string {
   return format(fromISODate(value), 'EEEE, MMMM d');
 }
 
+/** Formats a date like "October 5th, 2024". */
+export function formatOrdinalDate(value: ISODate): string {
+  return format(fromISODate(value), 'MMMM do, yyyy');
+}
+
 /** Formats a date like "Mar 7". */
 export function formatShortDate(value: ISODate): string {
   return format(fromISODate(value), 'MMM d');
@@ -97,4 +102,11 @@ export function describeRelativeDay(value: ISODate, today: ISODate): string {
   if (value === shiftISODate(today, 1)) return 'Tomorrow';
   if (value === shiftISODate(today, -1)) return 'Yesterday';
   return format(fromISODate(value), 'EEE, MMM d');
+}
+
+export function getTasksPerDay(tasks: Task[], start: ISODate, days = 10) {
+  return Array.from({ length: days }, (_, i) => {
+    const date = shiftISODate(start, i);
+    return { date, count: tasks.filter((t) => t.dueDate === date).length };
+  });
 }

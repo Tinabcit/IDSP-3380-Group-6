@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
 import ReviewTasksDialog from "@/components/review-tasks-dialog/review-tasks-dialog";
 import { buildDemoSummary, formatCurrency, simulateExtraction } from "@/lib/planner/contracts";
 import { formatShortDate, shiftISODate } from "@/lib/planner/dates";
@@ -227,12 +228,10 @@ export function ContractForm() {
   return (
     <form onSubmit={handleSubmit} noValidate className="mx-auto grid max-w-2xl gap-6">
       <div>
-        <Button asChild variant="ghost" size="sm" className="-ml-3 mb-1 text-muted-foreground">
-          <Link href="/contracts">
+        <Button render={<Link href="/contracts" />} nativeButton={false} variant="ghost" size="sm" className="-ml-3 mb-1 text-muted-foreground">
             <ArrowLeft />
             Contracts
-          </Link>
-        </Button>
+          </Button>
         <h1 className="text-xl font-bold leading-tight">New contract</h1>
         <p className="text-sm text-muted-foreground">
           Upload the signed file and check what we found, or fill it in by hand. Reminders for
@@ -249,11 +248,12 @@ export function ContractForm() {
           aria-label="Contract file"
           onChange={(e) => handleFile(e.target.files?.[0])}
         />
-        <button
+        <Button
           type="button"
+          variant="outline"
           onClick={() => fileInput.current?.click()}
           disabled={reading}
-          className="flex w-full flex-col items-center gap-1.5 rounded-lg border-2 border-dashed bg-card px-4 py-8 text-center transition-colors hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-70"
+          className="h-auto w-full flex-col gap-1.5 whitespace-normal rounded-lg border-2 border-dashed border-border px-4 py-8 text-center font-normal hover:border-primary/50 hover:bg-card hover:text-foreground disabled:opacity-70 [&_svg]:size-6"
         >
           {reading ? (
             <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden />
@@ -270,7 +270,7 @@ export function ContractForm() {
           <span className="text-sm text-muted-foreground">
             {fileName && !reading ? "Choose a different file" : "Tap to choose a file"}
           </span>
-        </button>
+        </Button>
         {autoFilled && (
           <p
             role="status"
@@ -302,7 +302,14 @@ export function ContractForm() {
 
         <div className="grid gap-2">
           <Label htmlFor="c-partner">Partner</Label>
-          <Select value={sponsorId} onValueChange={setSponsorId}>
+          <Select
+            value={sponsorId || null}
+            onValueChange={setSponsorId}
+            items={[
+              ...data.sponsors.map((s) => ({ value: s.id, label: s.name })),
+              { value: NEW_PARTNER, label: "Add a new partner" },
+            ]}
+          >
             <SelectTrigger id="c-partner" aria-invalid={Boolean(errors.sponsor)}>
               <SelectValue placeholder="Choose a partner" />
             </SelectTrigger>
@@ -329,7 +336,14 @@ export function ContractForm() {
 
         <div className="grid gap-2">
           <Label htmlFor="c-event">Event</Label>
-          <Select value={eventId} onValueChange={setEventId}>
+          <Select
+            value={eventId}
+            onValueChange={setEventId}
+            items={[
+              { value: NONE, label: "Not tied to one event" },
+              ...sortedEvents.map((e) => ({ value: e.id, label: `${e.name} (${formatShortDate(e.startDate)})` })),
+            ]}
+          >
             <SelectTrigger id="c-event">
               <SelectValue />
             </SelectTrigger>
@@ -420,7 +434,7 @@ export function ContractForm() {
           </p>
         )}
         {payments.map((p, i) => (
-          <div key={p.id} className="grid gap-2 rounded-md border bg-card p-3 sm:grid-cols-[1fr_9rem_7rem_auto] sm:items-end">
+          <Card key={p.id} className="grid gap-2 rounded-md p-3 sm:grid-cols-[1fr_9rem_7rem_auto] sm:items-end">
             <div className="grid gap-1.5">
               <Label htmlFor={`pay-label-${p.id}`} className="text-xs">Label</Label>
               <Input
@@ -464,7 +478,7 @@ export function ContractForm() {
             >
               <Trash2 />
             </Button>
-          </div>
+          </Card>
         ))}
         {payments.length > 0 && amountNumber > 0 && scheduled !== amountNumber && (
           <p role="status" className="text-sm text-overdue">
@@ -486,7 +500,7 @@ export function ContractForm() {
           </p>
         )}
         {deliverables.map((d, i) => (
-          <div key={d.id} className="grid gap-2 rounded-md border bg-card p-3 sm:grid-cols-[1fr_9rem_auto] sm:items-end">
+          <Card key={d.id} className="grid gap-2 rounded-md p-3 sm:grid-cols-[1fr_9rem_auto] sm:items-end">
             <div className="grid gap-1.5">
               <Label htmlFor={`del-label-${d.id}`} className="text-xs">Deliverable</Label>
               <Input
@@ -518,7 +532,7 @@ export function ContractForm() {
             >
               <Trash2 />
             </Button>
-          </div>
+          </Card>
         ))}
         <Button type="button" variant="outline" size="sm" className="justify-self-start" onClick={addDeliverable}>
           <Plus />
@@ -530,7 +544,11 @@ export function ContractForm() {
         <legend className="mb-1 text-base font-semibold">Follow-up</legend>
         <div className="grid gap-2">
           <Label htmlFor="c-assignee">Who gets the reminders</Label>
-          <Select value={assigneeId} onValueChange={setAssigneeId}>
+          <Select
+            value={assigneeId}
+            onValueChange={setAssigneeId}
+            items={data.staff.map((p) => ({ value: p.id, label: p.name }))}
+          >
             <SelectTrigger id="c-assignee">
               <SelectValue />
             </SelectTrigger>
@@ -552,9 +570,7 @@ export function ContractForm() {
       </fieldset>
 
       <div className="flex justify-end gap-2 border-t pt-4">
-        <Button asChild variant="outline">
-          <Link href="/contracts">Cancel</Link>
-        </Button>
+        <Button render={<Link href="/contracts" />} nativeButton={false} variant="outline">Cancel</Button>
         <Button type="submit" disabled={reading}>
           Save contract
         </Button>

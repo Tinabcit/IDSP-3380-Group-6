@@ -49,15 +49,13 @@ export function EventsPage() {
             Sponsorship for each event is added up from its contracts.
           </p>
         </div>
-        <Button asChild>
-          <Link href="/events/new">
+        <Button render={<Link href="/events/new" />} nativeButton={false}>
             <Plus />
             <span>
               <span className="sm:hidden">Add</span>
               <span className="hidden sm:inline">Add event</span>
             </span>
-          </Link>
-        </Button>
+          </Button>
       </header>
 
       <FilterBar

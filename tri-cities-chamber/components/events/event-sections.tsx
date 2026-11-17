@@ -414,7 +414,11 @@ export function CompTicketsSection({
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor="comp-type">Ticket type</Label>
-          <Select value={ticketType} onValueChange={setTicketType}>
+          <Select
+            value={ticketType}
+            onValueChange={setTicketType}
+            items={TICKET_TYPES.map((t) => ({ value: t, label: t }))}
+          >
             <SelectTrigger id="comp-type">
               <SelectValue />
             </SelectTrigger>

@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { splitEvents } from "@/lib/planner/home";
 import type { ChamberEvent } from "@/lib/planner/types";
 import type { DisplayUser } from "@/lib/planner/user";
@@ -35,7 +36,11 @@ export function UserSelect() {
   const data = useOptionalPlannerData();
   if (!data) return null;
   return (
-    <Select value={data.currentUserId} onValueChange={data.setCurrentUser}>
+    <Select
+      value={data.currentUserId}
+      onValueChange={data.setCurrentUser}
+      items={data.staff.map((p) => ({ value: p.id, label: p.name }))}
+    >
       <SelectTrigger
         aria-label="Signed in as"
         className="h-9 w-full gap-2 bg-card"
@@ -166,14 +171,16 @@ function Section({
   const [open, setOpen] = useState(startOpen);
   return (
     <div className="flex flex-col gap-1">
-      <button
+      <Button
         type="button"
+        variant="ghost"
         onClick={() => setOpen(!open)}
-        className="flex items-center justify-between text-xs font-medium text-muted-foreground"
+        aria-expanded={open}
+        className="h-auto justify-between p-0 text-xs font-medium text-muted-foreground hover:bg-transparent hover:text-muted-foreground"
       >
         {title}
         <ChevronDown className={cn("h-4 w-4", !open && "-rotate-90")} />
-      </button>
+      </Button>
       {open && children}
     </div>
   );
@@ -191,11 +198,12 @@ function Item({
   onClick: () => void;
 }) {
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2 rounded-md px-2 py-1 text-left text-sm hover:bg-card",
+        "h-auto justify-start gap-2 px-2 py-1 text-left font-normal hover:bg-card hover:text-foreground",
         active && "bg-card font-medium",
       )}
     >
@@ -205,7 +213,7 @@ function Item({
           {tasks} tasks
         </span>
       )}
-    </button>
+    </Button>
   );
 }
 
@@ -264,10 +272,7 @@ export function AppSidebar({ className, user }: { className?: string; user: Disp
   return (
     <aside
       aria-label="Sidebar"
-      className={cn(
-        "bg-muted flex flex-col divide-y [&>*]:p-4",
-        className,
-      )}
+      className={cn("bg-muted flex flex-col divide-y [&>*]:p-4", className)}
     >
       <div className="shrink-0">
         <div className="flex items-center gap-2">

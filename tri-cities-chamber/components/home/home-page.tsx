@@ -1,38 +1,18 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import {
-  ArrowUpDown,
-  Briefcase,
-  CalendarDays,
-  ListFilter,
-  MoreVertical,
-  User,
-} from "lucide-react";
+import { Briefcase, CalendarDays, ListFilter, User } from "lucide-react";
 
 import { AppSidebar, useHomeFilters } from "@/components/app-shell/app-sidebar";
 import { useToast } from "@/components/app-shell/toast-provider";
 import { usePlannerData } from "@/components/app-shell/planner-provider";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  formatLongDate,
-  isISODateBefore,
-  shiftISODate,
-} from "@/lib/planner/dates";
+import { FilterSelect } from "@/components/tasks/filter-select";
+import { TaskTable } from "@/components/tasks/task-table";
+import { isISODateBefore, shiftISODate } from "@/lib/planner/dates";
 import { paginate, searchTasks, sortByDueDate } from "@/lib/planner/home";
 import { getTaskStatus } from "@/lib/planner/selectors";
-import type { ISODate, Task } from "@/lib/planner/types";
-import TaskDetails, {type TaskInfo, } from "@/components/TaskDetails";
-import { cn } from "@/lib/utils";
+import TaskDetails, { type TaskInfo } from "@/components/TaskDetails";
 
 /** How many rows the table shows per page. */
 const PAGE_SIZE = 9;
@@ -218,87 +198,34 @@ export function HomePage() {
           />
         </div>
 
-        <div className="mt-6 overflow-x-auto rounded-lg border">
-          <table className="w-full min-w-160 text-left text-sm">
-            <thead className="bg-muted">
-              <tr>
-                <th className="w-10 px-3 py-2">
-                  <Checkbox
-                    aria-label="Select all rows on this page"
-                    checked={allOnPageSelected}
-                    onCheckedChange={toggleAllOnPage}
-                    className="rounded-lg data-[state=checked]:border-sky-600 data-[state=checked]:bg-sky-600"
-                  />
-                </th>
-                <th className="px-3 py-2 font-semibold">Tu Do Task Name</th>
-                <th className="px-3 py-2 font-semibold">Event</th>
-                <th className="px-3 py-2 font-semibold">Sponsor</th>
-                <th className="px-3 py-2 text-xs font-semibold">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setDirection(direction === "asc" ? "desc" : "asc")
-                    }
-                    className="inline-flex items-center gap-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    Due Date
-                    <ArrowUpDown className="h-3 w-3" aria-hidden />
-                    <span className="sr-only">
-                      , sorted{" "}
-                      {direction === "asc" ? "oldest first" : "newest first"}
-                    </span>
-                  </button>
-                </th>
-                <th className="w-8 px-3 py-2">
-                  <span className="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {current.items.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-3 py-10 text-center text-muted-foreground"
-                  >
-                    No tasks match these filters.
-                  </td>
-                </tr>
-              )}
-              {current.items.map((t) => (
-                <TaskRow
-                  key={t.id}
-                  task={t}
-                  today={today}
-                  onViewDetails={() => {
-                    setSelectedTask({
-                       id: t.id,
-                       title: t.title,
-                       description: "",
-                       priority: "Medium",
-                       dueDate: t.dueDate,
-                       assignedTo: "",
-                       event: t.eventId
-                       ? lookups.eventsById.get(t.eventId)?.name || ""
-                       : "",
-                      });
-                    }}
-                  checked={selected.has(t.id)}
-                  onToggle={() => toggleRow(t.id)}
-                  eventName={
-                    t.eventId
-                      ? lookups.eventsById.get(t.eventId)?.name
-                      : undefined
-                  }
-                  sponsorName={
-                    t.sponsorId
-                      ? lookups.sponsorsById.get(t.sponsorId)?.name
-                      : undefined
-                  }
-                />
-              ))}
-            </tbody>
-          </table>
+        <div className="mt-6">
+          <TaskTable
+            tasks={current.items}
+            today={today}
+            eventsById={lookups.eventsById}
+            sponsorsById={lookups.sponsorsById}
+            selection={{
+              selected,
+              allSelected: allOnPageSelected,
+              onToggleRow: toggleRow,
+              onToggleAll: toggleAllOnPage,
+            }}
+            onViewDetails={(t) =>
+              setSelectedTask({
+                id: t.id,
+                title: t.title,
+                description: "",
+                priority: "Medium",
+                dueDate: t.dueDate,
+                assignedTo: "",
+                event: t.eventId ? lookups.eventsById.get(t.eventId)?.name || "" : "",
+              })
+            }
+            sort={{
+              direction,
+              onToggle: () => setDirection(direction === "asc" ? "desc" : "asc"),
+            }}
+          />
         </div>
 
         <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
@@ -347,147 +274,5 @@ export function HomePage() {
 
       )}
     </div>
-  );
-}
-
-/** A small dropdown used in the filter row above the table. */
-function FilterSelect({
-  label,
-  icon,
-  value,
-  onChange,
-  options,
-}: {
-  label: string;
-  icon: React.ReactNode;
-  value: string;
-  onChange: (value: string) => void;
-  options: readonly { value: string; label: string }[];
-}) {
-  return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger
-        aria-label={label}
-        className="h-7 w-auto gap-2 px-2 text-xs"
-      >
-        {icon}
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {options.map((o) => (
-          <SelectItem key={o.value} value={o.value}>
-            {o.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-}
-
-/** One row of the table: tick box, task name, event, sponsor, due date (orange when overdue) and a link to the calendar. */
-function TaskRow({
-  task,
-  today,
-  checked,
-  onToggle,
-  onViewDetails,
-  eventName,
-  sponsorName,
-}: {
-  task: Task;
-  today: ISODate;
-  checked: boolean;
-  onToggle: () => void;
-  onViewDetails: () => void;
-  eventName?: string;
-  sponsorName?: string;
-}) {
-  const overdue = getTaskStatus(task, today) === "overdue";
-  return (
-    <tr className="border-t">
-      <td className="px-3 py-3">
-        <Checkbox
-          aria-label={`Select ${task.title}`}
-          checked={checked}
-          onCheckedChange={onToggle}
-          className="rounded-lg data-[state=checked]:border-sky-600 data-[state=checked]:bg-sky-600"
-        />
-      </td>
-      <td
-        className={cn(
-          "px-3 py-3 text-xs cursor-pointer",
-          task.completed && "text-muted-foreground line-through",
-        )}
-        onClick={onViewDetails}
-        onKeyDown={(e) => {
-          if(e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onViewDetails();
-          }
-        }}
-        role="button"
-        tabIndex={0}
-      >
-        {task.title}
-      </td>
-      <td className="px-3 py-3 text-xs">
-        {eventName ? (
-          <Chip label={eventName} color="bg-blue-600" />
-        ) : (
-          <span className="text-muted-foreground">-</span>
-        )}
-      </td>
-      <td className="px-3 py-3 text-xs">
-        {sponsorName ? (
-          <Chip label={sponsorName} color="bg-neutral-400" round />
-        ) : (
-          <span className="text-muted-foreground">-</span>
-        )}
-      </td>
-      <td
-        className={cn(
-          "px-3 py-3 text-xs",
-          overdue ? "text-red-600" : "text-amber-600",
-        )}
-      >
-        {formatLongDate(task.dueDate)}
-      </td>
-      <td className="px-3 py-3">
-        <Link
-          href={`/calendar?date=${task.dueDate}`}
-          aria-label={`View ${task.title} on the calendar`}
-          className="rounded text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <MoreVertical className="h-4 w-4" aria-hidden />
-        </Link>
-      </td>
-    </tr>
-  );
-}
-
-/** A small coloured letter badge followed by a name (used for the Event and Sponsor columns). */
-function Chip({
-  label,
-  color,
-  round,
-}: {
-  label: string;
-  color: string;
-  round?: boolean;
-}) {
-  return (
-    <span className="flex items-center gap-2">
-      <span
-        aria-hidden
-        className={cn(
-          "grid h-4 w-4 shrink-0 place-items-center text-[9px] font-semibold text-white",
-          round ? "rounded-full" : "rounded-[3px]",
-          color,
-        )}
-      >
-        {label.charAt(0).toUpperCase()}
-      </span>
-      <span className="truncate">{label}</span>
-    </span>
   );
 }
