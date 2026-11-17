@@ -163,3 +163,11 @@ Context: Phase 12 adds the day details pop-up from docs/CalendarDayDetailsPop-up
 Decision: Task gets optional startTime/endTime and ChamberEvent gets optional attendees (all optional, so saved data still loads). The task form and edit-event form have matching inputs. Stored times stay zone-less "HH:mm" wall-clock values, so "local timezone" is a client-only GMT offset label plus the footer note; no UTC conversion. The pop-up is DayDetailsDialog, opened from a "Day details" button in the day panel (single click on a day still only selects it). Pure logic is in lib/planner/day-details.ts. Branched from main, like the previous phases.
 
 Alternatives considered: Display only what already exists (rejected: the timetable and activity times would be empty). Store UTC instants (rejected: migrates saved data and forms for no gain in a single-timezone MVP).
+
+## 2026-11-17 — Event page and pop-up get the full field list from the mockups
+
+Context: docs/EventPage.png (Add Event) and docs/EventPopUp.png (edit pop-up, plus Comp Tickets) show Picture, Description, Date of Event, Deadline, Priority, Labels, Reminders, Guests, Sponsors, Tickets and Location. The add page and edit dialog only had a few of them.
+
+Decision: ChamberEvent gains optional picture, deadline, priority (P1 to P6), labels, reminders, guests, tickets and compTickets, so saved data still loads (no localStorage key bump). Both screens share components/events/event-sections.tsx (mini calendar, priority, chips, comp tickets). The Add Event page keeps its required fields and PDF upload flow; the edit pop-up adds Comp Tickets as an inline "issue" form rather than reusing GiveCompTicketsDialog, whose own fixed overlay does not work inside a Radix dialog. The picture is only a file name, like the PDF. The edit pop-up now keeps event fields it does not show (address, file name), which updateEvent used to drop.
+
+Alternatives considered: UI-only controls with no saved data (rejected: edits would be lost). Opening GiveCompTicketsDialog from the pop-up (rejected: nested overlay and focus-trap problems).

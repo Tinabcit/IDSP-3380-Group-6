@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { usePlannerData } from "@/components/app-shell/planner-provider";
+import { LowerExtras, MiniCalendar, NameChips, PictureAndDescription } from "@/components/events/event-sections";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -22,8 +23,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { EVENT_CATEGORIES, categoryOf, validateEventInput } from "@/lib/planner/events";
+import {
+  EVENT_CATEGORIES,
+  categoryOf,
+  cleanSponsors,
+  extrasFromEvent,
+  extrasToInput,
+  validateEventInput,
+  type EventExtras,
+} from "@/lib/planner/events";
 import type { ChamberEvent, EventCategory, EventInput, ISODate } from "@/lib/planner/types";
 
 /** What the dialog is doing: adding a new event on a date, or editing an existing one. */
@@ -48,7 +56,7 @@ interface EventFormDialogProps {
 export function EventFormDialog({ state, onClose, onSubmit }: EventFormDialogProps) {
   return (
     <Dialog open={state !== null} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-2xl">
         {state && <EventForm key={state.mode === "edit" ? state.event.id : "new"} state={state} onClose={onClose} onSubmit={onSubmit} />}
       </DialogContent>
     </Dialog>
@@ -77,13 +85,24 @@ function EventForm({
   const [isSignature, setIsSignature] = useState(editing?.isSignature ?? false);
   const [location, setLocation] = useState(editing?.location ?? "");
   const [attendees, setAttendees] = useState(editing?.attendees !== undefined ? String(editing.attendees) : "");
-  const [description, setDescription] = useState(editing?.description ?? "");
+  const [extras, setExtras] = useState<EventExtras>(() => extrasFromEvent(editing ?? undefined));
+  const [sponsorNames, setSponsorNames] = useState<string[]>(
+    editing?.sponsorNames ?? (editing?.sponsorName ? [editing.sponsorName] : [])
+  );
   const [error, setError] = useState("");
 
   /** Runs on Save. Checks the values, then passes them up and closes the pop-up. */
   function submit(e: React.FormEvent) {
     e.preventDefault();
+    // Start from the saved event so fields this form does not show (address, file name...) are kept.
+    const saved: Partial<ChamberEvent> = { ...editing };
+    delete saved.id;
+    const sponsors = cleanSponsors(sponsorNames);
     const input: EventInput = {
+      ...(saved as Omit<ChamberEvent, "id">),
+      ...extrasToInput(extras),
+      sponsorNames: sponsors.length > 0 ? sponsors : undefined,
+      sponsorName: sponsors.length > 0 ? sponsors.join(", ") : undefined,
       name: name.trim(),
       startDate: date,
       endDate: endDate || date,
@@ -95,12 +114,17 @@ function EventForm({
       isSignature,
       location: location.trim() || undefined,
       attendees: attendees.trim() ? Number(attendees) : undefined,
-      description: description.trim() || undefined,
     };
     const problem = validateEventInput(input);
     if (problem) return setError(problem);
     onSubmit(input, editing?.id);
     onClose();
+  }
+
+  /** Updates the extra fields (picture, deadline, priority, labels and so on). */
+  function setExtra(patch: Partial<EventExtras>) {
+    setExtras((x) => ({ ...x, ...patch }));
+    clearError();
   }
 
   /** Clears the error message when the person starts fixing the form. */
@@ -129,18 +153,22 @@ function EventForm({
           autoFocus
         />
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="grid gap-2">
-          <Label htmlFor="ev-date">Date</Label>
-          <Input id="ev-date" type="date" value={date} onChange={(e) => { setDate(e.target.value); clearError(); }} />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="ev-end">
-            Last day <span className="font-normal text-muted-foreground">(optional)</span>
-          </Label>
-          <Input id="ev-end" type="date" value={endDate} onChange={(e) => { setEndDate(e.target.value); clearError(); }} />
-        </div>
+      <PictureAndDescription extras={extras} onChange={setExtra} />
+      <MiniCalendar
+        label="Date of Event"
+        value={date}
+        onChange={(d) => {
+          setDate(d);
+          clearError();
+        }}
+      />
+      <div className="grid gap-2">
+        <Label htmlFor="ev-end">
+          Last day <span className="font-normal text-muted-foreground">(optional)</span>
+        </Label>
+        <Input id="ev-end" type="date" value={endDate} onChange={(e) => { setEndDate(e.target.value); clearError(); }} />
       </div>
+      <MiniCalendar label="Deadline" value={extras.deadline} onChange={(deadline) => setExtra({ deadline })} />
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
           <Label htmlFor="ev-start-time">
@@ -205,12 +233,6 @@ function EventForm({
         </Label>
         <Input id="ev-attendees" type="number" min={0} step={1} value={attendees} onChange={(e) => { setAttendees(e.target.value); clearError(); }} />
       </div>
-      <div className="grid gap-2">
-        <Label htmlFor="ev-desc">
-          Description <span className="font-normal text-muted-foreground">(optional)</span>
-        </Label>
-        <Textarea id="ev-desc" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
-      </div>
       <div className="flex items-center gap-2">
         <Checkbox
           id="ev-sig"
@@ -219,6 +241,23 @@ function EventForm({
         />
         <Label htmlFor="ev-sig">Signature event</Label>
       </div>
+      <LowerExtras
+        extras={extras}
+        onChange={setExtra}
+        showCompTickets
+        sponsors={
+          <NameChips
+            title="Sponsors"
+            names={sponsorNames}
+            onChange={(names) => {
+              setSponsorNames(names);
+              clearError();
+            }}
+            placeholder="Add a sponsor"
+            suggestions={data.sponsors.map((x) => x.name)}
+          />
+        }
+      />
       {error && (
         <p role="alert" className="text-sm text-destructive">
           {error}

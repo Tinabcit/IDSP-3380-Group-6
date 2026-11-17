@@ -6,6 +6,7 @@ import { Plus, X } from "lucide-react";
 
 import { usePlannerData } from "@/components/app-shell/planner-provider";
 import { useToast } from "@/components/app-shell/toast-provider";
+import { LowerExtras, MiniCalendar, PictureAndDescription, Section } from "@/components/events/event-sections";
 import { UploadCard } from "@/components/events/upload-card";
 import ReviewTasksDialog from "@/components/review-tasks-dialog/review-tasks-dialog";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,11 @@ import {
 import {
   EVENT_CATEGORIES,
   cleanSponsors,
+  extrasFromEvent,
+  extrasToInput,
+  validateEventInput,
   validateEventForm,
+  type EventExtras,
   type EventFormValues,
 } from "@/lib/planner/events";
 import { shiftISODate } from "@/lib/planner/dates";
@@ -54,6 +59,7 @@ export function AddEventPage() {
   const toast = useToast();
   const [values, setValues] = useState<EventFormValues>(EMPTY);
   const [errors, setErrors] = useState<Partial<Record<keyof EventFormValues, string>>>({});
+  const [extras, setExtras] = useState<EventExtras>(() => extrasFromEvent(undefined));
   const [fileName, setFileName] = useState<string | undefined>();
   const [proposed, setProposed] = useState<ProposedTask[]>([]);
   const [reviewOpen, setReviewOpen] = useState(false);
@@ -68,6 +74,11 @@ export function AddEventPage() {
   function set(key: "title" | "date" | "category" | "address", value: string) {
     setValues((v) => ({ ...v, [key]: value }));
     setErrors((e) => ({ ...e, [key]: undefined }));
+  }
+
+  /** Updates the extra fields (picture, deadline, priority, labels and so on). */
+  function setExtra(patch: Partial<EventExtras>) {
+    setExtras((x) => ({ ...x, ...patch }));
   }
 
   /** Changes the name in one sponsor box. */
@@ -143,7 +154,8 @@ export function AddEventPage() {
     if (Object.keys(found).length > 0) return;
     const date = values.date as ISODate;
     const sponsorNames = cleanSponsors(values.sponsors);
-    const eventId = data.addEvent({
+    const input = {
+      ...extrasToInput(extras),
       name: values.title.trim(),
       startDate: date,
       endDate: date,
@@ -155,7 +167,13 @@ export function AddEventPage() {
       address: values.address.trim(),
       location: values.address.trim(),
       fileName,
-    });
+    };
+    const problem = validateEventInput(input);
+    if (problem) {
+      setErrors({ date: problem });
+      return;
+    }
+    const eventId = data.addEvent(input);
     for (const task of kept) {
       const sponsor = data.sponsors.find((x) => x.name.toLowerCase() === task.sponsorName.toLowerCase());
       data.addTask(
@@ -199,7 +217,7 @@ export function AddEventPage() {
   }
 
   return (
-    <form onSubmit={submit} noValidate className="mx-auto grid max-w-xl grid-cols-[minmax(0,1fr)] gap-5">
+    <form onSubmit={submit} noValidate className="mx-auto grid max-w-2xl grid-cols-[minmax(0,1fr)] gap-5">
       <h1 className="text-xl font-bold">Add Event</h1>
       <UploadCard onComplete={handleComplete} onClear={handleClear} />
       {proposed.length > 0 && (
@@ -215,6 +233,8 @@ export function AddEventPage() {
         </div>
       )}
       {field("title", "Title", "Enter the Event Title")}
+      <PictureAndDescription extras={extras} onChange={setExtra} />
+      <Section title="Sponsors and signature">
       <div className="grid gap-1.5">
         <Label htmlFor="ev-sponsor-0">Event Sponsors</Label>
         {values.sponsors.map((name, index) => (
@@ -257,7 +277,6 @@ export function AddEventPage() {
           <option key={s.id} value={s.name} />
         ))}
       </datalist>
-      {field("date", "Date", "Set Date", "date")}
       <div className="flex items-center gap-2">
         <Checkbox
           id="ev-signature"
@@ -292,7 +311,16 @@ export function AddEventPage() {
           )}
         </div>
       )}
-      {field("address", "Address", "123 Main st")}
+      </Section>
+      <MiniCalendar
+        label="Date of Event"
+        value={values.date}
+        onChange={(d) => set("date", d)}
+        error={errors.date}
+      />
+      <MiniCalendar label="Deadline" value={extras.deadline} onChange={(deadline) => setExtra({ deadline })} />
+      <LowerExtras extras={extras} onChange={setExtra} />
+      <Section title="Location">{field("address", "Address", "123 Main st")}</Section>
       <div className="flex justify-center gap-3">
         <Button type="button" variant="outline" onClick={() => router.back()}>
           Cancel
