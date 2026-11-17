@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -24,7 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { splitEvents } from "@/lib/planner/home";
+import { splitEvents } from "@/lib/planner/tasks";
 import type { ChamberEvent } from "@/lib/planner/types";
 import type { DisplayUser } from "@/lib/planner/user";
 import SearchBar from "@/components/search-bar/search-bar";
@@ -70,7 +76,7 @@ export function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
 }
 
-type HomeFilters = {
+type TasksFilters = {
   search: string;
   eventId: string;
   sponsorId: string;
@@ -84,9 +90,9 @@ type HomeFilters = {
   viewKey: number;
 };
 
-const HomeFiltersContext = createContext<HomeFilters | null>(null);
+const TasksFiltersContext = createContext<TasksFilters | null>(null);
 
-export function HomeFiltersProvider({
+export function TasksFiltersProvider({
   children,
 }: {
   children: React.ReactNode;
@@ -133,25 +139,33 @@ export function HomeFiltersProvider({
       pickSponsor,
       viewKey,
     }),
-    [search, eventId, sponsorId, switchSponsor, pickEvent, pickSponsor, viewKey],
+    [
+      search,
+      eventId,
+      sponsorId,
+      switchSponsor,
+      pickEvent,
+      pickSponsor,
+      viewKey,
+    ],
   );
   return (
-    <HomeFiltersContext.Provider value={value}>
+    <TasksFiltersContext.Provider value={value}>
       {children}
-    </HomeFiltersContext.Provider>
+    </TasksFiltersContext.Provider>
   );
 }
 
-export function useHomeFilters(): HomeFilters {
-  const filters = useContext(HomeFiltersContext);
+export function useTasksFilters(): TasksFilters {
+  const filters = useContext(TasksFiltersContext);
   if (!filters)
-    throw new Error("useHomeFilters must be used inside HomeFiltersProvider");
+    throw new Error("useTasksFilters must be used inside TasksFiltersProvider");
   return filters;
 }
 
 export const SIDEBAR_NAV = [
   { href: "/home", label: "Home", icon: Home },
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/tasks", label: "Tasks", icon: LayoutDashboard },
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/contracts", label: "Contracts", icon: FileText },
   { href: "/events", label: "Events", icon: Star },
@@ -217,9 +231,15 @@ function Item({
   );
 }
 
-export function AppSidebar({ className, user }: { className?: string; user: DisplayUser }) {
+export function AppSidebar({
+  className,
+  user,
+}: {
+  className?: string;
+  user: DisplayUser;
+}) {
   const data = useOptionalPlannerData();
-  const filters = useHomeFilters();
+  const filters = useTasksFilters();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -238,7 +258,7 @@ export function AppSidebar({ className, user }: { className?: string; user: Disp
   const viewPicked = filters.eventId !== "all" || filters.sponsorId !== "all";
 
   function goHome() {
-    if (pathname !== "/home") router.push("/home");
+    if (pathname !== "/tasks") router.push("/tasks");
   }
 
   function pickEvent(id: string) {
@@ -303,71 +323,70 @@ export function AppSidebar({ className, user }: { className?: string; user: Disp
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col divide-y overflow-y-auto [&>*]:p-4">
-      <div className="grid grid-cols-2 gap-2">
-        <Link
-          href="/contracts/new"
-          className="whitespace-nowrap rounded-md bg-sky-600 px-2 py-2 text-center text-sm font-medium text-white hover:bg-sky-700"
-        >
-          Upload Contract
-        </Link>
-        <Link
-          href="/events/new"
-          className="whitespace-nowrap rounded-md bg-sky-600 px-2 py-2 text-center text-sm font-medium text-white hover:bg-sky-700"
-        >
-          Add Event
-        </Link>
-      </div>
-
-      <div>
-        <SearchBar
-          className="max-w-none"
-          value={filters.search}
-          onChange={filters.setSearch}
-        />
-      </div>
-
-      <nav className="flex flex-col gap-1">
-        {SIDEBAR_NAV.map(({ href, label, icon: Icon }) => (
+        <div className="grid grid-cols-2 gap-2">
           <Link
-            key={href}
-            href={href}
-            onClick={clearFilters}
-            className={cn(
-              "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-card",
-              isActive(pathname, href) &&
-                !(href === "/home" && viewPicked) &&
-                "bg-card font-medium",
-            )}
+            href="/contracts/new"
+            className="whitespace-nowrap rounded-md bg-sky-600 px-2 py-2 text-center text-sm font-medium text-white hover:bg-sky-700"
           >
-            <Icon className="h-4 w-4" />
-            {label}
+            Upload Contract
           </Link>
-        ))}
-      </nav>
+          <Link
+            href="/events/new"
+            className="whitespace-nowrap rounded-md bg-sky-600 px-2 py-2 text-center text-sm font-medium text-white hover:bg-sky-700"
+          >
+            Add Event
+          </Link>
+        </div>
 
-      <div className="flex flex-col gap-4">
-        <Section title="Event Series">{eventItems(events.repeat)}</Section>
-        <Section title="One-off Events">{eventItems(events.oneOff)}</Section>
-        <Section title="Archived Events" startOpen={false}>
-          {eventItems(events.archived)}
-        </Section>
-      </div>
+        <div>
+          <SearchBar
+            className="max-w-none"
+            value={filters.search}
+            onChange={filters.setSearch}
+          />
+        </div>
 
-      <div className="flex flex-col gap-4">
-        <Section title="Pillar Partners">
-          {partners.map((partner) => (
-            <Item
-              key={partner.id}
-              label={partner.name}
-              active={filters.sponsorId === partner.id}
-              onClick={() => pickPartner(partner.id)}
-            />
+        <nav className="flex flex-col gap-1">
+          {SIDEBAR_NAV.map(({ href, label, icon: Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              onClick={clearFilters}
+              className={cn(
+                "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-card",
+                isActive(pathname, href) &&
+                  !(href === "/tasks" && viewPicked) &&
+                  "bg-card font-medium",
+              )}
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+            </Link>
           ))}
-        </Section>
-        <Section title="Annual Partners" />
-        <Section title="Program Partners" />
-      </div>
+        </nav>
 
+        <div className="flex flex-col gap-4">
+          <Section title="Event Series">{eventItems(events.repeat)}</Section>
+          <Section title="One-off Events">{eventItems(events.oneOff)}</Section>
+          <Section title="Archived Events" startOpen={false}>
+            {eventItems(events.archived)}
+          </Section>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <Section title="Pillar Partners">
+            {partners.map((partner) => (
+              <Item
+                key={partner.id}
+                label={partner.name}
+                active={filters.sponsorId === partner.id}
+                onClick={() => pickPartner(partner.id)}
+              />
+            ))}
+          </Section>
+          <Section title="Annual Partners" />
+          <Section title="Program Partners" />
+        </div>
       </div>
 
       {/* Who is signed in with Google (or Unknown user), pinned to the bottom. */}

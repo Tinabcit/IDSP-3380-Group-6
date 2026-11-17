@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation";
 
 /** The dashboard's tabs. Each one is its own page. */
 const TABS = [
-  { href: "/dashboard", label: "All tasks and events" },
-  { href: "/dashboard/archive", label: "Completed tasks" },
+  { href: "/home", label: "All tasks and events" },
+  { href: "/home/archive", label: "Completed tasks" },
 ] as const;
 
 type DashboardHeaderProps = {

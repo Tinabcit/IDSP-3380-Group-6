@@ -1,7 +1,7 @@
 "use client";
 
 /*
- * DASHBOARD PAGE (shown at /dashboard). Build the page in the JSX below and style it yourself.
+ * DASHBOARD PAGE (shown at /home). Build the page in the JSX below and style it yourself.
  * Make its parts in components/dashboard/. Guide: docs/PAGE_STARTER_GUIDE.md
  */
 

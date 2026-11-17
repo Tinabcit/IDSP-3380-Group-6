@@ -1,4 +1,4 @@
-import { searchTasks, sortByDueDate } from "@/lib/planner/home";
+import { searchTasks, sortByDueDate } from "@/lib/planner/tasks";
 import type { ChamberEvent, Sponsor, Task } from "@/lib/planner/types";
 
 /**
@@ -22,12 +22,12 @@ export function getCompletedTasks(
   return sortByDueDate(searchTasks(done, query, eventsById, sponsorsById), "desc");
 }
 
-/** How many different sponsors and assignees appear across these tasks. */
-export function countPeople(tasks: Task[]): number {
-  const ids = new Set<string>();
-  for (const t of tasks) {
-    ids.add(`staff:${t.assigneeId}`);
-    if (t.sponsorId) ids.add(`sponsor:${t.sponsorId}`);
-  }
-  return ids.size;
+/** How many different events appear across these tasks. Tasks with no event are skipped. */
+export function countEvents(tasks: Task[]): number {
+  return new Set(tasks.flatMap((t) => (t.eventId ? [t.eventId] : []))).size;
+}
+
+/** How many different sponsors appear across these tasks. Tasks with no sponsor are skipped. */
+export function countSponsors(tasks: Task[]): number {
+  return new Set(tasks.flatMap((t) => (t.sponsorId ? [t.sponsorId] : []))).size;
 }

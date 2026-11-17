@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { countPeople, getCompletedTasks } from '@/lib/planner/archive';
+import { countEvents, countSponsors, getCompletedTasks } from '@/lib/planner/archive';
 import type { ChamberEvent, Sponsor, Task } from '@/lib/planner/types';
 
 /** Builds a task with sensible defaults so each test only sets what it cares about. */
@@ -71,17 +71,34 @@ describe('getCompletedTasks', () => {
   });
 });
 
-describe('countPeople', () => {
-  it('counts each distinct sponsor and assignee once', () => {
+describe('countEvents', () => {
+  it('counts each distinct event once and skips tasks with no event', () => {
     const tasks = [
-      task({ assigneeId: 's1', sponsorId: 'sp1' }),
-      task({ assigneeId: 's1', sponsorId: 'sp2' }),
-      task({ assigneeId: 's2' }),
+      task({ eventId: 'e1' }),
+      task({ eventId: 'e1' }),
+      task({ eventId: 'e2' }),
+      task({}),
     ];
-    expect(countPeople(tasks)).toBe(4);
+    expect(countEvents(tasks)).toBe(2);
   });
 
   it('is 0 with no tasks', () => {
-    expect(countPeople([])).toBe(0);
+    expect(countEvents([])).toBe(0);
+  });
+});
+
+describe('countSponsors', () => {
+  it('counts each distinct sponsor once and skips tasks with no sponsor', () => {
+    const tasks = [
+      task({ sponsorId: 'sp1' }),
+      task({ sponsorId: 'sp1' }),
+      task({ sponsorId: 'sp2' }),
+      task({}),
+    ];
+    expect(countSponsors(tasks)).toBe(2);
+  });
+
+  it('is 0 with no tasks', () => {
+    expect(countSponsors([])).toBe(0);
   });
 });

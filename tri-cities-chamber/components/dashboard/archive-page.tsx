@@ -24,7 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { countPeople, getCompletedTasks } from "@/lib/planner/archive";
+import { countEvents, countSponsors, getCompletedTasks } from "@/lib/planner/archive";
 import { formatOrdinalDate } from "@/lib/planner/dates";
 import { CardInfo } from "./cardInfo";
 import { DashboardHeader } from "./dashboard-header";
@@ -35,7 +35,7 @@ export function ArchivePage() {
   const [sponsorId, setSponsorId] = useState("all");
   const [eventId, setEventId] = useState("all");
 
-  const { eventsById, sponsorsById, staffById } = lookups;
+  const { eventsById, sponsorsById } = lookups;
   const allCompleted = getCompletedTasks(tasks, eventsById, sponsorsById);
   const completed = getCompletedTasks(
     tasks,
@@ -68,8 +68,12 @@ export function ArchivePage() {
           numberInfo={allCompleted.length}
         />
         <CardInfo
-          headingText="Assigned Sponsors & Events "
-          numberInfo={countPeople(allCompleted)}
+          headingText="Events"
+          numberInfo={countEvents(allCompleted)}
+        />
+        <CardInfo
+          headingText="Sponsors"
+          numberInfo={countSponsors(allCompleted)}
         />
       </div>
 
@@ -117,7 +121,6 @@ export function ArchivePage() {
                 <TableHead>Tu Do task name</TableHead>
                 <TableHead>Event</TableHead>
                 <TableHead>Sponsor</TableHead>
-                <TableHead>Assignee</TableHead>
                 <TableHead>Due date</TableHead>
               </TableRow>
             </TableHeader>
@@ -125,7 +128,7 @@ export function ArchivePage() {
               {completed.length === 0 && (
                 <TableRow className="hover:bg-transparent">
                   <TableCell
-                    colSpan={6}
+                    colSpan={5}
                     className="py-8 text-center text-muted-foreground"
                   >
                     No completed tasks match these filters.
@@ -157,9 +160,6 @@ export function ArchivePage() {
                           : undefined
                       }
                     />
-                  </TableCell>
-                  <TableCell>
-                    {staffById.get(t.assigneeId)?.name ?? "-"}
                   </TableCell>
                   <TableCell>{formatOrdinalDate(t.dueDate)}</TableCell>
                 </TableRow>
