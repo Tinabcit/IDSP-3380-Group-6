@@ -1,10 +1,10 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  Briefcase,
   CalendarDays,
   ChevronDown,
   FileText,
@@ -26,6 +26,7 @@ import {
 import { splitEvents } from "@/lib/planner/home";
 import type { ChamberEvent } from "@/lib/planner/types";
 import type { DisplayUser } from "@/lib/planner/user";
+import SearchBar from "@/components/search-bar/search-bar";
 import { UserMenu } from "./user-menu";
 import { OverdueBell } from "./overdue-bell";
 import { useOptionalPlannerData } from "./planner-provider";
@@ -83,9 +84,27 @@ export function HomeFiltersProvider({
   const [search, setSearch] = useState("");
   const [eventId, setEventId] = useState("all");
   const [sponsorId, setSponsorId] = useState("all");
+  // Switching to a different sponsor starts the task view fresh (no leftover event or search).
+  const switchSponsor = useCallback(
+    (next: string) => {
+      if (next !== sponsorId) {
+        setEventId("all");
+        setSearch("");
+      }
+      setSponsorId(next);
+    },
+    [sponsorId],
+  );
   const value = useMemo(
-    () => ({ search, eventId, sponsorId, setSearch, setEventId, setSponsorId }),
-    [search, eventId, sponsorId],
+    () => ({
+      search,
+      eventId,
+      sponsorId,
+      setSearch,
+      setEventId,
+      setSponsorId: switchSponsor,
+    }),
+    [search, eventId, sponsorId, switchSponsor],
   );
   return (
     <HomeFiltersContext.Provider value={value}>
@@ -223,18 +242,40 @@ export function AppSidebar({ className, user }: { className?: string; user: Disp
         className,
       )}
     >
-      <div className="flex items-center gap-2">
-        <span className="grid h-8 w-8 place-items-center rounded-md bg-sky-600 text-white">
-          <Briefcase className="h-4 w-4" />
-        </span>
-        <div className="min-w-0 flex-1 leading-tight">
-          <p className="text-sm font-semibold">TuDu</p>
-          <p className="truncate text-[11px] text-muted-foreground">
-            Tri-Cities Chamber
-          </p>
+      <div className="shrink-0">
+        <div className="flex items-center gap-2">
+          <Link
+            href="/home"
+            onClick={clearFilters}
+            aria-label="TuDu home"
+            className="flex min-w-0 flex-1 items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Image
+              src="/tudu-logo.svg"
+              alt=""
+              width={32}
+              height={32}
+              className="h-8 w-8 shrink-0"
+            />
+            <span className="min-w-0 leading-tight">
+              <span className="block text-sm font-semibold">TuDu</span>
+              <span className="block truncate text-[11px] text-muted-foreground">
+                Tri-Cities Chamber
+              </span>
+            </span>
+          </Link>
+          {/* The overdue bell sits at the right end of the logo row. */}
+          <OverdueBell align="beside" />
         </div>
-        {/* The overdue bell sits at the right end of the logo row. */}
-        <OverdueBell align="beside" />
+      </div>
+
+      <div className="flex min-h-0 flex-1 flex-col divide-y overflow-y-auto [&>*]:p-4">
+      <div>
+        <SearchBar
+          className="max-w-none"
+          value={filters.search}
+          onChange={filters.setSearch}
+        />
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -257,7 +298,7 @@ export function AppSidebar({ className, user }: { className?: string; user: Disp
           <Link
             key={href}
             href={href}
-            onClick={href === "/home" ? clearFilters : undefined}
+            onClick={clearFilters}
             className={cn(
               "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-card",
               isActive(pathname, href) && "bg-card font-medium",
@@ -270,7 +311,7 @@ export function AppSidebar({ className, user }: { className?: string; user: Disp
       </nav>
 
       <div className="flex flex-col gap-4">
-        <Section title="Repeat Events">{eventItems(events.repeat)}</Section>
+        <Section title="Event Series">{eventItems(events.repeat)}</Section>
         <Section title="One-off Events">{eventItems(events.oneOff)}</Section>
         <Section title="Archived Events" startOpen={false}>
           {eventItems(events.archived)}
@@ -292,8 +333,10 @@ export function AppSidebar({ className, user }: { className?: string; user: Disp
         <Section title="Program Partners" />
       </div>
 
+      </div>
+
       {/* Who is signed in with Google (or Unknown user), pinned to the bottom. */}
-      <div className="mt-auto">
+      <div className="shrink-0">
         <UserMenu user={user} />
       </div>
     </aside>

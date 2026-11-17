@@ -72,6 +72,15 @@ export function HomePage() {
   const [direction, setDirection] = useState<"asc" | "desc">("asc");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
+  // Picking a different sponsor (here or in the sidebar) clears the other task filters.
+  const [seenSponsorId, setSeenSponsorId] = useState(sponsorId);
+  if (sponsorId !== seenSponsorId) {
+    setSeenSponsorId(sponsorId);
+    setStatus("all");
+    setDue("any");
+    setSelected(new Set());
+  }
+
   const [selectedTask, setSelectedTask] = useState<TaskInfo | null>(null);
 
   // The page number remembers which filters it was picked for. When any filter
