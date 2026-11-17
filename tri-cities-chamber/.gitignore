@@ -42,3 +42,6 @@ next-env.d.ts
 .claude/settings.local.json
 
 .vercel
+
+# design screenshots stay on disk only, not on GitHub
+docs/**/*.png
