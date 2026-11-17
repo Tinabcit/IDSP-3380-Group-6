@@ -219,7 +219,7 @@ export function HomePage() {
         </div>
 
         <div className="mt-6 overflow-x-auto rounded-lg border">
-          <table className="w-full min-w-[640px] text-left text-sm">
+          <table className="w-full min-w-160 text-left text-sm">
             <thead className="bg-muted">
               <tr>
                 <th className="w-10 px-3 py-2">
@@ -227,7 +227,7 @@ export function HomePage() {
                     aria-label="Select all rows on this page"
                     checked={allOnPageSelected}
                     onCheckedChange={toggleAllOnPage}
-                    className="rounded-[4px] data-[state=checked]:border-sky-600 data-[state=checked]:bg-sky-600"
+                    className="rounded-lg data-[state=checked]:border-sky-600 data-[state=checked]:bg-sky-600"
                   />
                 </th>
                 <th className="px-3 py-2 font-semibold">Tu Do Task Name</th>
@@ -410,7 +410,7 @@ function TaskRow({
           aria-label={`Select ${task.title}`}
           checked={checked}
           onCheckedChange={onToggle}
-          className="rounded-[4px] data-[state=checked]:border-sky-600 data-[state=checked]:bg-sky-600"
+          className="rounded-lg data-[state=checked]:border-sky-600 data-[state=checked]:bg-sky-600"
         />
       </td>
       <td

@@ -1,7 +1,14 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, ChevronDown, ChevronRight, Pencil, X } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  Pencil,
+  X,
+} from "lucide-react";
 
 import { format, isValid, parseISO } from "date-fns";
 
@@ -10,111 +17,188 @@ import { cn } from "@/lib/utils";
 
 type ReviewTasksDialogProps = {
   open: boolean;
-  /** The tasks the document reader suggested. */
   tasks: ProposedTask[];
-  /** Called with the tasks the user saved when they press Done. */
   onDone: (kept: ProposedTask[]) => void;
-  /** Called when the dialog is closed with the X or Escape (nothing is kept). */
   onClose: () => void;
 };
 
-/** Formats a yyyy-MM-dd date with date-fns pattern `pattern`; shows the raw text if it is not a real date (e.g. while editing). */
+// Format the due date
 function formatDate(value: string, pattern: string): string {
   const date = parseISO(value);
   return isValid(date) ? format(date, pattern) : value;
 }
 
-/** Row icon button shared by Save, Edit and Dismiss. */
+// Shared button styles
 const ICON_BUTTON =
-  "flex size-8 items-center justify-center rounded-md border border-[#e5e5e5] bg-white text-[#0a0a0a] hover:bg-[#f5f5f5]";
+  "flex size-8 items-center justify-center rounded-md " +
+  "border border-gray-300 bg-white text-gray-900 " +
+  "hover:bg-gray-100 " +
+  "dark:border-gray-600 dark:bg-gray-700 " +
+  "dark:text-white dark:hover:bg-gray-600";
 
-/**
- * The Review tasks dialog (Figma "Review tasks dialog"). Shows the tasks read
- * from an uploaded document, sorted by due date. Click a title to expand it,
- * tick (save) the ones to keep, edit one in place, or dismiss it. Done hands
- * the saved tasks back to the page.
- */
-export default function ReviewTasksDialog(props: ReviewTasksDialogProps) {
-  // The inner part only exists while open, so its state starts fresh each time.
+// Shared input styles
+const INPUT_STYLE =
+  "w-full rounded-md border border-gray-300 bg-white " +
+  "px-3 py-2 text-sm text-gray-900 outline-none " +
+  "focus:border-blue-500 focus:ring-1 focus:ring-blue-500 " +
+  "dark:border-gray-600 dark:bg-gray-800 " +
+  "dark:text-white dark:focus:border-blue-400 " +
+  "dark:focus:ring-blue-400 dark:[color-scheme:dark]";
+
+export default function ReviewTasksDialog(
+  props: ReviewTasksDialogProps
+) {
   return props.open ? <DialogBody {...props} /> : null;
 }
 
-/** The open dialog and its state: the task list, which row is expanded or edited, and which are saved. */
-function DialogBody({ tasks: initial, onDone, onClose }: ReviewTasksDialogProps) {
+function DialogBody({
+  tasks: initial,
+  onDone,
+  onClose,
+}: ReviewTasksDialogProps) {
   const [tasks, setTasks] = useState<ProposedTask[]>(initial);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(
+    null
+  );
+  const [editingId, setEditingId] = useState<string | null>(
+    null
+  );
   const [savedIds, setSavedIds] = useState<string[]>([]);
 
-  // Escape closes the dialog.
+  // Close using Escape
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        onClose();
+      }
     }
+
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+
+    return () => {
+      window.removeEventListener("keydown", onKey);
+    };
   }, [onClose]);
 
-  const sorted = [...tasks].sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+  // Sort tasks by due date
+  const sorted = [...tasks].sort((a, b) =>
+    a.dueDate.localeCompare(b.dueDate)
+  );
 
-  /** Ticks or unticks a task as one to keep. */
+  // Save or unsave a task
   function toggleSaved(id: string) {
-    setSavedIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
+    setSavedIds((ids) =>
+      ids.includes(id)
+        ? ids.filter((x) => x !== id)
+        : [...ids, id]
+    );
   }
 
-  /** Removes a task from the list for good. */
+  // Remove a task
   function dismiss(id: string) {
     setTasks((all) => all.filter((t) => t.id !== id));
     setSavedIds((ids) => ids.filter((x) => x !== id));
   }
 
-  /** Changes one field of a task while it is being edited. */
-  function change(id: string, field: keyof ProposedTask, value: string) {
-    setTasks((all) => all.map((t) => (t.id === id ? { ...t, [field]: value } : t)));
+  // Edit a task field
+  function change(
+    id: string,
+    field: keyof ProposedTask,
+    value: string
+  ) {
+    setTasks((all) =>
+      all.map((t) =>
+        t.id === id ? { ...t, [field]: value } : t
+      )
+    );
   }
 
-  /** Hands the saved tasks back to the page. */
+  // Send saved tasks to the parent page
   function done() {
     onDone(sorted.filter((t) => savedIds.includes(t.id)));
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 dark:bg-black/70">
+      {/* Main dialog */}
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="review-tasks-title"
-        className="flex max-h-[90vh] w-full max-w-[1040px] flex-col overflow-hidden rounded-[10px] border border-[rgba(229,231,235,0.38)] bg-white text-[#0a0a0a] shadow-[0_16px_56px_rgba(0,0,0,0.12)]"
+        className="flex max-h-[90vh] w-full max-w-[1040px] flex-col overflow-hidden rounded-xl border border-gray-200 bg-white text-gray-900 shadow-xl dark:border-gray-700 dark:bg-gray-900 dark:text-white"
       >
-        <div className="flex items-start justify-between gap-4 p-6">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4 border-b border-gray-200 p-6 dark:border-gray-700">
           <div className="grid gap-2">
-            <p className="text-xs text-[#737373]">TuDu / Tri-Cities Chamber</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              TuDu / Tri-Cities Chamber
+            </p>
+
             <div className="flex items-center gap-2.5">
-              <h2 id="review-tasks-title" className="text-2xl font-bold leading-8">
+              <h2
+                id="review-tasks-title"
+                className="text-2xl font-bold leading-8 text-gray-900 dark:text-white"
+              >
                 Review tasks
               </h2>
-              <span className="flex h-[22px] items-center rounded-full bg-[#f4f4f5] px-2 text-xs font-medium text-[#737373]">
-                {tasks.length} {tasks.length === 1 ? "task" : "tasks"}
+
+              <span className="flex h-[22px] items-center rounded-full bg-gray-100 px-2 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-200">
+                {tasks.length}{" "}
+                {tasks.length === 1 ? "task" : "tasks"}
               </span>
             </div>
-            <p className="text-sm">Choose which tasks to keep. Click a task title to expand its information.</p>
+
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              Choose which tasks to keep. Click a task
+              title to expand its information.
+            </p>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close review tasks" className={cn(ICON_BUTTON, "shrink-0 text-[19px]")}>
+
+          {/* Close button */}
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close review tasks"
+            className={cn(
+              ICON_BUTTON,
+              "shrink-0 text-[19px]"
+            )}
+          >
             <X size={16} aria-hidden />
           </button>
         </div>
 
+        {/* Task list */}
         <div className="min-h-0 flex-1 overflow-auto">
           <div className="min-w-[760px]">
-            <div className="flex h-9 items-center gap-4 bg-[#f5f5f5] px-6 text-xs font-medium">
-              <p className="min-w-0 flex-1">Task title · click to expand</p>
-              <p className="w-[220px] shrink-0 text-[#737373]">Event</p>
-              <p className="w-[100px] shrink-0 text-[#737373]">Due date ↑</p>
-              <p className="w-10 shrink-0 text-center text-[#737373]">Save</p>
-              <p className="w-10 shrink-0 text-center text-[#737373]">Edit</p>
-              <p className="w-12 shrink-0 text-center text-[#737373]">Dismiss</p>
+            {/* Table header */}
+            <div className="flex h-9 items-center gap-4 bg-gray-100 px-6 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+              <p className="min-w-0 flex-1">
+                Task title · click to expand
+              </p>
+
+              <p className="w-[220px] shrink-0">
+                Event
+              </p>
+
+              <p className="w-[100px] shrink-0">
+                Due date ↑
+              </p>
+
+              <p className="w-10 shrink-0 text-center">
+                Save
+              </p>
+
+              <p className="w-10 shrink-0 text-center">
+                Edit
+              </p>
+
+              <p className="w-12 shrink-0 text-center">
+                Dismiss
+              </p>
             </div>
 
+            {/* Task rows */}
             {sorted.map((task) => (
               <TaskRow
                 key={task.id}
@@ -122,34 +206,55 @@ function DialogBody({ tasks: initial, onDone, onClose }: ReviewTasksDialogProps)
                 expanded={expandedId === task.id}
                 editing={editingId === task.id}
                 saved={savedIds.includes(task.id)}
-                onToggle={() => setExpandedId(expandedId === task.id ? null : task.id)}
+                onToggle={() =>
+                  setExpandedId(
+                    expandedId === task.id ? null : task.id
+                  )
+                }
                 onSave={() => toggleSaved(task.id)}
                 onEdit={() => {
-                  setEditingId(editingId === task.id ? null : task.id);
+                  setEditingId(
+                    editingId === task.id ? null : task.id
+                  );
                   setExpandedId(task.id);
                 }}
                 onDismiss={() => dismiss(task.id)}
-                onChange={(field, value) => change(task.id, field, value)}
+                onChange={(field, value) =>
+                  change(task.id, field, value)
+                }
               />
             ))}
 
-            {tasks.length === 0 && <p className="p-8 text-center text-sm text-[#737373]">No tasks left to review.</p>}
+            {tasks.length === 0 && (
+              <p className="p-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                No tasks left to review.
+              </p>
+            )}
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-4 px-6 py-[18px]">
+        {/* Footer */}
+        <div className="flex items-center justify-between gap-4 border-t border-gray-200 px-6 py-[18px] dark:border-gray-700">
           <div className="grid gap-1 text-xs">
-            <p className="font-medium">
-              {tasks.length} {tasks.length === 1 ? "task" : "tasks"} to review
+            <p className="font-medium text-gray-900 dark:text-white">
+              {tasks.length}{" "}
+              {tasks.length === 1 ? "task" : "tasks"} to
+              review
             </p>
-            <p role="status" className="text-[#737373]">
-              {savedIds.length} saved · only saved tasks are added to the calendar
+
+            <p
+              role="status"
+              className="text-gray-500 dark:text-gray-400"
+            >
+              {savedIds.length} saved · only saved tasks
+              are added to the calendar
             </p>
           </div>
+
           <button
             type="button"
             onClick={done}
-            className="h-7 w-[84px] rounded-md bg-[#0088c9] text-xs font-medium text-[#ebfcff] hover:bg-[#0079b3]"
+            className="h-8 w-[84px] rounded-md bg-[#0088c9] text-xs font-medium text-white hover:bg-[#0079b3] dark:bg-blue-600 dark:hover:bg-blue-500"
           >
             Done
           </button>
@@ -159,7 +264,7 @@ function DialogBody({ tasks: initial, onDone, onClose }: ReviewTasksDialogProps)
   );
 }
 
-/** One task: its summary line, and below it the details (or the edit form) when expanded. */
+// Each task row and its expanded details
 function TaskRow({
   task,
   expanded,
@@ -179,83 +284,195 @@ function TaskRow({
   onSave: () => void;
   onEdit: () => void;
   onDismiss: () => void;
-  onChange: (field: keyof ProposedTask, value: string) => void;
+  onChange: (
+    field: keyof ProposedTask,
+    value: string
+  ) => void;
 }) {
   return (
-    <div className="border-b border-[rgba(229,231,235,0.38)]">
-      <div className="flex h-[52px] items-center gap-4 bg-[#f3f4f6] px-6">
+    <div className="border-b border-gray-200 dark:border-gray-700">
+      {/* Task summary row */}
+      <div className="flex h-[52px] items-center gap-4 bg-gray-100 px-6 dark:bg-gray-800">
         <button
           type="button"
           onClick={onToggle}
           aria-expanded={expanded}
           className={cn(
-            "flex min-w-0 flex-1 items-center gap-2 text-left text-sm text-[#1764e8] hover:underline",
+            "flex min-w-0 flex-1 items-center gap-2 text-left text-sm text-blue-700 hover:underline dark:text-blue-400",
             expanded ? "font-semibold" : "font-medium"
           )}
         >
-          {expanded ? <ChevronDown size={16} className="shrink-0" aria-hidden /> : <ChevronRight size={16} className="shrink-0" aria-hidden />}
-          <span className="truncate">{task.title}</span>
+          {expanded ? (
+            <ChevronDown
+              size={16}
+              className="shrink-0"
+              aria-hidden
+            />
+          ) : (
+            <ChevronRight
+              size={16}
+              className="shrink-0"
+              aria-hidden
+            />
+          )}
+
+          <span className="truncate">
+            {task.title}
+          </span>
         </button>
-        <p className="w-[220px] shrink-0 truncate text-xs text-[#737373]">{task.eventName}</p>
-        <p className="w-[100px] shrink-0 text-xs text-[#737373]">{formatDate(task.dueDate, "MMM d, yyyy")}</p>
+
+        <p className="w-[220px] shrink-0 truncate text-xs text-gray-600 dark:text-gray-300">
+          {task.eventName}
+        </p>
+
+        <p className="w-[100px] shrink-0 text-xs text-gray-600 dark:text-gray-300">
+          {formatDate(task.dueDate, "MMM d, yyyy")}
+        </p>
+
+        {/* Save */}
         <div className="flex w-10 shrink-0 justify-center">
           <button
             type="button"
             onClick={onSave}
             aria-label={`${saved ? "Unsave" : "Save"} ${task.title}`}
             aria-pressed={saved}
-            className={cn(ICON_BUTTON, saved && "border-green-600 bg-green-50 text-green-700 hover:bg-green-100")}
+            className={cn(
+              ICON_BUTTON,
+              saved &&
+                "border-green-600 bg-green-50 text-green-700 hover:bg-green-100 dark:border-green-500 dark:bg-green-900 dark:text-green-300 dark:hover:bg-green-800"
+            )}
           >
             <Check size={16} aria-hidden />
           </button>
         </div>
+
+        {/* Edit */}
         <div className="flex w-10 shrink-0 justify-center">
-          <button type="button" onClick={onEdit} aria-label={`Edit ${task.title}`} className={ICON_BUTTON}>
+          <button
+            type="button"
+            onClick={onEdit}
+            aria-label={`Edit ${task.title}`}
+            className={ICON_BUTTON}
+          >
             <Pencil size={16} aria-hidden />
           </button>
         </div>
+
+        {/* Dismiss */}
         <div className="flex w-12 shrink-0 justify-center">
-          <button type="button" onClick={onDismiss} aria-label={`Dismiss ${task.title}`} className={ICON_BUTTON}>
+          <button
+            type="button"
+            onClick={onDismiss}
+            aria-label={`Dismiss ${task.title}`}
+            className={ICON_BUTTON}
+          >
             <X size={16} aria-hidden />
           </button>
         </div>
       </div>
 
+      {/* Expanded Task Details */}
       {expanded && (
-        <div className="bg-white pb-[22px] pl-12 pr-6 pt-5">
+        <div className="bg-white pb-[22px] pl-12 pr-6 pt-5 text-gray-900 dark:bg-gray-900 dark:text-white">
           {editing ? (
             <div className="grid gap-3">
-              <Field label="Task title" value={task.title} onChange={(v) => onChange("title", v)} />
-              <label className="grid gap-1 text-xs text-[#737373]">
+              {/* Task Title */}
+              <Field
+                label="Task title"
+                value={task.title}
+                onChange={(value) =>
+                  onChange("title", value)
+                }
+              />
+
+              {/* Task Description */}
+              <label className="grid gap-1 text-xs text-gray-600 dark:text-gray-300">
                 Task information
+
                 <textarea
                   value={task.description}
-                  onChange={(e) => onChange("description", e.target.value)}
+                  onChange={(e) =>
+                    onChange(
+                      "description",
+                      e.target.value
+                    )
+                  }
                   rows={3}
-                  className="rounded-md border border-[#e5e5e5] p-2 text-sm text-[#0a0a0a]"
+                  className={`${INPUT_STYLE} resize-none`}
                 />
               </label>
+
+              {/* Sponsor, Event, Due Date */}
               <div className="grid gap-3 sm:grid-cols-3">
-                <Field label="Sponsor" value={task.sponsorName} onChange={(v) => onChange("sponsorName", v)} />
-                <Field label="Event" value={task.eventName} onChange={(v) => onChange("eventName", v)} />
-                <Field label="Due date" type="date" value={task.dueDate} onChange={(v) => onChange("dueDate", v)} />
+                <Field
+                  label="Sponsor"
+                  value={task.sponsorName}
+                  onChange={(value) =>
+                    onChange("sponsorName", value)
+                  }
+                />
+
+                <Field
+                  label="Event"
+                  value={task.eventName}
+                  onChange={(value) =>
+                    onChange("eventName", value)
+                  }
+                />
+
+                <Field
+                  label="Due date"
+                  type="date"
+                  value={task.dueDate}
+                  onChange={(value) =>
+                    onChange("dueDate", value)
+                  }
+                />
               </div>
+
+              {/* Done Editing */}
               <div>
-                <button type="button" onClick={onEdit} className="h-7 rounded-md bg-[#0088c9] px-3 text-xs font-medium text-[#ebfcff]">
+                <button
+                  type="button"
+                  onClick={onEdit}
+                  className="h-8 rounded-md bg-[#0088c9] px-3 text-xs font-medium text-white hover:bg-[#0079b3] dark:bg-blue-600 dark:hover:bg-blue-500"
+                >
                   Done editing
                 </button>
               </div>
             </div>
           ) : (
             <div className="grid gap-[18px]">
+              {/* Task Information */}
               <div className="grid gap-1.5">
-                <p className="text-xs font-medium text-[#737373]">Task information</p>
-                <p className="text-sm text-[#737373]">{task.description}</p>
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  Task information
+                </p>
+
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  {task.description}
+                </p>
               </div>
+
+              {/* Task Details */}
               <div className="grid gap-6 sm:grid-cols-3">
-                <Detail label="Sponsor" value={task.sponsorName || "None"} />
-                <Detail label="Event" value={task.eventName} />
-                <Detail label="Due date" value={formatDate(task.dueDate, "MMMM d, yyyy")} />
+                <Detail
+                  label="Sponsor"
+                  value={task.sponsorName || "None"}
+                />
+
+                <Detail
+                  label="Event"
+                  value={task.eventName}
+                />
+
+                <Detail
+                  label="Due date"
+                  value={formatDate(
+                    task.dueDate,
+                    "MMMM d, yyyy"
+                  )}
+                />
               </div>
             </div>
           )}
@@ -265,17 +482,28 @@ function TaskRow({
   );
 }
 
-/** A small grey label over a value, used in the expanded details. */
-function Detail({ label, value }: { label: string; value: string }) {
+// Details shown when the task is expanded
+function Detail({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
   return (
     <div className="grid gap-1.5">
-      <p className="text-xs text-[#737373]">{label}</p>
-      <p className="text-sm font-medium">{value}</p>
+      <p className="text-xs text-gray-500 dark:text-gray-400">
+        {label}
+      </p>
+
+      <p className="text-sm font-medium text-gray-900 dark:text-white">
+        {value}
+      </p>
     </div>
   );
 }
 
-/** A labelled text (or date) box used in the edit form. */
+// Editable input field
 function Field({
   label,
   value,
@@ -288,13 +516,16 @@ function Field({
   type?: string;
 }) {
   return (
-    <label className="grid gap-1 text-xs text-[#737373]">
+    <label className="grid gap-1 text-xs text-gray-600 dark:text-gray-300">
       {label}
+
       <input
         type={type}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-9 rounded-md border border-[#e5e5e5] px-2 text-sm text-[#0a0a0a]"
+        onChange={(e) =>
+          onChange(e.target.value)
+        }
+        className={`${INPUT_STYLE} h-9`}
       />
     </label>
   );
