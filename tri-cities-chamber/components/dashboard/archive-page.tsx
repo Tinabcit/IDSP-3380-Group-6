@@ -1,10 +1,5 @@
 "use client";
 
-/*
- * ARCHIVE PAGE (shown at /dashboard/archive): tasks that are done.
- * Filtering lives in lib/planner/archive.ts; this file only lays it out.
- */
-
 import { useState } from "react";
 
 import { usePlannerData } from "@/components/app-shell/planner-provider";
@@ -34,7 +29,6 @@ import { formatOrdinalDate } from "@/lib/planner/dates";
 import { CardInfo } from "./cardInfo";
 import { DashboardHeader } from "./dashboard-header";
 
-// The archive page: summary numbers, a search box with event and sponsor filters, then the completed tasks.
 export function ArchivePage() {
   const { tasks, events, sponsors, lookups, toggleTask } = usePlannerData();
   const [query, setQuery] = useState("");
