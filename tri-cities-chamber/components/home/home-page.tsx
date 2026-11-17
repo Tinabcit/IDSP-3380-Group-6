@@ -12,6 +12,7 @@ import { TaskTable } from "@/components/tasks/task-table";
 import { isISODateBefore, shiftISODate } from "@/lib/planner/dates";
 import { paginate, searchTasks, sortByDueDate } from "@/lib/planner/home";
 import { getTaskStatus } from "@/lib/planner/selectors";
+import TaskDetails, { type TaskInfo } from "@/components/TaskDetails";
 
 /** How many rows the table shows per page. */
 const PAGE_SIZE = 9;
@@ -41,7 +42,7 @@ export function HomePage() {
   const { today, tasks, events, sponsors, lookups } = data;
 
   // The search box and the event / partner picked in the sidebar (shared with every page).
-  const { search, eventId, sponsorId, setEventId, setSponsorId } =
+  const { search, eventId, sponsorId, setEventId, setSponsorId, viewKey } =
     useHomeFilters();
 
   // What the user has chosen on screen.
@@ -50,6 +51,19 @@ export function HomePage() {
   const [due, setDue] = useState<(typeof DUE_OPTIONS)[number]["value"]>("any");
   const [direction, setDirection] = useState<"asc" | "desc">("asc");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  // Picking a different sponsor (here or in the sidebar), or any sidebar event / sponsor,
+  // clears the other task filters.
+  const resetKey = `${sponsorId}|${viewKey}`;
+  const [seenResetKey, setSeenResetKey] = useState(resetKey);
+  if (resetKey !== seenResetKey) {
+    setSeenResetKey(resetKey);
+    setStatus("all");
+    setDue("any");
+    setSelected(new Set());
+  }
+
+  const [selectedTask, setSelectedTask] = useState<TaskInfo | null>(null);
 
   // The page number remembers which filters it was picked for. When any filter
   // changes (here or in the sidebar), it goes back to the first page, so the
@@ -196,6 +210,17 @@ export function HomePage() {
               onToggleRow: toggleRow,
               onToggleAll: toggleAllOnPage,
             }}
+            onViewDetails={(t) =>
+              setSelectedTask({
+                id: t.id,
+                title: t.title,
+                description: "",
+                priority: "Medium",
+                dueDate: t.dueDate,
+                assignedTo: "",
+                event: t.eventId ? lookups.eventsById.get(t.eventId)?.name || "" : "",
+              })
+            }
             sort={{
               direction,
               onToggle: () => setDirection(direction === "asc" ? "desc" : "asc"),
@@ -237,6 +262,17 @@ export function HomePage() {
           Mark as Complete
         </Button>
       </section>
+      {selectedTask && (
+        <TaskDetails
+        key={selectedTask.id}
+        task={selectedTask}
+        onClose={() => setSelectedTask(null)}
+        onSave={(updatedTask) => {
+          setSelectedTask(updatedTask);
+        }}
+        />
+
+      )}
     </div>
   );
 }

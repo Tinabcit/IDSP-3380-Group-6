@@ -51,6 +51,21 @@ export interface StaffMember {
 /** The kinds of event, used for colour coding. Events without one count as "other". */
 export type EventCategory = "networking" | "workshop" | "meeting" | "fundraiser" | "other";
 
+/** How urgent an event is: 1 (most) to 6 (least). Shown as P1 to P6. */
+export type EventPriority = 1 | 2 | 3 | 4 | 5 | 6;
+
+/** When to remind staff about an event. */
+export type EventReminder = "day-before" | "week-before" | "on-date";
+
+/** One line in an event's comp ticket list. */
+export interface EventCompTicket {
+  id: string;
+  recipient: string;
+  ticketType: string;
+  quantity: number;
+  status: "Draft" | "Issued";
+}
+
 export interface ChamberEvent {
   id: string;
   name: string;
@@ -67,8 +82,10 @@ export interface ChamberEvent {
   description?: string;
   /** Missing on events saved before categories existed; treat as "other". */
   category?: EventCategory;
-  /** Free-text sponsor name typed on the Add Event page. */
+  /** Free-text sponsor names typed on the Add Event page, joined with ", ". */
   sponsorName?: string;
+  /** Every sponsor typed on the Add Event page (the page allows as many as needed). */
+  sponsorNames?: string[];
   /** Contact email for the event. */
   email?: string;
   /** Contact phone number for the event. */
@@ -77,6 +94,21 @@ export interface ChamberEvent {
   address?: string;
   /** Name of the PDF uploaded with the event (the file itself is not stored). */
   fileName?: string;
+  /** How many people are expected. Missing means unknown. */
+  attendees?: number;
+  /** Name of the picture chosen for the event (the image itself is not stored). */
+  picture?: string;
+  /** Date by which the event's preparation must be finished. */
+  deadline?: ISODate;
+  priority?: EventPriority;
+  /** Labels such as "Design" or "Urgent". */
+  labels?: string[];
+  reminders?: EventReminder[];
+  /** Names of invited guests. */
+  guests?: string[];
+  /** Ticket types on sale, e.g. "General Admission". */
+  tickets?: string[];
+  compTickets?: EventCompTicket[];
 }
 
 /** Fields the user can set when creating or editing an event. */
@@ -95,6 +127,10 @@ export interface Task {
   /** The payment or deliverable this task mirrors, kept in sync both ways. */
   contractItemId?: string;
   notes?: string;
+  /** Start time as 24-hour "HH:mm". Missing means the task has no set time. */
+  startTime?: string;
+  /** End time as 24-hour "HH:mm". Only used when startTime is set. */
+  endTime?: string;
   createdAt: string;
 }
 

@@ -49,6 +49,8 @@ interface TaskTableProps {
   sponsorsById: Map<string, Sponsor>;
   selection?: TaskTableSelection;
   sort?: TaskTableSort;
+  /** When given, clicking a task name calls this (the home page opens the task details pop-up). */
+  onViewDetails?: (task: Task) => void;
   /** Show the calendar link at the end of each row. Defaults to true. */
   showActions?: boolean;
   emptyMessage?: string;
@@ -66,6 +68,7 @@ export function TaskTable({
   sponsorsById,
   selection,
   sort,
+  onViewDetails,
   showActions = true,
   emptyMessage = "No tasks match these filters.",
 }: TaskTableProps) {
@@ -151,6 +154,7 @@ export function TaskTable({
               today={today}
               checked={selection?.selected.has(t.id)}
               onToggle={selection ? () => selection.onToggleRow(t.id) : undefined}
+              onViewDetails={onViewDetails ? () => onViewDetails(t) : undefined}
               eventName={t.eventId ? eventsById.get(t.eventId)?.name : undefined}
               sponsorName={t.sponsorId ? sponsorsById.get(t.sponsorId)?.name : undefined}
               showActions={showActions}
@@ -168,6 +172,7 @@ function TaskRow({
   today,
   checked,
   onToggle,
+  onViewDetails,
   eventName,
   sponsorName,
   showActions,
@@ -176,6 +181,7 @@ function TaskRow({
   today: ISODate;
   checked?: boolean;
   onToggle?: () => void;
+  onViewDetails?: () => void;
   eventName?: string;
   sponsorName?: string;
   showActions: boolean;
@@ -194,7 +200,24 @@ function TaskRow({
         </TableCell>
       )}
       <TableCell
-        className={cn("px-3 py-3 text-xs", task.completed && "text-muted-foreground line-through")}
+        className={cn(
+          "px-3 py-3 text-xs",
+          onViewDetails && "cursor-pointer",
+          task.completed && "text-muted-foreground line-through",
+        )}
+        onClick={onViewDetails}
+        onKeyDown={
+          onViewDetails
+            ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onViewDetails();
+                }
+              }
+            : undefined
+        }
+        role={onViewDetails ? "button" : undefined}
+        tabIndex={onViewDetails ? 0 : undefined}
       >
         {task.title}
       </TableCell>

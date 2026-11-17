@@ -1,11 +1,13 @@
 "use client";
 
 import { Suspense } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Download } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import type { DisplayUser } from "@/lib/planner/user";
 import { cn } from "@/lib/utils";
 
 import {
@@ -25,7 +27,7 @@ import { useToast } from "./toast-provider";
  * the sidebar (see app-sidebar.tsx), the footer (backup and reset buttons),
  * and on phones the small top bar and the bottom menu.
  */
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({ children, user }: { children: React.ReactNode; user: DisplayUser }) {
   const data = useOptionalPlannerData();
   const toast = useToast();
 
@@ -49,9 +51,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <HomeFiltersProvider>
-      <div className="flex min-h-dvh">
+      <div className="flex min-h-dvh bg-background text-foreground">
         {/* The sidebar, down the left edge on tablet and up. It stays put while the page scrolls. */}
-        <AppSidebar className="sticky top-0 z-30 hidden h-dvh w-64 shrink-0 overflow-y-auto border-r md:block" />
+        <AppSidebar user={user} className="sticky top-0 z-30 hidden h-dvh w-80 shrink-0 overflow-hidden border-r md:flex" />
 
         <div className="flex min-w-0 flex-1 flex-col">
           {/* Phones have no sidebar, so they get a small header with the title, bell and user. */}
@@ -59,9 +61,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-3 px-4 py-3">
               <Link
                 href="/home"
-                className="min-w-0 truncate text-base font-bold leading-tight"
+                className="flex min-w-0 items-center gap-2 text-base font-bold leading-tight"
               >
-                Tri-Cities Chamber
+                <Image src="/tudu-logo.png" alt="" width={407} height={408} className="h-8 w-8 shrink-0" />
+                <span className="truncate">TuDu</span>
               </Link>
               {data && (
                 <div className="ml-auto flex items-center gap-2">

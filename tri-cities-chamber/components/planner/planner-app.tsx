@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { addMonths, endOfMonth, isSameMonth, startOfMonth } from "date-fns";
 import { Plus } from "lucide-react";
@@ -33,6 +33,7 @@ import {
   type TaskInput,
 } from "@/lib/planner/types";
 
+import { DayDetailsDialog } from "./day-details-dialog";
 import { DayPanel } from "./day-panel";
 import { FilterBar } from "./filter-bar";
 import { MonthGrid } from "./month-grid";
@@ -65,7 +66,12 @@ export function PlannerApp() {
   const [filters, setFilters] = useState<PlannerFilters>(EMPTY_FILTERS);
   const [formState, setFormState] = useState<TaskFormState | null>(null);
   const [eventForm, setEventForm] = useState<EventFormState | null>(null);
+  const [detailsDate, setDetailsDate] = useState<ISODate | null>(null);
   const [announcement, setAnnouncement] = useState("");
+
+  // Next keeps a page's state alive while it is hidden after you navigate away,
+  // so clear the filters when the calendar is left (the cleanup runs on hide / unmount).
+  useEffect(() => () => setFilters(EMPTY_FILTERS), []);
 
   // Opening "/calendar?date=2025-03-07" (from the header bell) jumps to that day. This
   // adjusts state while rendering, once per new value of the URL.
@@ -344,6 +350,7 @@ export function PlannerApp() {
             tasks={dayTasks}
             lookups={lookups}
             onAddTask={openCreate}
+            onOpenDetails={setDetailsDate}
             onEditEvent={openEditEvent}
             onDeleteEvent={handleEventDelete}
             onToggle={handleToggle}
@@ -361,6 +368,20 @@ export function PlannerApp() {
           />
         </aside>
       </main>
+
+      <DayDetailsDialog
+        date={detailsDate}
+        events={visibleEvents}
+        tasks={visibleTasks}
+        lookups={lookups}
+        onClose={() => setDetailsDate(null)}
+        onChangeDate={setDetailsDate}
+        onAddEvent={(date) => {
+          setDetailsDate(null);
+          openAddEvent(date);
+        }}
+        onToggle={handleToggle}
+      />
 
       <TaskFormDialog
         state={formState}

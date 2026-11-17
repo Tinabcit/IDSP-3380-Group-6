@@ -4,6 +4,7 @@
  * components/landing/sections/. Guide: docs/PAGE_STARTER_GUIDE.md
  */
 import { Suspense } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { connection } from "next/server";
 
@@ -61,7 +62,10 @@ export function LandingPage() {
   return (
     <div>
       <header>
-        <span>Tu Du</span>
+        <span>
+          <Image src="/tudu-logo.png" alt="" width={407} height={408} className="h-10 w-10" />
+          Tu Du
+        </span>
         {/* Sign Up / Login (they work already) and the Theme menu. Style or move them as you like. */}
         <Suspense fallback={null}>
           <AuthButtons />

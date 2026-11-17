@@ -1,3 +1,4 @@
+
 import { DataGate } from "@/components/app-shell/planner-provider";
 import { HomePage } from "@/components/home/home-page";
 

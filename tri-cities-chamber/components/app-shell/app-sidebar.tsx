@@ -1,10 +1,10 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  Briefcase,
   CalendarDays,
   ChevronDown,
   FileText,
@@ -26,6 +26,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { splitEvents } from "@/lib/planner/home";
 import type { ChamberEvent } from "@/lib/planner/types";
+import type { DisplayUser } from "@/lib/planner/user";
+import SearchBar from "@/components/search-bar/search-bar";
+import { UserMenu } from "./user-menu";
 import { OverdueBell } from "./overdue-bell";
 import { useOptionalPlannerData } from "./planner-provider";
 
@@ -74,6 +77,11 @@ type HomeFilters = {
   setSearch: (value: string) => void;
   setEventId: (value: string) => void;
   setSponsorId: (value: string) => void;
+  /** Sidebar pick: shows just this event (or sponsor) and clears every other filter. */
+  pickEvent: (id: string) => void;
+  pickSponsor: (id: string) => void;
+  /** Goes up every time the sidebar picks a view, so the task table can reset its own dropdowns. */
+  viewKey: number;
 };
 
 const HomeFiltersContext = createContext<HomeFilters | null>(null);
@@ -86,9 +94,46 @@ export function HomeFiltersProvider({
   const [search, setSearch] = useState("");
   const [eventId, setEventId] = useState("all");
   const [sponsorId, setSponsorId] = useState("all");
+  // Switching to a different sponsor starts the task view fresh (no leftover event or search).
+  const switchSponsor = useCallback(
+    (next: string) => {
+      if (next !== sponsorId) {
+        setEventId("all");
+        setSearch("");
+      }
+      setSponsorId(next);
+    },
+    [sponsorId],
+  );
+  const [viewKey, setViewKey] = useState(0);
+  // Picking an event or sponsor in the sidebar is a fresh view: only that one is highlighted.
+  const pickView = useCallback((event: string, sponsor: string) => {
+    setEventId(event);
+    setSponsorId(sponsor);
+    setSearch("");
+    setViewKey((k) => k + 1);
+  }, []);
+  const pickEvent = useCallback(
+    (id: string) => pickView(eventId === id ? "all" : id, "all"),
+    [pickView, eventId],
+  );
+  const pickSponsor = useCallback(
+    (id: string) => pickView("all", sponsorId === id ? "all" : id),
+    [pickView, sponsorId],
+  );
   const value = useMemo(
-    () => ({ search, eventId, sponsorId, setSearch, setEventId, setSponsorId }),
-    [search, eventId, sponsorId],
+    () => ({
+      search,
+      eventId,
+      sponsorId,
+      setSearch,
+      setEventId,
+      setSponsorId: switchSponsor,
+      pickEvent,
+      pickSponsor,
+      viewKey,
+    }),
+    [search, eventId, sponsorId, switchSponsor, pickEvent, pickSponsor, viewKey],
   );
   return (
     <HomeFiltersContext.Provider value={value}>
@@ -172,7 +217,7 @@ function Item({
   );
 }
 
-export function AppSidebar({ className }: { className?: string }) {
+export function AppSidebar({ className, user }: { className?: string; user: DisplayUser }) {
   const data = useOptionalPlannerData();
   const filters = useHomeFilters();
   const pathname = usePathname();
@@ -189,17 +234,20 @@ export function AppSidebar({ className }: { className?: string }) {
     ).length;
   }
 
+  // An event or sponsor is picked: it holds the highlight, so Home does not.
+  const viewPicked = filters.eventId !== "all" || filters.sponsorId !== "all";
+
   function goHome() {
     if (pathname !== "/home") router.push("/home");
   }
 
   function pickEvent(id: string) {
-    filters.setEventId(filters.eventId === id ? "all" : id);
+    filters.pickEvent(id);
     goHome();
   }
 
   function pickPartner(id: string) {
-    filters.setSponsorId(filters.sponsorId === id ? "all" : id);
+    filters.pickSponsor(id);
     goHome();
   }
 
@@ -226,44 +274,56 @@ export function AppSidebar({ className }: { className?: string }) {
       aria-label="Sidebar"
       className={cn("bg-muted flex flex-col divide-y [&>*]:p-4", className)}
     >
-      <div className="flex items-center gap-2">
-        <span className="grid h-8 w-8 place-items-center rounded-md bg-sky-600 text-white">
-          <Briefcase className="h-4 w-4" />
-        </span>
-        <div className="leading-tight">
-          <p className="text-sm font-semibold">TuDu</p>
-          <p className="text-[11px] text-muted-foreground">
-            Tri-Cities Chamber
-          </p>
+      <div className="shrink-0">
+        <div className="flex items-center gap-2">
+          <Link
+            href="/home"
+            onClick={clearFilters}
+            aria-label="TuDu home"
+            className="flex min-w-0 flex-1 items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Image
+              src="/tudu-logo.png"
+              alt=""
+              width={407}
+              height={408}
+              priority
+              className="h-10 w-10 shrink-0 drop-shadow-sm"
+            />
+            <span className="min-w-0 leading-tight">
+              <span className="block text-sm font-semibold">TuDu</span>
+              <span className="block truncate text-[11px] text-muted-foreground">
+                Tri-Cities Chamber
+              </span>
+            </span>
+          </Link>
+          {/* The overdue bell sits at the right end of the logo row. */}
+          <OverdueBell align="beside" />
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        <Button
-          render={<Link href="/contracts/new" />}
-          nativeButton={false}
-          className="h-auto w-fit bg-sky-600 px-3 py-1.5 font-normal text-white hover:bg-sky-600/90"
+      <div className="flex min-h-0 flex-1 flex-col divide-y overflow-y-auto [&>*]:p-4">
+      <div className="grid grid-cols-2 gap-2">
+        <Link
+          href="/contracts/new"
+          className="whitespace-nowrap rounded-md bg-sky-600 px-2 py-2 text-center text-sm font-medium text-white hover:bg-sky-700"
         >
           Upload Contract
-        </Button>
-        <Button
-          render={<Link href="/events/new" />}
-          nativeButton={false}
-          className="h-auto w-fit bg-sky-600 px-3 py-1.5 font-normal text-white hover:bg-sky-600/90"
+        </Link>
+        <Link
+          href="/events/new"
+          className="whitespace-nowrap rounded-md bg-sky-600 px-2 py-2 text-center text-sm font-medium text-white hover:bg-sky-700"
         >
-          Add Event +
-        </Button>
+          Add Event
+        </Link>
       </div>
 
-      {/* Who is signed in, with the overdue bell (it was removed from the desktop sidebar by mistake). */}
-      <div className="grid gap-1.5">
-        <span className="text-xs text-muted-foreground">Signed in as</span>
-        <div className="flex items-center gap-1">
-          <div className="min-w-0 flex-1">
-            <UserSelect />
-          </div>
-          <OverdueBell align="left" />
-        </div>
+      <div>
+        <SearchBar
+          className="max-w-none"
+          value={filters.search}
+          onChange={filters.setSearch}
+        />
       </div>
 
       <nav className="flex flex-col gap-1">
@@ -271,10 +331,12 @@ export function AppSidebar({ className }: { className?: string }) {
           <Link
             key={href}
             href={href}
-            onClick={href === "/home" ? clearFilters : undefined}
+            onClick={clearFilters}
             className={cn(
               "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-card",
-              isActive(pathname, href) && "bg-card font-medium",
+              isActive(pathname, href) &&
+                !(href === "/home" && viewPicked) &&
+                "bg-card font-medium",
             )}
           >
             <Icon className="h-4 w-4" />
@@ -284,7 +346,7 @@ export function AppSidebar({ className }: { className?: string }) {
       </nav>
 
       <div className="flex flex-col gap-4">
-        <Section title="Repeat Events">{eventItems(events.repeat)}</Section>
+        <Section title="Event Series">{eventItems(events.repeat)}</Section>
         <Section title="One-off Events">{eventItems(events.oneOff)}</Section>
         <Section title="Archived Events" startOpen={false}>
           {eventItems(events.archived)}
@@ -304,6 +366,13 @@ export function AppSidebar({ className }: { className?: string }) {
         </Section>
         <Section title="Annual Partners" />
         <Section title="Program Partners" />
+      </div>
+
+      </div>
+
+      {/* Who is signed in with Google (or Unknown user), pinned to the bottom. */}
+      <div className="shrink-0">
+        <UserMenu user={user} />
       </div>
     </aside>
   );

@@ -172,7 +172,7 @@ export function ContractDetail({ id }: { id: string }) {
       />
 
       <Checklist
-        title="What we owe the partner"
+        title="Deliverables"
         empty="No deliverables recorded."
         items={contract.deliverables.map((d) => ({
           id: d.id,

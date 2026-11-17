@@ -20,13 +20,14 @@ const DropdownMenuRadioGroup = MenuPrimitive.RadioGroup;
 function DropdownMenuContent({
   className,
   align = "start",
+  side,
   sideOffset = 4,
   ...props
 }: WithClass<MenuPrimitive.Popup.Props> &
-  Pick<MenuPrimitive.Positioner.Props, "align" | "sideOffset">) {
+  Pick<MenuPrimitive.Positioner.Props, "align" | "side" | "sideOffset">) {
   return (
     <MenuPrimitive.Portal>
-      <MenuPrimitive.Positioner className="z-50 outline-none" align={align} sideOffset={sideOffset}>
+      <MenuPrimitive.Positioner className="z-50 outline-none" align={align} side={side} sideOffset={sideOffset}>
         <MenuPrimitive.Popup
           data-slot="dropdown-menu-content"
           className={cn(
@@ -63,10 +64,45 @@ function DropdownMenuRadioItem({
   );
 }
 
+/** A plain clickable choice in the menu (use `render` to show your own element). */
+function DropdownMenuItem({ className, ...props }: WithClass<MenuPrimitive.Item.Props>) {
+  return (
+    <MenuPrimitive.Item
+      data-slot="dropdown-menu-item"
+      className={cn(
+        "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+/** A non-clickable heading inside the menu. */
+function DropdownMenuLabel({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div data-slot="dropdown-menu-label" className={cn("px-2 py-1.5 text-sm font-semibold", className)} {...props} />
+  );
+}
+
+/** A thin line between groups of items. */
+function DropdownMenuSeparator({ className, ...props }: WithClass<MenuPrimitive.Separator.Props>) {
+  return (
+    <MenuPrimitive.Separator
+      data-slot="dropdown-menu-separator"
+      className={cn("-mx-1 my-1 h-px bg-muted", className)}
+      {...props}
+    />
+  );
+}
+
 export {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 };

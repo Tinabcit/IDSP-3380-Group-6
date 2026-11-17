@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, MapPin, Pencil, Trash2 } from "lucide-react";
+import { CalendarDays, Clock, MapPin, Pencil, Trash2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,7 @@ interface DayPanelProps {
   tasks: Task[];
   lookups: PlannerLookups;
   onAddTask: (date: ISODate) => void;
+  onOpenDetails: (date: ISODate) => void;
   onEditEvent: (event: ChamberEvent) => void;
   onDeleteEvent: (id: string) => void;
   onToggle: (id: string) => void;
@@ -50,6 +51,7 @@ export function DayPanel({
   tasks,
   lookups,
   onAddTask,
+  onOpenDetails,
   onEditEvent,
   onDeleteEvent,
   onToggle,
@@ -73,6 +75,9 @@ export function DayPanel({
               : `${tasks.length} task${tasks.length > 1 ? "s" : ""}, ${done} done.`}
           </p>
         </div>
+        <Button variant="outline" size="sm" onClick={() => onOpenDetails(date)}>
+          <CalendarDays aria-hidden /> Day details
+        </Button>
       </div>
 
       {events.length === 0 && (

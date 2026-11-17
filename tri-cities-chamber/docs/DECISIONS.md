@@ -171,3 +171,27 @@ Context: The scope changed: students will build only the Landing page and the Da
 Decision: /events/[id], /complimentary-tickets, their components, the ComplimentaryTicket types, the sidebar "Comp Tickets" item and the event-name links on /events were removed. The Dashboard follows the same pattern as the Landing page: app/(app)/dashboard/page.tsx wraps components/dashboard/dashboard-page.tsx in DataGate, and parts live in components/dashboard/ (cardInfo.tsx is the bare starter, with its earlier styling removed). docs/PAGE_STARTER_GUIDE.md covers both pages.
 
 Alternatives considered: Keeping the removed pages as unused starters (rejected: unused routes would confuse students).
+
+## 2026-11-08 — Sidebar avatar footer reads the Google session on the server
+
+Context: Phase 11 adds the shadcn-style avatar footer from docs/AvatarIcon.png. Nothing on the client knew who signed in with Google; the old "Signed in as" select is the planner staff switcher.
+
+Decision: app/(app)/layout.tsx reads the session with auth() (after connection()) and passes a DisplayUser (getDisplayUser in lib/planner/user.ts) down by props to AppShell, AppSidebar and UserMenu. No SessionProvider. Without a session it shows "Unknown user" / "unknown@...". The staff switcher stays. Added shadcn Avatar (now on Base UI), plus DropdownMenuItem/Label/Separator. Sign in/out server actions live in components/app-shell/auth-actions.ts.
+
+Alternatives considered: SessionProvider with useSession (rejected: extra client state, props are simpler). Replacing the staff switcher (rejected: it drives planner data).
+
+## 2026-11-11 — Calendar day details pop-up: optional time and attendee fields, label-only timezone
+
+Context: Phase 12 adds the day details pop-up from docs/CalendarDayDetailsPop-up.png. The mockup shows time ranges on activities and attendee counts on events, which tasks and events did not store, and says times are shown in the user's local timezone.
+
+Decision: Task gets optional startTime/endTime and ChamberEvent gets optional attendees (all optional, so saved data still loads). The task form and edit-event form have matching inputs. Stored times stay zone-less "HH:mm" wall-clock values, so "local timezone" is a client-only GMT offset label plus the footer note; no UTC conversion. The pop-up is DayDetailsDialog, opened from a "Day details" button in the day panel (single click on a day still only selects it). Pure logic is in lib/planner/day-details.ts. Branched from main, like the previous phases.
+
+Alternatives considered: Display only what already exists (rejected: the timetable and activity times would be empty). Store UTC instants (rejected: migrates saved data and forms for no gain in a single-timezone MVP).
+
+## 2026-11-17 — Event page and pop-up get the full field list from the mockups
+
+Context: docs/EventPage.png (Add Event) and docs/EventPopUp.png (edit pop-up, plus Comp Tickets) show Picture, Description, Date of Event, Deadline, Priority, Labels, Reminders, Guests, Sponsors, Tickets and Location. The add page and edit dialog only had a few of them.
+
+Decision: ChamberEvent gains optional picture, deadline, priority (P1 to P6), labels, reminders, guests, tickets and compTickets, so saved data still loads (no localStorage key bump). Both screens share components/events/event-sections.tsx (mini calendar, priority, chips, comp tickets). The Add Event page keeps its required fields and PDF upload flow; the edit pop-up adds Comp Tickets as an inline "issue" form rather than reusing GiveCompTicketsDialog, whose own fixed overlay does not work inside a Radix dialog. The picture is only a file name, like the PDF. The edit pop-up now keeps event fields it does not show (address, file name), which updateEvent used to drop.
+
+Alternatives considered: UI-only controls with no saved data (rejected: edits would be lost). Opening GiveCompTicketsDialog from the pop-up (rejected: nested overlay and focus-trap problems).
