@@ -274,13 +274,13 @@ export function AppSidebar({ className, user }: { className?: string; user: Disp
       <div className="flex gap-2">
         <Link
           href="/contracts/new"
-          className="flex-1 whitespace-nowrap rounded-md bg-sky-600 px-2 py-1.5 text-center text-xs text-white"
+          className="flex-1 whitespace-nowrap rounded-md bg-sky-600 px-3 py-2 text-center text-sm font-medium text-white hover:bg-sky-700"
         >
           Upload Contract
         </Link>
         <Link
           href="/events/new"
-          className="flex-1 whitespace-nowrap rounded-md bg-sky-600 px-2 py-1.5 text-center text-xs text-white"
+          className="flex-1 whitespace-nowrap rounded-md bg-sky-600 px-3 py-2 text-center text-sm font-medium text-white hover:bg-sky-700"
         >
           Add Event
         </Link>
