@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Download } from "lucide-react";
@@ -60,9 +61,10 @@ export function AppShell({ children, user }: { children: React.ReactNode; user: 
             <div className="flex items-center gap-3 px-4 py-3">
               <Link
                 href="/home"
-                className="min-w-0 truncate text-base font-bold leading-tight"
+                className="flex min-w-0 items-center gap-2 text-base font-bold leading-tight"
               >
-                Tri-Cities Chamber
+                <Image src="/tudu-logo.png" alt="" width={407} height={408} className="h-8 w-8 shrink-0" />
+                <span className="truncate">TuDu</span>
               </Link>
               {data && (
                 <div className="ml-auto flex items-center gap-2">

@@ -251,11 +251,12 @@ export function AppSidebar({ className, user }: { className?: string; user: Disp
             className="flex min-w-0 flex-1 items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Image
-              src="/tudu-logo.svg"
+              src="/tudu-logo.png"
               alt=""
-              width={32}
-              height={32}
-              className="h-8 w-8 shrink-0"
+              width={407}
+              height={408}
+              priority
+              className="h-10 w-10 shrink-0 drop-shadow-sm"
             />
             <span className="min-w-0 leading-tight">
               <span className="block text-sm font-semibold">TuDu</span>
