@@ -93,33 +93,44 @@ export function validateEventInput(input: EventInput): string | null {
   return null;
 }
 
-/** The values typed on the Add Event page, all as plain text. */
+/** The values typed on the Add Event page. */
 export interface EventFormValues {
   title: string;
-  sponsor: string;
+  /** One name per sponsor box; the page lets people add as many as they need. */
+  sponsors: string[];
   date: string;
+  /** A signature event (or event series) is the only kind that picks a category. */
+  isSignature: boolean;
   category: string;
-  email: string;
-  phone: string;
   address: string;
 }
 
+/** Trims sponsor names and drops blanks and repeats (ignoring case), keeping the order. */
+export function cleanSponsors(names: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of names) {
+    const name = raw.trim();
+    if (!name || seen.has(name.toLowerCase())) continue;
+    seen.add(name.toLowerCase());
+    out.push(name);
+  }
+  return out;
+}
+
 /**
- * Checks the Add Event page. Every field is required. Returns a map of field
- * name to message, empty when everything is fine.
+ * Checks the Add Event page. Title, date, address and at least one sponsor are
+ * required; the category only when the event is a signature event. Returns a map
+ * of field name to message, empty when everything is fine.
  */
 export function validateEventForm(values: EventFormValues): Partial<Record<keyof EventFormValues, string>> {
   const errors: Partial<Record<keyof EventFormValues, string>> = {};
   const required = "Field Required";
-  for (const key of Object.keys(values) as (keyof EventFormValues)[]) {
-    if (!values[key].trim()) errors[key] = required;
-  }
-  if (!errors.date && !isValidISODate(values.date)) errors.date = "Pick a valid date.";
-  if (!errors.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
-    errors.email = "Enter a valid email address.";
-  }
-  if (!errors.phone && !/^\+?[\d\s().-]{7,}$/.test(values.phone.trim())) {
-    errors.phone = "Enter a valid phone number.";
-  }
+  if (!values.title.trim()) errors.title = required;
+  if (cleanSponsors(values.sponsors).length === 0) errors.sponsors = required;
+  if (!values.date.trim()) errors.date = required;
+  else if (!isValidISODate(values.date)) errors.date = "Pick a valid date.";
+  if (values.isSignature && !values.category.trim()) errors.category = required;
+  if (!values.address.trim()) errors.address = required;
   return errors;
 }
