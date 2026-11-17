@@ -226,6 +226,9 @@ export function AppSidebar({ className, user }: { className?: string; user: Disp
     ).length;
   }
 
+  // An event or sponsor is picked: it holds the highlight, so Home does not.
+  const viewPicked = filters.eventId !== "all" || filters.sponsorId !== "all";
+
   function goHome() {
     if (pathname !== "/home") router.push("/home");
   }
@@ -326,7 +329,9 @@ export function AppSidebar({ className, user }: { className?: string; user: Disp
             onClick={clearFilters}
             className={cn(
               "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-card",
-              isActive(pathname, href) && "bg-card font-medium",
+              isActive(pathname, href) &&
+                !(href === "/home" && viewPicked) &&
+                "bg-card font-medium",
             )}
           >
             <Icon className="h-4 w-4" />
