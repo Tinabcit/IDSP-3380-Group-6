@@ -79,8 +79,8 @@ export function TaskTable({
           <li key={t.id} className={cn("grid items-center gap-4 border-t px-1 py-3 text-sm", PLAIN_TASK_COLUMNS)}>
             <span>{formatOrdinalDate(t.dueDate)}</span>
             <span className={cn("truncate", t.completed && "text-muted-foreground line-through")}>{t.title}</span>
-            <PlainCell name={t.eventId ? eventsById.get(t.eventId)?.name : undefined} />
-            <PlainCell name={t.sponsorId ? sponsorsById.get(t.sponsorId)?.name : undefined} />
+            <NameCell name={t.eventId ? eventsById.get(t.eventId)?.name : undefined} />
+            <NameCell name={t.sponsorId ? sponsorsById.get(t.sponsorId)?.name : undefined} />
           </li>
         ))}
       </ul>
@@ -230,8 +230,8 @@ function TaskRow({
   );
 }
 
-/** An event or sponsor cell in the plain layout: a grey letter badge and the name, or a dash. */
-function PlainCell({ name }: { name?: string }) {
+/** An event or sponsor cell: a grey letter badge and the name, or a dash. Also used by the archive page. */
+export function NameCell({ name }: { name?: string }) {
   if (!name) return <span className="text-muted-foreground">-</span>;
   return (
     <span className="flex min-w-0 items-center gap-2">

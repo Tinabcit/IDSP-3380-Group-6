@@ -224,10 +224,7 @@ export function AppSidebar({ className }: { className?: string }) {
   return (
     <aside
       aria-label="Sidebar"
-      className={cn(
-        "bg-muted flex flex-col divide-y [&>*]:p-4",
-        className,
-      )}
+      className={cn("bg-muted flex flex-col divide-y [&>*]:p-4", className)}
     >
       <div className="flex items-center gap-2">
         <span className="grid h-8 w-8 place-items-center rounded-md bg-sky-600 text-white">
