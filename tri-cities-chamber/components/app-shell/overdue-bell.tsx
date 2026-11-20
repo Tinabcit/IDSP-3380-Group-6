@@ -75,11 +75,11 @@ export function OverdueBell({ align = "right" }: { align?: "left" | "right" | "b
 
   return (
     <div ref={wrapperRef} className="relative">
-      <Button
+      <button
         ref={buttonRef}
         type="button"
-        variant="ghost"
-        size="icon"
+        // variant="ghost"
+        // size="icon"
         onClick={toggle}
         aria-expanded={open}
         aria-haspopup="true"
@@ -95,7 +95,7 @@ export function OverdueBell({ align = "right" }: { align?: "left" | "right" | "b
             {overdue.length}
           </span>
         )}
-      </Button>
+      </button>
 
       {open && (
         <div
