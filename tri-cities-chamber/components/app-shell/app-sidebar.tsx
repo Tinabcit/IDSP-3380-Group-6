@@ -403,7 +403,7 @@ export function AppSidebar({
     <aside
       aria-label="Sidebar"
       className={cn(
-        "flex min-w-0 flex-col divide-y bg-muted [&>*]:p-4",
+        "flex min-w-0 flex-col divide-y bg-muted *:p-4",
         className
       )}
     >
@@ -451,7 +451,7 @@ export function AppSidebar({
       {/* Scrollable Sidebar Content */}
       {/* -------------------------------- */}
 
-      <div className="flex min-h-0 flex-1 flex-col divide-y overflow-y-auto [&>*]:p-4">
+      <div className="flex min-h-0 flex-1 flex-col divide-y overflow-y-auto *:p-4">
 
         {/* -------------------------------- */}
         {/* Upload Contract + Add Event */}
