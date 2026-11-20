@@ -40,7 +40,7 @@ export default function SignUpPage() {
       {/* Main Sign Up Section */}
       <main className="flex flex-1 justify-center bg-landing-hero px-4 py-12 text-landing-hero-foreground">
 
-        <div className="w-full max-w-[500px]">
+        <div className="w-full max-w-125">
 
           {/* Page Heading */}
           <div className="mb-12 text-center">
