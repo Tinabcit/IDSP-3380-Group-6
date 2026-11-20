@@ -51,6 +51,21 @@ export interface StaffMember {
 /** The kinds of event, used for colour coding. Events without one count as "other". */
 export type EventCategory = "networking" | "workshop" | "meeting" | "fundraiser" | "other";
 
+/** How urgent an event is: 1 (most) to 6 (least). Shown as P1 to P6. */
+export type EventPriority = 1 | 2 | 3 | 4 | 5 | 6;
+
+/** When to remind staff about an event. */
+export type EventReminder = "day-before" | "week-before" | "on-date";
+
+/** One line in an event's comp ticket list. */
+export interface EventCompTicket {
+  id: string;
+  recipient: string;
+  ticketType: string;
+  quantity: number;
+  status: "Draft" | "Issued";
+}
+
 export interface ChamberEvent {
   id: string;
   name: string;
@@ -81,6 +96,19 @@ export interface ChamberEvent {
   fileName?: string;
   /** How many people are expected. Missing means unknown. */
   attendees?: number;
+  /** Name of the picture chosen for the event (the image itself is not stored). */
+  picture?: string;
+  /** Date by which the event's preparation must be finished. */
+  deadline?: ISODate;
+  priority?: EventPriority;
+  /** Labels such as "Design" or "Urgent". */
+  labels?: string[];
+  reminders?: EventReminder[];
+  /** Names of invited guests. */
+  guests?: string[];
+  /** Ticket types on sale, e.g. "General Admission". */
+  tickets?: string[];
+  compTickets?: EventCompTicket[];
 }
 
 /** Fields the user can set when creating or editing an event. */

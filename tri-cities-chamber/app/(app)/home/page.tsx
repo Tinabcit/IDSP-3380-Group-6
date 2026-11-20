@@ -1,15 +1,16 @@
-
 import { DataGate } from "@/components/app-shell/planner-provider";
-import { HomePage } from "@/components/home/home-page";
+import { DashboardPage } from "@/components/dashboard/dashboard-page";
 
-/**
- * Page at "/home". Shows the to-do task table with the sidebar.
- * DataGate waits until the data has loaded before showing it.
+export const metadata = { title: "Home | Tri-Cities Chamber" };
+
+/*
+ * Page at /home. You normally do not need to change this file:
+ * the page itself is components/dashboard/dashboard-page.tsx.
  */
-export default function Home() {
+export default function Page() {
   return (
     <DataGate>
-      <HomePage />
+      <DashboardPage />
     </DataGate>
   );
 }

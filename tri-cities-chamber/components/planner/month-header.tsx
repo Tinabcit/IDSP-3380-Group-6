@@ -57,6 +57,7 @@ export function MonthHeader({
       <div className="flex items-center gap-1">
         <Select
           value={String(month.getMonth())}
+          items={MONTH_NAMES.map((name, i) => ({ value: String(i), label: name }))}
           onValueChange={(v) => onJump(startOfMonth(setMonth(month, Number(v))))}
         >
           <SelectTrigger aria-label="Choose month" className="h-8 w-[7.5rem]">

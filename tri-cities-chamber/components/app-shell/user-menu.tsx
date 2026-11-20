@@ -35,14 +35,11 @@ function UserInfo({ user }: { user: DisplayUser }) {
 export function UserMenu({ user }: { user: DisplayUser }) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          className="flex w-full items-center gap-2 rounded-md p-1 hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <UserInfo user={user} />
-          <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-        </button>
+      <DropdownMenuTrigger
+        className="flex w-full items-center gap-2 rounded-md p-1 hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <UserInfo user={user} />
+        <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
       </DropdownMenuTrigger>
       <DropdownMenuContent side="bottom" align="start" className="w-56">
         <DropdownMenuLabel className="flex items-center gap-2 font-normal">
@@ -50,11 +47,9 @@ export function UserMenu({ user }: { user: DisplayUser }) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <form action={user.signedIn ? googleSignOut : googleSignIn}>
-          <DropdownMenuItem asChild>
-            <button type="submit" className="w-full cursor-pointer">
-              {user.signedIn ? <LogOut className="h-4 w-4" aria-hidden /> : <LogIn className="h-4 w-4" aria-hidden />}
-              {user.signedIn ? "Sign out" : "Log in"}
-            </button>
+          <DropdownMenuItem render={<button type="submit" />} className="w-full cursor-pointer">
+            {user.signedIn ? <LogOut className="h-4 w-4" aria-hidden /> : <LogIn className="h-4 w-4" aria-hidden />}
+            {user.signedIn ? "Sign out" : "Log in"}
           </DropdownMenuItem>
         </form>
       </DropdownMenuContent>

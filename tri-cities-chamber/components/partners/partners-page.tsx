@@ -15,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 import { amountPaid, formatCurrency } from "@/lib/planner/contracts";
 import { fromISODate } from "@/lib/planner/dates";
 import { isDraft, levelLabel } from "@/lib/planner/sponsors";
@@ -137,16 +138,14 @@ export function PartnersPage() {
           </Button>
 
           {/* Existing New Contract button */}
-          <Button asChild>
-            <Link href="/contracts/new">
-              <Plus />
-              <span>
-                <span className="sm:hidden">New</span>
-                <span className="hidden sm:inline">
-                  New contract
-                </span>
+          <Button render={<Link href="/contracts/new" />} nativeButton={false}>
+            <Plus />
+            <span>
+              <span className="sm:hidden">New</span>
+              <span className="hidden sm:inline">
+                New contract
               </span>
-            </Link>
+            </span>
           </Button>
         </div>
       </header>
@@ -176,10 +175,8 @@ export function PartnersPage() {
         <ul className="grid gap-3">
           {partners.map(
             ({ sponsor, contracts, total, received }) => (
-              <li
-                key={sponsor.id}
-                className="rounded-lg border bg-card p-4"
-              >
+              <li key={sponsor.id}>
+                <Card className="p-4">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -379,7 +376,7 @@ export function PartnersPage() {
                     </div>
                   </div>
                 )}
-              </li>
+              </Card></li>
             )
           )}
         </ul>

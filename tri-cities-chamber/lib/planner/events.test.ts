@@ -9,6 +9,11 @@ import {
   isValidISODate,
   isValidTime,
   cleanSponsors,
+  compTicketStats,
+  extrasFromEvent,
+  extrasToInput,
+  initialsOf,
+  toggleItem,
   validateEventForm,
   validateEventInput,
 } from './events';
@@ -178,5 +183,82 @@ describe('validateEventForm', () => {
 describe('cleanSponsors', () => {
   it('trims names, drops blanks and repeats', () => {
     expect(cleanSponsors([' RBC ', '', 'rbc', 'BCIT'])).toEqual(['RBC', 'BCIT']);
+  });
+});
+
+describe('toggleItem', () => {
+  it('adds a missing item and removes a present one', () => {
+    expect(toggleItem(['a'], 'b')).toEqual(['a', 'b']);
+    expect(toggleItem(['a', 'b'], 'a')).toEqual(['b']);
+  });
+});
+
+describe('initialsOf', () => {
+  it('uses the first letters of the first two words', () => {
+    expect(initialsOf('Alice Ross')).toBe('AR');
+    expect(initialsOf('Marcus')).toBe('M');
+    expect(initialsOf('  ')).toBe('');
+  });
+});
+
+describe('event extras', () => {
+  it('starts empty for a new event', () => {
+    const extras = extrasFromEvent(undefined);
+    expect(extras.labels).toEqual([]);
+    expect(extras.priority).toBeNull();
+    expect(extras.deadline).toBe('');
+  });
+
+  it('round-trips through an event, leaving blanks out of the input', () => {
+    const empty = extrasToInput(extrasFromEvent(undefined));
+    expect(empty.description).toBeUndefined();
+    expect(empty.labels).toBeUndefined();
+    expect(empty.priority).toBeUndefined();
+    const extras = {
+      ...extrasFromEvent(undefined),
+      description: '  Big night ',
+      deadline: '2025-02-20',
+      priority: 2 as const,
+      labels: ['Design'],
+      guests: ['Alice Ross'],
+    };
+    const input = extrasToInput(extras);
+    expect(input).toMatchObject({ description: 'Big night', deadline: '2025-02-20', priority: 2 });
+    const back = extrasFromEvent({ ...base, ...input });
+    expect(back.labels).toEqual(['Design']);
+    expect(back.guests).toEqual(['Alice Ross']);
+  });
+});
+
+describe('validateEventInput for the extra fields', () => {
+  it('rejects a bad deadline, priority or comp ticket quantity', () => {
+    expect(validateEventInput({ ...base, deadline: '2025-13-40' })).toMatch(/deadline/i);
+    expect(validateEventInput({ ...base, priority: 9 as never })).toMatch(/priority/i);
+    expect(
+      validateEventInput({
+        ...base,
+        compTickets: [{ id: 'c', recipient: 'A', ticketType: 'VIP Access', quantity: 0, status: 'Issued' }],
+      }),
+    ).toMatch(/ticket/i);
+  });
+
+  it('accepts valid extras', () => {
+    expect(
+      validateEventInput({ ...base, deadline: '2025-02-20', priority: 3, labels: ['Urgent'] }),
+    ).toBeNull();
+  });
+});
+
+describe('compTicketStats', () => {
+  it('counts recipients, issued tickets and tickets per type', () => {
+    const stats = compTicketStats([
+      { id: '1', recipient: 'Alice Ross', ticketType: 'General Admission', quantity: 2, status: 'Issued' },
+      { id: '2', recipient: 'Marcus Reed', ticketType: 'VIP Access', quantity: 1, status: 'Issued' },
+      { id: '3', recipient: 'Marcus Reed', ticketType: 'VIP Access', quantity: 1, status: 'Draft' },
+    ]);
+    expect(stats.recipients).toBe(2);
+    expect(stats.issued).toBe(3);
+    expect(stats.byType['General Admission']).toBe(2);
+    expect(stats.byType['VIP Access']).toBe(1);
   });
 });

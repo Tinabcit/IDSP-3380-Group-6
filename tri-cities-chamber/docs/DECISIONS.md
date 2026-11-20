@@ -148,11 +148,35 @@ Decision: Adding an event is the page /events/new (the modal EventFormDialog sta
 
 Alternatives considered: Keep the modal (rejected: does not match the design). Pick sponsors from a dropdown only (rejected: new sponsors could not be typed).
 
+## 2026-11-04 — shadcn components run on Base UI instead of Radix; more of the app uses them
+
+Context: The team asked to take Radix UI out and use shadcn components throughout while keeping the current look. shadcn's default components are built on Radix; shadcn also supports Base UI as the underlying library.
+
+Decision: All @radix-ui/* packages were removed and @base-ui/react (1.9.0) was added. The files in components/ui keep the same component names and Tailwind classes but are built on Base UI. Differences for callers: `asChild` is gone, use `render` instead (for a Next.js Link: `<Button render={<Link href="..." />} nativeButton={false}>`); every Select passes `items` (value/label pairs) so the closed dropdown shows the label, not the raw id; Select's onValueChange is never called with null; open/checked styling uses `data-[open]`, `data-[closed]` and `data-[checked]` instead of `data-[state=...]`; Label is a plain <label>. New shadcn components Card and Table were added and replace hand-made bordered boxes, the home task table, and raw buttons. Kept as native elements: the calendar day cells in month-grid (a keyboard grid, not buttons), the hidden file input in the contract form, the link-cards in contract-card, and dashed "nothing here" messages.
+
+Alternatives considered: Keep shadcn on Radix and only add more shadcn components (rejected: Radix had to go).
+
+## 2026-11-04 — Starter templates for Landing, Event detail and Complimentary Tickets
+
+Context: A teammate who does not know TypeScript will build these three pages. The pages must stay TypeScript so they share data and types with the rest of the app.
+
+Decision: Each page is a .tsx component with a folder for its parts (components/landing/sections, components/events/detail, components/tickets/parts). Every component starts with a "TYPES (already set up)" block declaring its props, so the teammate edits JSX and copies prop lines from docs/PAGE_STARTER_GUIDE.md. New routes: /events/[id] (event names on /events link to it) and /complimentary-tickets (sidebar "Comp Tickets", protected in proxy.ts). ComplimentaryTicket and ComplimentaryTicketInput were added to lib/planner/types.ts. Tickets are page state only for now, not saved in the planner store. The pages and parts are deliberately bare (heading, typed props, TODO comments, no styling) because students will build and style them; on the landing page only the working Sign Up / Login / Theme controls are kept, unstyled.
+
+Alternatives considered: Plain .jsx files (rejected: no type checking where the pages meet shared data).
+
+## 2026-11-04 — Starter pages are Landing and Dashboard only
+
+Context: The scope changed: students will build only the Landing page and the Dashboard, not Event detail or Complimentary Tickets. This replaces the scope of the "Starter templates" entry above.
+
+Decision: /events/[id], /complimentary-tickets, their components, the ComplimentaryTicket types, the sidebar "Comp Tickets" item and the event-name links on /events were removed. The Dashboard follows the same pattern as the Landing page: app/(app)/dashboard/page.tsx wraps components/dashboard/dashboard-page.tsx in DataGate, and parts live in components/dashboard/ (cardInfo.tsx is the bare starter, with its earlier styling removed). docs/PAGE_STARTER_GUIDE.md covers both pages.
+
+Alternatives considered: Keeping the removed pages as unused starters (rejected: unused routes would confuse students).
+
 ## 2026-11-08 — Sidebar avatar footer reads the Google session on the server
 
 Context: Phase 11 adds the shadcn-style avatar footer from docs/AvatarIcon.png. Nothing on the client knew who signed in with Google; the old "Signed in as" select is the planner staff switcher.
 
-Decision: app/(app)/layout.tsx reads the session with auth() (after connection()) and passes a DisplayUser (getDisplayUser in lib/planner/user.ts) down by props to AppShell, AppSidebar and UserMenu. No SessionProvider. Without a session it shows "Unknown user" / "unknown@...". The staff switcher stays. Added @radix-ui/react-avatar and shadcn Avatar, plus DropdownMenuItem/Label/Separator. Sign in/out server actions live in components/app-shell/auth-actions.ts.
+Decision: app/(app)/layout.tsx reads the session with auth() (after connection()) and passes a DisplayUser (getDisplayUser in lib/planner/user.ts) down by props to AppShell, AppSidebar and UserMenu. No SessionProvider. Without a session it shows "Unknown user" / "unknown@...". The staff switcher stays. Added shadcn Avatar (now on Base UI), plus DropdownMenuItem/Label/Separator. Sign in/out server actions live in components/app-shell/auth-actions.ts.
 
 Alternatives considered: SessionProvider with useSession (rejected: extra client state, props are simpler). Replacing the staff switcher (rejected: it drives planner data).
 
@@ -163,3 +187,11 @@ Context: Phase 12 adds the day details pop-up from docs/CalendarDayDetailsPop-up
 Decision: Task gets optional startTime/endTime and ChamberEvent gets optional attendees (all optional, so saved data still loads). The task form and edit-event form have matching inputs. Stored times stay zone-less "HH:mm" wall-clock values, so "local timezone" is a client-only GMT offset label plus the footer note; no UTC conversion. The pop-up is DayDetailsDialog, opened from a "Day details" button in the day panel (single click on a day still only selects it). Pure logic is in lib/planner/day-details.ts. Branched from main, like the previous phases.
 
 Alternatives considered: Display only what already exists (rejected: the timetable and activity times would be empty). Store UTC instants (rejected: migrates saved data and forms for no gain in a single-timezone MVP).
+
+## 2026-11-17 — Event page and pop-up get the full field list from the mockups
+
+Context: docs/EventPage.png (Add Event) and docs/EventPopUp.png (edit pop-up, plus Comp Tickets) show Picture, Description, Date of Event, Deadline, Priority, Labels, Reminders, Guests, Sponsors, Tickets and Location. The add page and edit dialog only had a few of them.
+
+Decision: ChamberEvent gains optional picture, deadline, priority (P1 to P6), labels, reminders, guests, tickets and compTickets, so saved data still loads (no localStorage key bump). Both screens share components/events/event-sections.tsx (mini calendar, priority, chips, comp tickets). The Add Event page keeps its required fields and PDF upload flow; the edit pop-up adds Comp Tickets as an inline "issue" form rather than reusing GiveCompTicketsDialog, whose own fixed overlay does not work inside a Radix dialog. The picture is only a file name, like the PDF. The edit pop-up now keeps event fields it does not show (address, file name), which updateEvent used to drop.
+
+Alternatives considered: UI-only controls with no saved data (rejected: edits would be lost). Opening GiveCompTicketsDialog from the pop-up (rejected: nested overlay and focus-trap problems).

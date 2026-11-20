@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 
 import {
   AppSidebar,
-  HomeFiltersProvider,
+  TasksFiltersProvider,
   NAV,
   UserSelect,
   isActive,
@@ -50,7 +50,7 @@ export function AppShell({ children, user }: { children: React.ReactNode; user: 
   }
 
   return (
-    <HomeFiltersProvider>
+    <TasksFiltersProvider>
       <div className="flex min-h-dvh bg-background text-foreground">
         {/* The sidebar, down the left edge on tablet and up. It stays put while the page scrolls. */}
         <AppSidebar user={user} className="sticky top-0 z-30 hidden h-dvh w-80 shrink-0 overflow-hidden border-r md:flex" />
@@ -116,7 +116,7 @@ export function AppShell({ children, user }: { children: React.ReactNode; user: 
           <MobileNav />
         </Suspense>
       </div>
-    </HomeFiltersProvider>
+    </TasksFiltersProvider>
   );
 }
 

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useOptionalPlannerData } from "@/components/app-shell/planner-provider";
 import { getPaymentNotifications } from "@/lib/planner/payment-notifications";
 import { formatCurrency } from "@/lib/planner/contracts";
+import { Card } from "@/components/ui/card";
 
 export function PaymentReminderPanel() {
   const data = useOptionalPlannerData();
@@ -20,19 +21,19 @@ export function PaymentReminderPanel() {
 
   if (notifications.length === 0) {
     return (
-      <div className="rounded-lg border p-4">
+      <Card className="p-4 bg-transparent">
         <h2 className="text-lg font-semibold">
           Sponsorship Payment Reminders
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
           No outstanding payment reminders.
         </p>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <section className="rounded-lg border p-4">
+    <Card className="p-4 bg-transparent">
       <h2 className="mb-4 text-lg font-semibold">
         Sponsorship Payment Reminders
       </h2>
@@ -86,6 +87,6 @@ export function PaymentReminderPanel() {
           </Link>
         ))}
       </div>
-    </section>
+    </Card>
   );
 }
