@@ -22,8 +22,14 @@ export default function PdfViewer({ url }: { url: string }) {
         <Document
           file={url}
           onLoadSuccess={({ numPages }) => setPageCount(numPages)}
-          loading={<p className="p-6 text-sm text-muted-foreground">Loading PDF...</p>}
-          error={<p className="p-6 text-sm text-destructive">Could not load this PDF.</p>}
+          loading={
+            <p className="p-6 text-sm text-muted-foreground">Loading PDF...</p>
+          }
+          error={
+            <p className="p-6 text-sm text-destructive">
+              Could not load this PDF.
+            </p>
+          }
           className="flex justify-center"
         >
           <Page pageNumber={page} width={480} />

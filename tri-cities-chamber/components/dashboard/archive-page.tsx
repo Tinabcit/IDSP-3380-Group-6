@@ -24,7 +24,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { countEvents, countSponsors, getCompletedTasks } from "@/lib/planner/archive";
+import {
+  countEvents,
+  countSponsors,
+  getCompletedTasks,
+} from "@/lib/planner/archive";
 import { formatOrdinalDate } from "@/lib/planner/dates";
 import { CardInfo } from "./cardInfo";
 import { DashboardHeader } from "./dashboard-header";
@@ -68,11 +72,11 @@ export function ArchivePage() {
           numberInfo={allCompleted.length}
         />
         <CardInfo
-          headingText="Events"
+          headingText="Completed Events"
           numberInfo={countEvents(allCompleted)}
         />
         <CardInfo
-          headingText="Sponsors"
+          headingText="Completed Sponsors"
           numberInfo={countSponsors(allCompleted)}
         />
       </div>

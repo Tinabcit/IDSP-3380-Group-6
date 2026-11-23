@@ -18,3 +18,16 @@ export function CardInfo({ headingText, numberInfo }: CardInfoProps) {
     </div>
   );
 }
+
+// scoreBoard Component (array of objects)
+// {
+// foreach (array) {headingText, NumbericalData)}
+// }
+
+// CardInfo heaadingText {[headingText]}
+
+// formattedData () {
+//   return data.map()
+// }
+
+// <ScoreBoard data={formattedData}
