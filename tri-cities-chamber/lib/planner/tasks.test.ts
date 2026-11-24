@@ -5,7 +5,7 @@ import {
   searchTasks,
   sortByDueDate,
   splitEvents,
-} from '@/lib/planner/home';
+} from '@/lib/planner/tasks';
 import type { ChamberEvent, Sponsor, Task } from '@/lib/planner/types';
 
 /** Builds a task with sensible defaults so each test only sets what it cares about. */
@@ -34,8 +34,8 @@ function event(over: Partial<ChamberEvent>): ChamberEvent {
   };
 }
 
-// Tests for the home page helpers: pure functions, so no browser is needed.
-describe('home helpers', () => {
+// Tests for the tasks page helpers: pure functions, so no browser is needed.
+describe('tasks helpers', () => {
   describe('paginate', () => {
     const items = [1, 2, 3, 4, 5, 6, 7];
 

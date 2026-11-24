@@ -1,10 +1,20 @@
-/** A small stat card: a label on top and a number below. Uses theme colours so it reads in light and dark mode. */
-export function CardInfo({ headingText, numberInfo }: { headingText: string; numberInfo: number }) {
-  return (
-    <div className="w-36 rounded-xl border bg-card px-3.5 py-3">
-      <p className="text-[9px] text-muted-foreground">{headingText}</p>
+/*
+ * PART of the dashboard: one number with a label.
+ * Guide: docs/PAGE_STARTER_GUIDE.md
+ */
 
-      <p className="mt-1 text-base font-semibold text-foreground">{numberInfo}</p>
+/** TYPES (already set up): the props this part takes. To add a prop, add a line here. */
+type CardInfoProps = {
+  headingText: string;
+  numberInfo: number;
+};
+
+/** A small stat: a muted label with a big number under it. Adds a divider on the left of all but the first. */
+export function CardInfo({ headingText, numberInfo }: CardInfoProps) {
+  return (
+    <div className="flex w-44 shrink-0 flex-col gap-2 border-l p-4 first:border-l-0">
+      <p className="text-xs text-muted-foreground">{headingText}</p>
+      <p className="text-2xl font-semibold leading-none">{numberInfo}</p>
     </div>
   );
 }

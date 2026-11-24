@@ -19,9 +19,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
+import ReviewTasksDialog from "@/components/review-tasks-dialog/review-tasks-dialog";
 import { buildDemoSummary, formatCurrency, simulateExtraction } from "@/lib/planner/contracts";
 import { formatShortDate, shiftISODate } from "@/lib/planner/dates";
+
 import { newId } from "@/lib/planner/ids";
+import { suggestTasks, toTaskInput, type ProposedTask } from "@/lib/planner/proposed-tasks";
+
 import type { Deliverable, PaymentInstalment } from "@/lib/planner/types";
 
 /** Special dropdown value that means "no event chosen". */
@@ -58,6 +63,9 @@ export function ContractForm() {
   const [fileName, setFileName] = useState<string | undefined>();
   const [reading, setReading] = useState(false);
   const [autoFilled, setAutoFilled] = useState(false);
+  const [proposed, setProposed] = useState<ProposedTask[]>([]);
+  const [kept, setKept] = useState<ProposedTask[]>([]);
+  const [reviewOpen, setReviewOpen] = useState(false);
 
   const [sponsorId, setSponsorId] = useState<string>("");
   const [newPartner, setNewPartner] = useState("");
@@ -82,7 +90,8 @@ export function ContractForm() {
 
   /**
    * Runs when a file is chosen. After a short pretend "reading" delay it fills
-   * the form with best guesses (see simulateExtraction).
+   * the form with best guesses (see simulateExtraction), then opens the Review
+   * tasks dialog with tasks read from the file.
    */
   function handleFile(file: File | undefined) {
     if (!file) return;
@@ -102,10 +111,28 @@ export function ContractForm() {
       if (guess.payments) {
         setPayments(guess.payments.map((p) => ({ ...p, id: newId() })));
       }
+      const guessedSponsor = data.sponsors.find((s) => s.id === guess.sponsorId);
+      const guessedEvent = data.events.find((e) => e.id === guess.eventId);
+      setProposed(
+        suggestTasks({
+          fileName: file.name,
+          eventName: guessedEvent?.name ?? guess.title ?? "",
+          sponsorName: guessedSponsor?.name ?? "",
+          eventDate: guessedEvent?.startDate ?? shiftISODate(today, 45),
+        })
+      );
+      setKept([]);
+      setReviewOpen(true);
       setErrors({});
       setAutoFilled(true);
       setReading(false);
     }, 900);
+  }
+
+  /** Closes the dialog and remembers the saved tasks until the contract is saved. */
+  function handleReviewDone(saved: ProposedTask[]) {
+    setKept(saved);
+    setReviewOpen(false);
   }
 
   /** Adds an empty payment row, due in 30 days. */
@@ -186,19 +213,26 @@ export function ContractForm() {
       { ...input, summary: buildDemoSummary(input, sponsorName, event?.name) },
       { assigneeId }
     );
-    toast({ title: "Contract created", description: input.title });
+    for (const task of kept) {
+      data.addTask(toTaskInput(task, { assigneeId, eventId: event?.id, sponsorId: finalSponsorId }));
+    }
+    toast({
+      title: "Contract created",
+      description:
+        kept.length > 0
+          ? `${input.title} and ${kept.length} ${kept.length === 1 ? "task" : "tasks"}`
+          : input.title,
+    });
     router.push(`/contracts/${id}`);
   }
 
   return (
     <form onSubmit={handleSubmit} noValidate className="mx-auto grid max-w-2xl gap-6">
       <div>
-        <Button asChild variant="ghost" size="sm" className="-ml-3 mb-1 text-muted-foreground">
-          <Link href="/contracts">
+        <Button render={<Link href="/contracts" />} nativeButton={false} variant="ghost" size="sm" className="-ml-3 mb-1 text-muted-foreground">
             <ArrowLeft />
             Contracts
-          </Link>
-        </Button>
+          </Button>
         <h1 className="text-xl font-bold leading-tight">New contract</h1>
         <p className="text-sm text-muted-foreground">
           Upload the signed file and check what we found, or fill it in by hand. Reminders for
@@ -215,11 +249,12 @@ export function ContractForm() {
           aria-label="Contract file"
           onChange={(e) => handleFile(e.target.files?.[0])}
         />
-        <button
+        <Button
           type="button"
+          variant="outline"
           onClick={() => fileInput.current?.click()}
           disabled={reading}
-          className="flex w-full flex-col items-center gap-1.5 rounded-lg border-2 border-dashed bg-card px-4 py-8 text-center transition-colors hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-70"
+          className="h-auto w-full flex-col gap-1.5 whitespace-normal rounded-lg border-2 border-dashed border-border px-4 py-8 text-center font-normal hover:border-primary/50 hover:bg-card hover:text-foreground disabled:opacity-70 [&_svg]:size-6"
         >
           {reading ? (
             <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden />
@@ -236,7 +271,7 @@ export function ContractForm() {
           <span className="text-sm text-muted-foreground">
             {fileName && !reading ? "Choose a different file" : "Tap to choose a file"}
           </span>
-        </button>
+        </Button>
         {autoFilled && (
           <p
             role="status"
@@ -249,6 +284,18 @@ export function ContractForm() {
             </span>
           </p>
         )}
+        {proposed.length > 0 && (
+          <div className="flex items-center justify-between gap-3 rounded-md border bg-card px-3 py-2 text-sm">
+            <p role="status">
+              {kept.length > 0
+                ? `${kept.length} ${kept.length === 1 ? "task" : "tasks"} from the file will be added with this contract.`
+                : "No tasks from the file saved yet."}
+            </p>
+            <Button type="button" variant="outline" size="sm" onClick={() => setReviewOpen(true)}>
+              Review tasks
+            </Button>
+          </div>
+        )}
       </section>
 
       <fieldset className="grid gap-4">
@@ -256,7 +303,14 @@ export function ContractForm() {
 
         <div className="grid gap-2">
           <Label htmlFor="c-partner">Partner</Label>
-          <Select value={sponsorId} onValueChange={setSponsorId}>
+          <Select
+            value={sponsorId || null}
+            onValueChange={setSponsorId}
+            items={[
+              ...data.sponsors.map((s) => ({ value: s.id, label: s.name })),
+              { value: NEW_PARTNER, label: "Add a new partner" },
+            ]}
+          >
             <SelectTrigger id="c-partner" aria-invalid={Boolean(errors.sponsor)}>
               <SelectValue placeholder="Choose a partner" />
             </SelectTrigger>
@@ -283,7 +337,14 @@ export function ContractForm() {
 
         <div className="grid gap-2">
           <Label htmlFor="c-event">Event</Label>
-          <Select value={eventId} onValueChange={setEventId}>
+          <Select
+            value={eventId}
+            onValueChange={setEventId}
+            items={[
+              { value: NONE, label: "Not tied to one event" },
+              ...sortedEvents.map((e) => ({ value: e.id, label: `${e.name} (${formatShortDate(e.startDate)})` })),
+            ]}
+          >
             <SelectTrigger id="c-event">
               <SelectValue />
             </SelectTrigger>
@@ -374,7 +435,7 @@ export function ContractForm() {
           </p>
         )}
         {payments.map((p, i) => (
-          <div key={p.id} className="grid gap-2 rounded-md border bg-card p-3 sm:grid-cols-[1fr_9rem_7rem_auto] sm:items-end">
+          <Card key={p.id} className="grid gap-2 rounded-md p-3 sm:grid-cols-[1fr_9rem_7rem_auto] sm:items-end">
             <div className="grid gap-1.5">
               <Label htmlFor={`pay-label-${p.id}`} className="text-xs">Label</Label>
               <Input
@@ -418,7 +479,7 @@ export function ContractForm() {
             >
               <Trash2 />
             </Button>
-          </div>
+          </Card>
         ))}
         {payments.length > 0 && amountNumber > 0 && scheduled !== amountNumber && (
           <p role="status" className="text-sm text-overdue">
@@ -433,14 +494,14 @@ export function ContractForm() {
       </fieldset>
 
       <fieldset className="grid gap-3">
-        <legend className="mb-1 text-base font-semibold">What we owe the partner</legend>
+        <legend className="mb-1 text-base font-semibold">Deliverables</legend>
         {deliverables.length === 0 && (
           <p className="text-sm text-muted-foreground">
             Logo placement, tickets, a speaking slot, anything promised in the contract.
           </p>
         )}
         {deliverables.map((d, i) => (
-          <div key={d.id} className="grid gap-2 rounded-md border bg-card p-3 sm:grid-cols-[1fr_9rem_auto] sm:items-end">
+          <Card key={d.id} className="grid gap-2 rounded-md p-3 sm:grid-cols-[1fr_9rem_auto] sm:items-end">
             <div className="grid gap-1.5">
               <Label htmlFor={`del-label-${d.id}`} className="text-xs">Deliverable</Label>
               <Input
@@ -472,7 +533,7 @@ export function ContractForm() {
             >
               <Trash2 />
             </Button>
-          </div>
+          </Card>
         ))}
         <Button type="button" variant="outline" size="sm" className="justify-self-start" onClick={addDeliverable}>
           <Plus />
@@ -484,7 +545,11 @@ export function ContractForm() {
         <legend className="mb-1 text-base font-semibold">Follow-up</legend>
         <div className="grid gap-2">
           <Label htmlFor="c-assignee">Who gets the reminders</Label>
-          <Select value={assigneeId} onValueChange={setAssigneeId}>
+          <Select
+            value={assigneeId}
+            onValueChange={setAssigneeId}
+            items={data.staff.map((p) => ({ value: p.id, label: p.name }))}
+          >
             <SelectTrigger id="c-assignee">
               <SelectValue />
             </SelectTrigger>
@@ -506,13 +571,17 @@ export function ContractForm() {
       </fieldset>
 
       <div className="flex justify-end gap-2 border-t pt-4">
-        <Button asChild variant="outline">
-          <Link href="/contracts">Cancel</Link>
-        </Button>
+        <Button render={<Link href="/contracts" />} nativeButton={false} variant="outline">Cancel</Button>
         <Button type="submit" disabled={reading}>
           Save contract
         </Button>
       </div>
+      <ReviewTasksDialog
+        open={reviewOpen}
+        tasks={proposed}
+        onDone={handleReviewDone}
+        onClose={() => setReviewOpen(false)}
+      />
     </form>
   );
 }

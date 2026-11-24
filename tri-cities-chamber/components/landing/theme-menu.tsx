@@ -51,11 +51,9 @@ export function ThemeMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm">
+      <DropdownMenuTrigger render={<Button variant="outline" size="sm" />}>
           Theme
-        </Button>
-      </DropdownMenuTrigger>
+        </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuRadioGroup value={choice} onValueChange={pick}>
           <DropdownMenuRadioItem value="default">Default</DropdownMenuRadioItem>
