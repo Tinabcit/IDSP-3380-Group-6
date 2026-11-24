@@ -20,6 +20,7 @@ import { User, Sparkles, Plus, Sun, Moon, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { loadProfileSettingsAction, saveProfileSettingsAction } from "@/lib/db/actions";
 
 export default function SettingsPage() {
   const [username, setUsername] = useState("");
@@ -29,12 +30,8 @@ export default function SettingsPage() {
   const [theme, setTheme] = useState("light");
   const [message, setMessage] = useState("");
 
-  // Load settings saved in the browser
+  // Load the profile from the database (the theme stays a per-browser choice)
   useEffect(() => {
-    setUsername(localStorage.getItem("username") || "");
-    setEmail(localStorage.getItem("email") || "");
-    setPhoto(localStorage.getItem("profileImage") || "");
-
     const savedTheme = localStorage.getItem("theme") || "light";
     setTheme(savedTheme);
 
@@ -42,6 +39,15 @@ export default function SettingsPage() {
       "dark",
       savedTheme === "dark"
     );
+
+    loadProfileSettingsAction()
+      .then((saved) => {
+        if (!saved) return;
+        setUsername(saved.username);
+        setEmail(saved.email);
+        setPhoto(saved.photo);
+      })
+      .catch(() => setMessage("Could not load your profile."));
   }, []);
 
   // Change between light and dark mode
@@ -78,12 +84,10 @@ export default function SettingsPage() {
     reader.readAsDataURL(file);
   }
 
-  // Save settings
-  function saveSettings() {
+  // Save settings: the profile goes to the database, the theme stays in the browser
+  async function saveSettings() {
     try {
-      localStorage.setItem("username", username);
-      localStorage.setItem("email", email);
-      localStorage.setItem("profileImage", photo);
+      await saveProfileSettingsAction({ username, email, photo });
       localStorage.setItem("theme", theme);
 
       setPassword("");

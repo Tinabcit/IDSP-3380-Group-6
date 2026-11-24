@@ -17,7 +17,7 @@ npm run build
 
 ### Database setup (Supabase)
 
-1. In the Supabase SQL editor run `supabase/migrations/0001_match_app_fields.sql` (safe to run again).
+1. In the Supabase SQL editor run `supabase/migrations/0001_match_app_fields.sql`, then `0002_event_extras_comp_tickets_profile_settings.sql` (both safe to run again).
 2. In Supabase open Connect > ORMs > Prisma and copy the two connection strings into `.env.local` as `DATABASE_URL` (pooled, port 6543) and `DIRECT_URL` (port 5432). Set both on Vercel too.
 3. `npm install` generates the Prisma client (`npm run db:generate` does it again after editing `prisma/schema.prisma`).
 4. Seed it:

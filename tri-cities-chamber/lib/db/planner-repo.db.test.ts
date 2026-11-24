@@ -151,6 +151,85 @@ describe.skipIf(!url)('planner-repo against a database', () => {
     expect(snap.data.activity.some((a) => a.message === 'Added contract' && a.contractId === undefined)).toBe(true);
   });
 
+  it('saves the event extras and replaces the comp ticket list on edit', async () => {
+    const event: ChamberEvent = {
+      id: newId(),
+      name: 'Extras Gala',
+      startDate: '2026-12-05',
+      endDate: '2026-12-05',
+      pillarId: '',
+      isSignature: true,
+      sponsorName: 'Acme, Beta',
+      sponsorNames: ['Acme', 'Beta'],
+      picture: 'poster.png',
+      deadline: '2026-11-28',
+      priority: 1,
+      labels: ['Urgent'],
+      reminders: ['week-before'],
+      guests: ['Mayor'],
+      tickets: ['VIP Access'],
+      compTickets: [
+        { id: newId(), recipient: 'Alice Ross', ticketType: 'VIP Access', quantity: 2, status: 'Issued' },
+        { id: newId(), recipient: 'Marcus Reed', ticketType: 'Press Pass', quantity: 1, status: 'Draft' },
+      ],
+    };
+    await repo.createEvent(db, actorId, event, entry('Added event'));
+    let saved = (await load()).data.events.find((e) => e.id === event.id);
+    expect(saved).toMatchObject(event);
+
+    const { id, ...input } = event;
+    const edited = { ...input, priority: undefined, labels: undefined, compTickets: [event.compTickets![1]] };
+    await repo.updateEvent(db, actorId, id, edited, entry('Edited event'));
+    saved = (await load()).data.events.find((e) => e.id === id);
+    expect(saved?.priority).toBeUndefined();
+    expect(saved?.labels).toBeUndefined();
+    expect(saved?.compTickets).toEqual([event.compTickets![1]]);
+
+    // Deleting the event removes its comp tickets with it.
+    await repo.deleteEvent(db, actorId, id, entry('Deleted event'));
+    expect(await db.eventCompTicket.count({ where: { eventId: id } })).toBe(0);
+  });
+
+  it('saves and deletes Partners page comp tickets, linking the sponsor by name', async () => {
+    const sponsor: Sponsor = { id: newId(), name: `Ticket Sponsor ${newId()}`, todos: [] };
+    await repo.createSponsor(db, actorId, sponsor);
+    const ticket = {
+      id: newId(),
+      recipient: 'Sarah Jenkins',
+      sponsorName: sponsor.name.toUpperCase(),
+      quantity: 4,
+      ticketType: 'General Admission',
+      eventName: 'Gala',
+      location: 'Town Hall',
+      plusOne: true,
+      vipLounge: true,
+      backstage: false,
+      notes: 'Front row',
+      status: 'Issued' as const,
+    };
+    await repo.createSponsorCompTicket(db, ticket);
+    expect((await repo.listSponsorCompTickets(db)).find((t) => t.id === ticket.id)).toEqual(ticket);
+    expect((await db.sponsorCompTicket.findUnique({ where: { id: ticket.id } }))?.sponsorId).toBe(sponsor.id);
+
+    await repo.deleteSponsorCompTicket(db, ticket.id);
+    expect((await repo.listSponsorCompTickets(db)).some((t) => t.id === ticket.id)).toBe(false);
+  });
+
+  it('saves the Settings page profile without touching the sign-in email', async () => {
+    const photo = 'data:image/png;base64,AAAA';
+    await repo.saveProfileSettings(db, actorId, { username: 'Renamed Person', email: 'display@example.com', photo });
+    expect(await repo.getProfileSettings(db, actorId)).toEqual({
+      username: 'Renamed Person',
+      email: 'display@example.com',
+      photo,
+    });
+    // Signing in again still finds the same profile.
+    expect(await repo.ensureProfile(db, person)).toBe(actorId);
+    await expect(
+      repo.saveProfileSettings(db, actorId, { username: '', email: '', photo: 'javascript:alert(1)' })
+    ).rejects.toThrow('Invalid profile picture');
+  });
+
   it('refuses ids that are not UUIDs', async () => {
     await expect(repo.deleteTask(db, actorId, 'task-1')).rejects.toThrow('Invalid task id');
   });

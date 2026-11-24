@@ -3,13 +3,16 @@ import type {
   AgreementDeliverable,
   AgreementPayment,
   Event,
+  EventCompTicket as EventCompTicketRow,
   Pillar as PillarRow,
   Profile,
   Sponsor as SponsorRow,
   SponsorAgreement,
+  SponsorCompTicket as SponsorCompTicketRow,
   SponsorTodo as SponsorTodoRow,
   Task as TaskRow,
 } from "@/lib/generated/prisma/client";
+import type { CompTicket } from "@/components/partners/give-comp-tickets-dialog";
 import { isUuid } from "@/lib/planner/ids";
 import { getInitials } from "@/lib/planner/user";
 import type {
@@ -18,6 +21,9 @@ import type {
   Contract,
   ContractStatus,
   EventCategory,
+  EventCompTicket,
+  EventPriority,
+  EventReminder,
   ISODate,
   Pillar,
   Sponsor,
@@ -94,6 +100,28 @@ function fromDbNumber(value: { toString(): string } | number): number {
 
 const EVENT_CATEGORIES: readonly EventCategory[] = ["networking", "workshop", "meeting", "fundraiser", "other"];
 const SPONSOR_LEVELS: readonly SponsorLevel[] = ["platinum", "gold", "silver", "bronze"];
+const EVENT_REMINDERS: readonly EventReminder[] = ["day-before", "week-before", "on-date"];
+const EVENT_PRIORITIES: readonly EventPriority[] = [1, 2, 3, 4, 5, 6];
+
+/** Turns an empty array column into a missing field (the app leaves empty lists out). */
+function list<T>(value: T[]): T[] | undefined {
+  return value.length > 0 ? value : undefined;
+}
+
+/** Keeps a priority the app knows (1 to 6); anything else counts as none. */
+function toEventPriority(value: number | null): EventPriority | undefined {
+  return EVENT_PRIORITIES.find((p) => p === value);
+}
+
+/** Keeps only the reminder values the app knows. */
+function toEventReminders(value: string[]): EventReminder[] {
+  return value.filter((r): r is EventReminder => (EVENT_REMINDERS as readonly string[]).includes(r));
+}
+
+/** Reads a comp ticket status ("Draft" or "Issued"; anything else counts as a draft). */
+function toTicketStatus(value: string): "Draft" | "Issued" {
+  return value === "Issued" ? "Issued" : "Draft";
+}
 
 /** Keeps a category the app knows; anything else counts as missing ("other"). */
 function toEventCategory(value: string | null): EventCategory | undefined {
@@ -128,8 +156,23 @@ export function toStaffMember(row: Profile): StaffMember {
   return { id: row.id, name, initials: getInitials(name) };
 }
 
-/** An event row as the app's ChamberEvent (no pillar becomes ""). */
-export function toChamberEvent(row: Event): ChamberEvent {
+/** An event comp ticket row as the app's EventCompTicket. */
+export function toEventCompTicket(row: EventCompTicketRow): EventCompTicket {
+  return {
+    id: row.id,
+    recipient: row.recipient,
+    ticketType: row.ticketType,
+    quantity: row.quantity,
+    status: toTicketStatus(row.status),
+  };
+}
+
+/**
+ * An event row (with its comp ticket rows) as the app's ChamberEvent (no pillar
+ * becomes ""). Comp tickets are optional so callers that load only the event
+ * row still work.
+ */
+export function toChamberEvent(row: Event & { compTickets?: EventCompTicketRow[] }): ChamberEvent {
   return {
     id: row.id,
     name: row.name,
@@ -148,6 +191,17 @@ export function toChamberEvent(row: Event): ChamberEvent {
     address: opt(row.address),
     fileName: opt(row.fileName),
     attendees: opt(row.attendees),
+    sponsorNames: list(row.sponsorNames),
+    picture: opt(row.picture),
+    deadline: fromDbDateOpt(row.deadline),
+    priority: toEventPriority(row.priority),
+    labels: list(row.labels),
+    reminders: list(toEventReminders(row.reminders)),
+    guests: list(row.guests),
+    tickets: list(row.tickets),
+    compTickets: list(
+      [...(row.compTickets ?? [])].sort((a, b) => a.position - b.position).map(toEventCompTicket)
+    ),
   };
 }
 
@@ -261,6 +315,92 @@ export function eventData(event: Omit<ChamberEvent, "id">) {
     address: orNull(event.address),
     fileName: orNull(event.fileName),
     attendees: event.attendees ?? null,
+    sponsorNames: event.sponsorNames ?? [],
+    picture: orNull(event.picture),
+    deadline: toDbDateOpt(event.deadline),
+    priority: event.priority ?? null,
+    labels: event.labels ?? [],
+    reminders: event.reminders ?? [],
+    guests: event.guests ?? [],
+    tickets: event.tickets ?? [],
+  };
+}
+
+/** The event_comp_tickets rows for an event, in list order. */
+export function eventCompTicketRows(eventId: string, event: Omit<ChamberEvent, "id">) {
+  return (event.compTickets ?? []).map((ticket, position) => ({
+    id: ticket.id,
+    eventId,
+    recipient: ticket.recipient,
+    ticketType: ticket.ticketType,
+    quantity: ticket.quantity,
+    status: ticket.status,
+    position,
+  }));
+}
+
+/** A Partners page comp ticket row as the dialog's CompTicket. */
+export function toSponsorCompTicket(row: SponsorCompTicketRow): CompTicket {
+  return {
+    id: row.id,
+    recipient: row.recipient,
+    sponsorName: row.sponsorName,
+    quantity: row.quantity,
+    ticketType: row.ticketType,
+    eventName: row.eventName,
+    location: row.location,
+    plusOne: row.plusOne,
+    vipLounge: row.vipLounge,
+    backstage: row.backstage,
+    notes: row.notes ?? "",
+    status: toTicketStatus(row.status),
+  };
+}
+
+/** The sponsor_comp_tickets columns for a Partners page comp ticket. */
+export function sponsorCompTicketData(ticket: CompTicket, sponsorId: string | null) {
+  return {
+    id: ticket.id,
+    sponsorName: ticket.sponsorName,
+    sponsorId,
+    recipient: ticket.recipient,
+    quantity: ticket.quantity,
+    ticketType: ticket.ticketType,
+    eventName: ticket.eventName,
+    location: ticket.location,
+    plusOne: ticket.plusOne,
+    vipLounge: ticket.vipLounge,
+    backstage: ticket.backstage,
+    notes: orNull(ticket.notes),
+    status: ticket.status,
+  };
+}
+
+/** What the Settings page shows and saves for the signed-in person. */
+export interface ProfileSettings {
+  username: string;
+  email: string;
+  photo: string;
+}
+
+/**
+ * A profile row as the Settings page values. The display email falls back to
+ * the sign-in email until the person saves a different one.
+ */
+export function toProfileSettings(row: Profile): ProfileSettings {
+  return {
+    username: row.fullName ?? "",
+    email: row.contactEmail ?? row.email ?? "",
+    photo: row.avatarUrl ?? "",
+  };
+}
+
+/** The profile columns the Settings page sets (never the sign-in email). */
+export function profileSettingsData(settings: ProfileSettings) {
+  return {
+    fullName: orNull(settings.username.trim()),
+    contactEmail: orNull(settings.email.trim()),
+    avatarUrl: orNull(settings.photo),
   };
 }
 

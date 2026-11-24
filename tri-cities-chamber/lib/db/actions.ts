@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import type { CompTicket } from "@/components/partners/give-comp-tickets-dialog";
 import type {
   ActivityEntry,
   ChamberEvent,
@@ -12,6 +13,7 @@ import type {
   TaskInput,
 } from "@/lib/planner/types";
 
+import type { ProfileSettings } from "./mappers";
 import * as repo from "./planner-repo";
 import { getPrisma } from "./prisma";
 
@@ -131,4 +133,37 @@ export async function setContractStatusAction(id: string, status: Contract["stat
 export async function deleteContractAction(id: string, entry?: ActivityEntry) {
   const { db, actorId } = await signedIn();
   await repo.deleteContract(db, actorId, id, entry);
+}
+
+/** Loads the comp tickets made on the Partners page (an empty list when nobody is signed in). */
+export async function loadSponsorCompTicketsAction(): Promise<CompTicket[]> {
+  const session = await auth();
+  if (!session?.user?.email) return [];
+  return repo.listSponsorCompTickets(getPrisma());
+}
+
+/** Saves a comp ticket made on the Partners page. */
+export async function createSponsorCompTicketAction(ticket: CompTicket) {
+  const { db } = await signedIn();
+  await repo.createSponsorCompTicket(db, ticket);
+}
+
+/** Deletes a comp ticket made on the Partners page. */
+export async function deleteSponsorCompTicketAction(id: string) {
+  const { db } = await signedIn();
+  await repo.deleteSponsorCompTicket(db, id);
+}
+
+/** Loads the Settings page values for the signed-in person (null when nobody is signed in). */
+export async function loadProfileSettingsAction(): Promise<ProfileSettings | null> {
+  const session = await auth();
+  if (!session?.user?.email) return null;
+  const { db, actorId } = await signedIn();
+  return repo.getProfileSettings(db, actorId);
+}
+
+/** Saves the Settings page values for the signed-in person. */
+export async function saveProfileSettingsAction(settings: ProfileSettings) {
+  const { db, actorId } = await signedIn();
+  await repo.saveProfileSettings(db, actorId, settings);
 }

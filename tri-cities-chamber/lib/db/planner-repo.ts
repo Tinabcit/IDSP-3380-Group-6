@@ -1,3 +1,4 @@
+import type { CompTicket } from "@/components/partners/give-comp-tickets-dialog";
 import type { Prisma, PrismaClient } from "@/lib/generated/prisma/client";
 import { isUuid, newId } from "@/lib/planner/ids";
 import type {
@@ -15,7 +16,10 @@ import type {
 
 import {
   contractData,
+  eventCompTicketRows,
   eventData,
+  profileSettingsData,
+  sponsorCompTicketData,
   sponsorData,
   sponsorTodoRows,
   taskData,
@@ -24,9 +28,12 @@ import {
   toContract,
   toDbDate,
   toPillar,
+  toProfileSettings,
   toSponsor,
+  toSponsorCompTicket,
   toStaffMember,
   toTask,
+  type ProfileSettings,
 } from "./mappers";
 
 /**
@@ -95,7 +102,7 @@ export async function loadPlannerSnapshot(db: Db, person: SessionPerson): Promis
   const [pillars, profiles, events, tasks, sponsors, agreements, activity] = await Promise.all([
     db.pillar.findMany({ orderBy: [{ createdAt: "asc" }, { name: "asc" }] }),
     db.profile.findMany({ orderBy: [{ fullName: "asc" }, { email: "asc" }] }),
-    db.event.findMany({ orderBy: { createdAt: "asc" } }),
+    db.event.findMany({ orderBy: { createdAt: "asc" }, include: { compTickets: true } }),
     db.task.findMany({ orderBy: { createdAt: "asc" } }),
     db.sponsor.findMany({ orderBy: { createdAt: "asc" }, include: { todos: true } }),
     // Newest first, like the browser version (new contracts went to the top).
@@ -211,15 +218,18 @@ export async function createEvent(db: Db, actorId: string, event: ChamberEvent, 
   assertUuid(event.id, "event");
   await db.$transaction(async (tx) => {
     await tx.event.create({ data: { id: event.id, status: "planning", ...eventData(event) } });
+    await tx.eventCompTicket.createMany({ data: eventCompTicketRows(event.id, event) });
     await logActivity(tx, entry, actorId);
   });
 }
 
-/** Saves the edited fields of an event. */
+/** Saves the edited fields of an event and replaces its comp ticket list. */
 export async function updateEvent(db: Db, actorId: string, id: string, input: EventInput, entry?: ActivityEntry) {
   assertUuid(id, "event");
   await db.$transaction(async (tx) => {
     await tx.event.update({ where: { id }, data: eventData(input) });
+    await tx.eventCompTicket.deleteMany({ where: { eventId: id } });
+    await tx.eventCompTicket.createMany({ data: eventCompTicketRows(id, input) });
     await logActivity(tx, entry, actorId);
   });
 }
@@ -364,4 +374,47 @@ export async function deleteContract(db: Db, actorId: string, id: string, entry?
     await tx.sponsorAgreement.deleteMany({ where: { id } });
     await logActivity(tx, entry, actorId);
   });
+}
+
+// --- Partners page comp tickets ---------------------------------------------------
+
+/** Every comp ticket made on the Partners page, oldest first (the order the page adds them). */
+export async function listSponsorCompTickets(db: Db): Promise<CompTicket[]> {
+  const rows = await db.sponsorCompTicket.findMany({ orderBy: { createdAt: "asc" } });
+  return rows.map(toSponsorCompTicket);
+}
+
+/** Saves a new comp ticket, linking it to the sponsor whose name matches (if any). */
+export async function createSponsorCompTicket(db: Db, ticket: CompTicket) {
+  assertUuid(ticket.id, "comp ticket");
+  const sponsor = await db.sponsor.findFirst({
+    where: { name: { equals: ticket.sponsorName.trim(), mode: "insensitive" } },
+    orderBy: { createdAt: "asc" },
+    select: { id: true },
+  });
+  await db.sponsorCompTicket.create({ data: sponsorCompTicketData(ticket, sponsor?.id ?? null) });
+}
+
+/** Deletes a comp ticket. */
+export async function deleteSponsorCompTicket(db: Db, id: string) {
+  assertUuid(id, "comp ticket");
+  await db.sponsorCompTicket.deleteMany({ where: { id } });
+}
+
+// --- Settings page ------------------------------------------------------------------
+
+/** The Settings page values for a profile. */
+export async function getProfileSettings(db: Db, profileId: string): Promise<ProfileSettings> {
+  assertUuid(profileId, "profile");
+  return toProfileSettings(await db.profile.findUniqueOrThrow({ where: { id: profileId } }));
+}
+
+/** Saves the Settings page values to a profile (the sign-in email is never changed). */
+export async function saveProfileSettings(db: Db, profileId: string, settings: ProfileSettings) {
+  assertUuid(profileId, "profile");
+  // The page only allows images up to 1 MB; 1.5 million characters covers that as base64.
+  if (settings.photo && (!settings.photo.startsWith("data:image/") || settings.photo.length > 1_500_000)) {
+    throw new Error("Invalid profile picture");
+  }
+  await db.profile.update({ where: { id: profileId }, data: profileSettingsData(settings) });
 }

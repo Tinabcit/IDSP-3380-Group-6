@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { useSponsorCompTickets } from "@/hooks/use-sponsor-comp-tickets";
 import { amountPaid, formatCurrency } from "@/lib/planner/contracts";
 import { fromISODate } from "@/lib/planner/dates";
 import { isDraft, levelLabel } from "@/lib/planner/sponsors";
@@ -33,7 +34,8 @@ export function PartnersPage() {
 
   const [showCompTickets, setShowCompTickets] = useState(false);
   const [selectedSponsor, setSelectedSponsor] = useState("");
-  const [compTickets, setCompTickets] = useState<CompTicket[]>([]);
+  // Saved in the database (sponsor_comp_tickets).
+  const { tickets: compTickets, addTicket, removeTicket } = useSponsorCompTickets();
 
   function openCompTickets(sponsorName: string) {
     setSelectedSponsor(sponsorName);
@@ -41,7 +43,7 @@ export function PartnersPage() {
   }
 
   function handleSaveCompTicket(ticket: CompTicket) {
-    setCompTickets((previous) => [...previous, ticket]);
+    addTicket(ticket);
 
     toast({
       title:
@@ -53,9 +55,7 @@ export function PartnersPage() {
   }
 
   function handleRemoveCompTicket(ticket: CompTicket) {
-    setCompTickets((previous) =>
-      previous.filter((item) => item.id !== ticket.id)
-    );
+    removeTicket(ticket.id);
 
     toast({
       title: "Comp tickets removed",
