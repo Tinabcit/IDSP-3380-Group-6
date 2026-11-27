@@ -24,9 +24,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { countEvents, countSponsors, getCompletedTasks } from "@/lib/planner/archive";
+import {
+  countEvents,
+  countSponsors,
+  getCompletedTasks,
+} from "@/lib/planner/archive";
 import { formatOrdinalDate } from "@/lib/planner/dates";
-import { CardInfo } from "./cardInfo";
+import { CardInfoGroup } from "./cardInfo";
 import { DashboardHeader } from "./dashboard-header";
 
 export function ArchivePage() {
@@ -62,20 +66,13 @@ export function ArchivePage() {
         subtitle="Every task marked as done in your workspace."
       />
 
-      <div className="flex w-fit max-w-full overflow-x-auto rounded-lg border bg-card text-card-foreground">
-        <CardInfo
-          headingText="Completed tasks"
-          numberInfo={allCompleted.length}
-        />
-        <CardInfo
-          headingText="Events"
-          numberInfo={countEvents(allCompleted)}
-        />
-        <CardInfo
-          headingText="Sponsors"
-          numberInfo={countSponsors(allCompleted)}
-        />
-      </div>
+      <CardInfoGroup
+        items={[
+          { title: "Completed tasks", trackerData: allCompleted.length },
+          { title: "Events", trackerData: countEvents(allCompleted) },
+          { title: "Sponsors", trackerData: countSponsors(allCompleted) },
+        ]}
+      />
 
       <div className="flex flex-wrap items-center gap-2">
         <Input

@@ -1,20 +1,61 @@
-/*
- * PART of the dashboard: one number with a label.
- * Guide: docs/PAGE_STARTER_GUIDE.md
- */
+import { formatTrackerValue } from "@/lib/planner/dashboard";
+import { cn } from "@/lib/utils";
+import "./cardInfo.css";
 
-/** TYPES (already set up): the props this part takes. To add a prop, add a line here. */
 type CardInfoProps = {
-  headingText: string;
-  numberInfo: number;
+  title?: string | null;
+  trackerData?: number | string | null;
+  fallback?: string | null;
+  className?: string | null;
 };
 
-/** A small stat: a muted label with a big number under it. Adds a divider on the left of all but the first. */
-export function CardInfo({ headingText, numberInfo }: CardInfoProps) {
+const DEFAULT_HEADING = "Card Title";
+const DEFAULT_FALLBACK = "-";
+
+export type CardInfoItems = Pick<CardInfoProps, "title" | "trackerData">;
+
+type CardInfoGroupProps = {
+  items?: CardInfoItems[] | null;
+  limit?: number;
+  emptyText?: string;
+};
+
+export function CardInfo({ title, trackerData, fallback, className }: CardInfoProps) {
   return (
-    <div className="flex w-44 shrink-0 flex-col gap-2 border-l p-4 first:border-l-0">
-      <p className="text-xs text-muted-foreground">{headingText}</p>
-      <p className="text-2xl font-semibold leading-none">{numberInfo}</p>
+    <div className={cn("card-info", className)}>
+      <p className="card-info__title">{title?.trim() || DEFAULT_HEADING}</p>
+      <p className="card-info__value">
+        {formatTrackerValue(trackerData, fallback ?? DEFAULT_FALLBACK)}
+      </p>
     </div>
   );
 }
+
+export function CardInfoGroup({ items, limit, emptyText = "No stats to show." }: CardInfoGroupProps) {
+  const shown = (items ?? []).slice(0, limit);
+
+  if (shown.length === 0) {
+    return <p className="card-info-group__empty">{emptyText}</p>;
+  }
+
+  return (
+    <div className="card-info-group">
+      {shown.map((item, index) => (
+        <CardInfo key={`${item.title ?? "stat"}-${index}`} title={item.title} trackerData={item.trackerData} />
+      ))}
+    </div>
+  );
+}
+
+// scoreBoard Component (array of objects)
+// {
+// foreach (array) {headingText, NumbericalData)}
+// }
+
+// CardInfo heaadingText {[headingText]}
+
+// formattedData () {
+//   return data.map()
+// }
+
+// <ScoreBoard data={formattedData}

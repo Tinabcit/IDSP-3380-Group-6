@@ -60,3 +60,14 @@ export function getUpcomingTasks(
   });
   return sortByDueDate(upcoming, "asc");
 }
+
+/** Turns a stat into display text: numbers get thousands separators, text is trimmed, anything else uses the fallback. */
+export function formatTrackerValue(value: number | string | null | undefined, fallback: string): string {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value.toLocaleString("en-US") : fallback;
+  }
+  if (typeof value === "string" && value.trim() !== "") {
+    return value.trim();
+  }
+  return fallback;
+}
