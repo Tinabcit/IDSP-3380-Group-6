@@ -219,3 +219,11 @@ Context: The client does not track deliverables separately; anything a partner w
 Decision: Deliverables are removed everywhere: the Deliverable type and Contract.deliverables, the form section, the contract page checklist, the demo data, deliverable reminder tasks, next-due-date and summary logic, and the tests. Contracts now mirror only payments as tasks. The saved-data key moved from partner-calendar:v2 to v3, so browsers holding old data (with deliverable tasks) start again from the demo data.
 
 Alternatives considered: Hiding deliverables in the UI but keeping them in the data (rejected: dead data and code paths). Keeping old saved data and stripping deliverables on load (rejected: extra migration code for a frontend-only MVP).
+
+## 2026-11-27 — Sidebar groups events as Event Series / One-off again
+
+Context: The 2026-11-27 "Simpler event screens" entry grouped events Upcoming / Past everywhere. The team prefers the sidebar to show what kind of event each one is.
+
+Decision: The sidebar is back to three sections: Event Series (signature events not finished yet), One-off Events (other events not finished yet) and Archived Events (finished, collapsed by default), using groupSidebarEvents in lib/planner/tasks.ts. This partly reverses that entry: the Events page still groups Upcoming / Past with splitEvents.
+
+Alternatives considered: Switching the Events page to Series / One-off as well (not requested for now).

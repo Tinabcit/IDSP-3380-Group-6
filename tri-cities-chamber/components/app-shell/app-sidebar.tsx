@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { splitEvents } from "@/lib/planner/tasks";
+import { groupSidebarEvents } from "@/lib/planner/tasks";
 import type { ChamberEvent, TaskInput } from "@/lib/planner/types";
 import {
   TaskFormDialog,
@@ -342,8 +342,8 @@ export function AppSidebar({
   const [taskForm, setTaskForm] = useState<TaskFormState | null>(null);
 
   const events = data
-    ? splitEvents(data.events, data.today)
-    : { upcoming: [], past: [] };
+    ? groupSidebarEvents(data.events, data.today)
+    : { series: [], oneOff: [], archived: [] };
 
   const partners = data?.sponsors ?? [];
 
@@ -505,15 +505,19 @@ export function AppSidebar({
 
         {/* Events */}
         <div className="flex flex-col gap-4">
-          <Section title="Upcoming Events">
-            {eventItems(events.upcoming)}
+          <Section title="Event Series">
+            {eventItems(events.series)}
+          </Section>
+
+          <Section title="One-off Events">
+            {eventItems(events.oneOff)}
           </Section>
 
           <Section
-            title="Past Events"
+            title="Archived Events"
             startOpen={false}
           >
-            {eventItems(events.past)}
+            {eventItems(events.archived)}
           </Section>
         </div>
 

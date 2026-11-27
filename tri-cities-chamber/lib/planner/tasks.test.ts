@@ -4,6 +4,7 @@ import {
   paginate,
   searchTasks,
   sortByDueDate,
+  groupSidebarEvents,
   splitEvents,
   taskInputFrom,
 } from '@/lib/planner/tasks';
@@ -116,6 +117,26 @@ describe('tasks helpers', () => {
         event({ id: 'feb', startDate: '2025-02-05', endDate: '2025-02-05' }),
       ];
       expect(splitEvents(past, today).past.map((e) => e.id)).toEqual(['feb', 'jan']);
+    });
+  });
+
+  describe('groupSidebarEvents', () => {
+    const today = '2025-03-10';
+    const events = [
+      event({ id: 'sig', isSignature: true, startDate: '2025-04-01', endDate: '2025-04-01' }),
+      event({ id: 'one', isSignature: false, startDate: '2025-04-02', endDate: '2025-04-02' }),
+      event({ id: 'old', isSignature: true, startDate: '2025-02-01', endDate: '2025-02-02' }),
+      event({ id: 'now', isSignature: false, startDate: '2025-03-09', endDate: '2025-03-10' }),
+    ];
+
+    it('puts finished events in archived, whatever their type', () => {
+      expect(groupSidebarEvents(events, today).archived.map((e) => e.id)).toEqual(['old']);
+    });
+
+    it('splits the rest into series (signature) and one-off events, soonest first', () => {
+      const { series, oneOff } = groupSidebarEvents(events, today);
+      expect(series.map((e) => e.id)).toEqual(['sig']);
+      expect(oneOff.map((e) => e.id)).toEqual(['now', 'one']);
     });
   });
 

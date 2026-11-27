@@ -78,6 +78,28 @@ export function splitEvents(events: ChamberEvent[], today: ISODate): EventGroups
   };
 }
 
+/** The three groups of events shown in the sidebar. */
+export interface SidebarEventGroups {
+  series: ChamberEvent[];
+  oneOff: ChamberEvent[];
+  archived: ChamberEvent[];
+}
+
+/**
+ * Splits events for the sidebar: finished events are "archived", and the rest
+ * are "series" (signature events) or "one-off". Each group is sorted by start date.
+ */
+export function groupSidebarEvents(events: ChamberEvent[], today: ISODate): SidebarEventGroups {
+  const groups: SidebarEventGroups = { series: [], oneOff: [], archived: [] };
+  const byStart = [...events].sort((a, b) => a.startDate.localeCompare(b.startDate));
+  for (const event of byStart) {
+    if (isISODateBefore(event.endDate, today)) groups.archived.push(event);
+    else if (event.isSignature) groups.series.push(event);
+    else groups.oneOff.push(event);
+  }
+  return groups;
+}
+
 /** The small coloured label next to an event in the sidebar. */
 export interface EventBadge {
   text: string;
