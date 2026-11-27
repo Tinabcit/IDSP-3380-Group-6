@@ -1,34 +1,33 @@
-
-
 .card-info-group {
-  display: flex;
-  width: fit-content;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  width: 100%;
   max-width: 100%;
-  overflow-x: auto;
-  border: 1px solid hsl(var(--border));
+  border-top: 1px solid hsl(var(--border));
+  border-left: 1px solid hsl(var(--border));
   border-radius: var(--radius);
   background-color: hsl(var(--card));
   color: hsl(var(--card-foreground));
+  overflow: hidden;
 }
 
 .card-info-group__empty {
   margin: 0;
+  padding: 1rem;
   font-size: 0.875rem;
   line-height: 1.25rem;
   color: hsl(var(--muted-foreground));
+  border-right: 1px solid hsl(var(--border));
+  border-bottom: 1px solid hsl(var(--border));
 }
 
 .card-info {
   display: flex;
-  flex: none;
   flex-direction: column;
   gap: 0.5rem;
-  width: 11rem;
   padding: 1rem;
-}
-
-.card-info + .card-info {
-  border-left: 1px solid hsl(var(--border));
+  border-right: 1px solid hsl(var(--border));
+  border-bottom: 1px solid hsl(var(--border));
 }
 
 .card-info__title {
