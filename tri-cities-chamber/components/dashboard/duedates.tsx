@@ -1,5 +1,6 @@
 import { fromISODate } from "@/lib/planner/dates";
 import type { TasksOnDay } from "@/lib/planner/dashboard";
+import "./duedates.css";
 
 interface DueDatesProps {
   days: TasksOnDay[];
@@ -10,17 +11,16 @@ function taskLabel(count: number): string {
   if (count === 0) return "No tasks";
   return `${count} ${count === 1 ? "task" : "tasks"}`;
 }
+
 function DayColumn({ day }: { day: TasksOnDay }) {
   const date = fromISODate(day.date);
   return (
-    <li className="flex min-w-20 flex-1 flex-col items-center gap-1 text-center">
-      <span className="text-xs text-muted-foreground">
+    <li className='due-dates__day'>
+      <span className='due-dates__weekday'>
         {date.toLocaleDateString("en-US", { weekday: "short" })}
       </span>
-      <span className="text-2xl font-semibold leading-none">
-        {date.getDate()}
-      </span>
-      <span className="text-xs">&bull; {taskLabel(day.count)}</span>
+      <span className='due-dates__date'>{date.getDate()}</span>
+      <span className='due-dates__count'>&bull; {taskLabel(day.count)}</span>
     </li>
   );
 }
@@ -34,16 +34,19 @@ export function DueDates({ days }: DueDatesProps) {
     : "";
 
   return (
-    <section className="flex w-full flex-col gap-6 rounded-lg border bg-card p-4 text-card-foreground">
-      <header className="flex items-baseline justify-between gap-4">
-        <h2 className="text-sm font-semibold">Due dates at a glance</h2>
-        <p className="text-xs text-muted-foreground">
+    <section className='due-dates'>
+      <header className='due-dates__header'>
+        <h2 className='due-dates__title'>Due dates at a glance</h2>
+        <p className='due-dates__subtitle'>
           {monthLabel} &middot; Tasks per day
         </p>
       </header>
-      <ul className="flex w-full overflow-x-auto pb-1">
+      <ul className='due-dates__list'>
         {days.map((day) => (
-          <DayColumn key={day.date} day={day} />
+          <DayColumn
+            key={day.date}
+            day={day}
+          />
         ))}
       </ul>
     </section>
