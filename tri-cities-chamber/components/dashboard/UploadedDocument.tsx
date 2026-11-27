@@ -33,4 +33,17 @@ export function UploadedDocument({ doc }: { doc: UploadedDoc }) {
       >
         View
       </button>
-      
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="truncate pr-6">{doc.fileName}</DialogTitle>
+            <DialogDescription>
+              Placeholder preview. The real file is not stored yet.
+            </DialogDescription>
+          </DialogHeader>
+          {open && <PdfViewer url={SAMPLE_PDF_URL} />}
+        </DialogContent>
+      </Dialog>
+    </li>
+  );
+}
