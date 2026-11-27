@@ -1,5 +1,4 @@
 import * as React from "react";
-import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
@@ -34,18 +33,41 @@ const buttonVariants = cva(
   }
 );
 
-export type ButtonProps = Omit<ButtonPrimitive.Props, "className"> &
+export type ButtonProps = Omit<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  "className"
+> & {
+  render?: React.ReactElement<any>;
+  nativeButton?: boolean;
+} &
   VariantProps<typeof buttonVariants> & { className?: string };
 
 /**
  * The app's button. To make a link look like a button, pass it as `render`
  * and turn off the native button: <Button render={<Link href="/x" />} nativeButton={false}>.
  */
-function Button({ className, variant, size, ...props }: ButtonProps) {
+function Button({
+  className,
+  variant,
+  size,
+  render,
+  nativeButton = true,
+  ...props
+}: ButtonProps) {
+  const buttonClassName = cn(buttonVariants({ variant, size, className }));
+
+  if (render && !nativeButton) {
+    return React.cloneElement(render, {
+      ...props,
+      className: cn(render.props.className, buttonClassName),
+      "data-slot": "button",
+    });
+  }
+
   return (
-    <ButtonPrimitive
+    <button
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={buttonClassName}
       {...props}
     />
   );
