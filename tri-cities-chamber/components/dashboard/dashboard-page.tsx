@@ -14,26 +14,25 @@ import { DueDates } from "./duedates";
 import { DashboardHeader } from "./dashboard-header";
 import "./dashboard-page.css";
 
-
-
 export function DashboardPage() {
   const data = usePlannerData();
   const days = getTasksPerDay(data.tasks, data.today);
   const docs = getUploadedDocuments(data.contracts);
 
-    const stats=[
-          { title: "Tasks", trackerData: data.tasks.length },
-          { title: "Events", trackerData: data.events.length },
-          { title: "Sponsors", trackerData: data.sponsors.length },
-        ]
+  const stats = [
+    { title: "Tasks", trackerData: data.tasks.length },
+    { title: "Events", trackerData: data.events.length },
+    { title: "Sponsors", trackerData: data.sponsors.length },
+    { title: "Error Test", trackerData: "Error", error: "test" },
+    { title: "Random Test", trackerData: "Random" },
+  ];
   return (
-    <div className="dashboard-page">
+    <div className='dashboard-page'>
       <DashboardHeader
-        title="Tu Do Dashboard"
-        subtitle="A clear view of due dates across your events and projects."
+        title='Tu Do Dashboard'
+        subtitle='A clear view of due dates across your events and projects.'
       />
-      <CardInfoGroup items = {stats}
-      />
+      <CardInfoGroup items={stats} />
       <DueDates days={days} />
       <UploadedDocuments docs={docs} />
       <UpcomingDueDates />
