@@ -15,7 +15,7 @@ export default function SearchBar({ value, onChange, className = "" }) {
         placeholder="Search"
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
-        className="h-9 w-full rounded-lg border-2 border-neutral-200 bg-white px-3 text-sm text-black placeholder:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="h-9 w-full rounded-lg border-2 border-neutral-200 bg-white px-3 text-sm text-black placeholder:text-black dark:border-input dark:bg-card dark:text-white dark:placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
     </form>
   );

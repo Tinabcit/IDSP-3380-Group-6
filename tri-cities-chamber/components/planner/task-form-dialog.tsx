@@ -87,13 +87,14 @@ interface TaskFormProps extends Omit<TaskFormDialogProps, "state"> {
 interface FormErrors {
   title?: string;
   dueDate?: string;
-  endTime?: string;
 }
 
 /**
- * The form for creating or editing a task. It keeps a draft of what you typed,
- * checks that a title and due date were entered when you save, then passes the
- * result to the parent and closes.
+ * The form for creating or editing a task. It shows the same few fields as the
+ * Review tasks dialog: title, task information, sponsor, event and due date.
+ * New tasks are assigned to the first staff member (the current user). It
+ * checks that a title and due date were entered, passes the result to the
+ * parent and closes.
  */
 function TaskForm({
   state,
@@ -144,10 +145,7 @@ function TaskForm({
     const next: FormErrors = {};
     if (!title) next.title = "Enter a task name.";
     if (!values.dueDate) next.dueDate = "Choose a due date.";
-    if (values.startTime && values.endTime && values.endTime <= values.startTime) {
-      next.endTime = "The end time must be after the start time.";
-    }
-    if (next.title || next.dueDate || next.endTime) {
+    if (next.title || next.dueDate) {
       setErrors(next);
       return;
     }
@@ -156,9 +154,7 @@ function TaskForm({
         ...values,
         title,
         notes: values.notes?.trim() || undefined,
-        startTime: values.startTime || undefined,
-        // An end time means nothing without a start time.
-        endTime: values.startTime && values.endTime ? values.endTime : undefined,
+        // Times and assignee are not on the form; an edited task keeps the ones it had.
       },
       state.mode === "edit" ? state.task.id : undefined
     );
@@ -172,12 +168,12 @@ function TaskForm({
       <DialogHeader>
         <DialogTitle>{isEdit ? "Edit task" : "New task"}</DialogTitle>
         <DialogDescription>
-          Link it to an event or sponsor so the team can find it later.
+          Give it a title and due date. Link a sponsor or event so the team can find it later.
         </DialogDescription>
       </DialogHeader>
 
       <div className="grid gap-2">
-        <Label htmlFor="task-title">Task</Label>
+        <Label htmlFor="task-title">Task title</Label>
         <Input
           id="task-title"
           value={values.title}
@@ -195,8 +191,66 @@ function TaskForm({
         )}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="grid gap-2">
+      <div className="grid gap-2">
+        <Label htmlFor="task-notes">
+          Task information <span className="font-normal text-muted-foreground">(optional)</span>
+        </Label>
+        <Textarea
+          id="task-notes"
+          value={values.notes ?? ""}
+          onChange={(e) => update("notes", e.target.value)}
+          placeholder="What needs to happen, contacts, file locations"
+          rows={3}
+        />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid min-w-0 gap-2">
+          <Label htmlFor="task-sponsor">Sponsor</Label>
+          <Select
+            value={values.sponsorId ?? NONE}
+            items={[{ value: NONE, label: "No sponsor" }, ...sponsors.map((s) => ({ value: s.id, label: s.name }))]}
+            onValueChange={(v) => update("sponsorId", v === NONE ? undefined : v)}
+          >
+            <SelectTrigger id="task-sponsor" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={NONE}>No sponsor</SelectItem>
+              {sponsors.map((sponsor) => (
+                <SelectItem key={sponsor.id} value={sponsor.id}>
+                  {sponsor.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="grid min-w-0 gap-2">
+          <Label htmlFor="task-event">Event</Label>
+          <Select
+            value={values.eventId ?? NONE}
+            items={[
+              { value: NONE, label: "No event" },
+              ...sortedEvents.map((e) => ({ value: e.id, label: `${e.name} (${formatShortDate(e.startDate)})` })),
+            ]}
+            onValueChange={(v) => update("eventId", v === NONE ? undefined : v)}
+          >
+            <SelectTrigger id="task-event" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={NONE}>No event</SelectItem>
+              {sortedEvents.map((event) => (
+                <SelectItem key={event.id} value={event.id}>
+                  {event.name} ({formatShortDate(event.startDate)})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="grid min-w-0 gap-2">
           <Label htmlFor="task-due">Due date</Label>
           <Input
             id="task-due"
@@ -212,119 +266,6 @@ function TaskForm({
             </p>
           )}
         </div>
-
-        <div className="grid gap-2">
-          <Label htmlFor="task-assignee">Assigned to</Label>
-          <Select
-            value={values.assigneeId}
-            items={staff.map((p) => ({ value: p.id, label: p.name }))}
-            onValueChange={(v) => update("assigneeId", v)}
-          >
-            <SelectTrigger id="task-assignee">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {staff.map((person) => (
-                <SelectItem key={person.id} value={person.id}>
-                  {person.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="grid gap-2">
-          <Label htmlFor="task-start">
-            Start time <span className="font-normal text-muted-foreground">(optional)</span>
-          </Label>
-          <Input
-            id="task-start"
-            type="time"
-            value={values.startTime ?? ""}
-            onChange={(e) => update("startTime", e.target.value || undefined)}
-          />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="task-end">
-            End time <span className="font-normal text-muted-foreground">(optional)</span>
-          </Label>
-          <Input
-            id="task-end"
-            type="time"
-            value={values.endTime ?? ""}
-            disabled={!values.startTime}
-            onChange={(e) => update("endTime", e.target.value || undefined)}
-            aria-invalid={Boolean(errors.endTime)}
-            aria-describedby={errors.endTime ? "task-end-error" : undefined}
-          />
-          {errors.endTime && (
-            <p id="task-end-error" className="text-sm text-destructive">
-              {errors.endTime}
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div className="grid gap-2">
-        <Label htmlFor="task-event">Event</Label>
-        <Select
-          value={values.eventId ?? NONE}
-          items={[
-            { value: NONE, label: "No event" },
-            ...sortedEvents.map((e) => ({ value: e.id, label: `${e.name} (${formatShortDate(e.startDate)})` })),
-          ]}
-          onValueChange={(v) => update("eventId", v === NONE ? undefined : v)}
-        >
-          <SelectTrigger id="task-event">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={NONE}>No event</SelectItem>
-            {sortedEvents.map((event) => (
-              <SelectItem key={event.id} value={event.id}>
-                {event.name} ({formatShortDate(event.startDate)})
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="grid gap-2">
-        <Label htmlFor="task-sponsor">Sponsor</Label>
-        <Select
-          value={values.sponsorId ?? NONE}
-          items={[{ value: NONE, label: "No sponsor" }, ...sponsors.map((s) => ({ value: s.id, label: s.name }))]}
-          onValueChange={(v) =>
-            update("sponsorId", v === NONE ? undefined : v)
-          }
-        >
-          <SelectTrigger id="task-sponsor">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={NONE}>No sponsor</SelectItem>
-            {sponsors.map((sponsor) => (
-              <SelectItem key={sponsor.id} value={sponsor.id}>
-                {sponsor.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="grid gap-2">
-        <Label htmlFor="task-notes">
-          Notes <span className="font-normal text-muted-foreground">(optional)</span>
-        </Label>
-        <Textarea
-          id="task-notes"
-          value={values.notes ?? ""}
-          onChange={(e) => update("notes", e.target.value)}
-          placeholder="Contract details, contacts, file locations"
-          rows={3}
-        />
       </div>
 
       <DialogFooter>

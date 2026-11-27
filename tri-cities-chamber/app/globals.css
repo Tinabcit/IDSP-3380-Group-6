@@ -3,6 +3,7 @@
 
 @layer base {
   :root {
+    color-scheme: light;
     --background: 210 20% 97%;
     --foreground: 218 46% 16%;
     --card: 0 0% 100%;
@@ -37,7 +38,10 @@
     --landing-cta: 237 47% 28%;
   }
 
+  /* color-scheme makes the browser's own icons (date / time pickers, the
+     search clear button, scrollbars) light in dark mode instead of black. */
   .dark {
+    color-scheme: dark;
     --background: 218 40% 8%;
     --foreground: 210 20% 95%;
     --card: 218 35% 12%;

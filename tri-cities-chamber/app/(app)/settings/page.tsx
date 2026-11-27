@@ -155,7 +155,7 @@ export default function SettingsPage() {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <User size={26} className="text-indigo-700" />
+                    <User size={26} className="text-indigo-700 dark:text-white" />
                   )}
                 </div>
 
