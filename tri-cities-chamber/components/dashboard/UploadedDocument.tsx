@@ -47,3 +47,30 @@ export function UploadedDocument({ doc }: { doc: UploadedDoc }) {
     </li>
   );
 }
+
+export function UploadedDocuments({ docs }: { docs: UploadedDoc[] }) {
+  return (
+    <section className="flex w-full flex-col gap-4 rounded-lg border bg-card p-4 text-card-foreground">
+      <header className="flex items-baseline justify-between gap-4">
+        <div>
+          <h2 className="text-md font-bold">Uploaded documents</h2>
+          <p className="text-xs text-muted-foreground">
+            Contract files uploaded to the app.
+          </p>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {docs.length} {docs.length === 1 ? "file" : "files"}
+        </p>
+      </header>
+      {docs.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No files uploaded yet.</p>
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {docs.map((doc) => (
+            <UploadedDocument key={doc.id} doc={doc} />
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
