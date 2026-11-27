@@ -1,35 +1,72 @@
+@reference "../../app/globals.css";
+
 .due-dates {
   @apply flex w-full flex-col gap-6 rounded-lg border bg-card p-4 text-card-foreground;
+  /* 
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 24px;
+  border-radius: 8px;
+  border: 1px solid;
+  background-color: var(--card);
+  padding: 16px;
+  color: var(--card-foreground); */
 }
 
-.due-datesheader {
+.due-dates__header {
   @apply flex items-baseline justify-between gap-4;
+  /* display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px; */
 }
 
-.due-datestitle {
+.due-dates__title {
   @apply text-sm font-semibold;
+  /* font-size: 14px;
+  font-weight: 600; */
 }
 
-.due-datessubtitle {
+.due-dates__subtitle {
   @apply text-xs text-muted-foreground;
+  /* font-size: 12px;
+  color: var(--muted-foreground); */
 }
 
-.due-dateslist {
+.due-dates__list {
   @apply flex w-full overflow-x-auto pb-1;
+  /* display: flex;
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 4px; */
 }
 
-.due-datesday {
+.due-dates__day {
   @apply flex min-w-20 flex-1 flex-col items-center gap-1 text-center;
+  /* display: flex;
+  min-width: 80px;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center; */
 }
 
-.due-datesweekday {
+.due-dates__weekday {
   @apply text-xs text-muted-foreground;
+  /* font-size: 12px;
+  color: var(--muted-foreground); */
 }
 
-.due-datesdate {
+.due-dates__date {
   @apply text-2xl font-semibold leading-none;
+  /* font-size: 24px;
+  font-weight: 600;
+  line-height: 1; */
 }
 
-.due-datescount {
+.due-dates__count {
   @apply text-xs;
+  /* font-size: 12px; */
 }
