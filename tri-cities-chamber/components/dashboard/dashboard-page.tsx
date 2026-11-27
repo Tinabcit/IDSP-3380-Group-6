@@ -12,6 +12,7 @@ import { UpcomingDueDates } from "./upcoming-due-dates";
 import { UploadedDocuments } from "./UploadedDocument";
 import { DueDates } from "./duedates";
 import { DashboardHeader } from "./dashboard-header";
+import "./dashboard-page.css";
 
 
 
@@ -26,7 +27,7 @@ export function DashboardPage() {
           { title: "Sponsors", trackerData: data.sponsors.length },
         ]
   return (
-    <div className="flex flex-col gap-4">
+    <div className="dashboard-page">
       <DashboardHeader
         title="Tu Do Dashboard"
         subtitle="A clear view of due dates across your events and projects."

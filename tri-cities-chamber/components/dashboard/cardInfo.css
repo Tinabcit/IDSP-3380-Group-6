@@ -1,0 +1,46 @@
+
+
+.card-info-group {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background-color: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+}
+
+.card-info-group__empty {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.card-info {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 11rem;
+  padding: 1rem;
+}
+
+.card-info + .card-info {
+  border-left: 1px solid hsl(var(--border));
+}
+
+.card-info__title {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.card-info__value {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1;
+}
