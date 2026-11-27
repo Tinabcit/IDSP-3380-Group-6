@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getTasksPerDay, getUploadedDocuments, getUpcomingTasks } from '@/lib/planner/dashboard';
+import { getTasksPerDay, getUploadedDocuments, getUpcomingTasks, formatTrackerValue } from '@/lib/planner/dashboard';
 import type { Contract, Task } from '@/lib/planner/types';
 
 /** Builds a task with sensible defaults so each test only sets what it cares about. */
@@ -116,5 +116,24 @@ describe('getUpcomingTasks', () => {
   it('filters by sponsor', () => {
     const ids = getUpcomingTasks(tasks, '2025-03-10', 'all', 's2').map((t) => t.id);
     expect(ids).toEqual(['soon']);
+  });
+});
+
+describe('formatTrackerValue', () => {
+  it('formats numbers with thousands separators and keeps zero', () => {
+    expect(formatTrackerValue(1234, '-')).toBe('1,234');
+    expect(formatTrackerValue(0, '-')).toBe('0');
+  });
+
+  it('trims text and uses the fallback when it is blank', () => {
+    expect(formatTrackerValue('  9 open  ', '-')).toBe('9 open');
+    expect(formatTrackerValue('   ', '-')).toBe('-');
+  });
+
+  it('uses the fallback for missing or non-finite values', () => {
+    expect(formatTrackerValue(null, 'n/a')).toBe('n/a');
+    expect(formatTrackerValue(undefined, 'n/a')).toBe('n/a');
+    expect(formatTrackerValue(NaN, 'n/a')).toBe('n/a');
+    expect(formatTrackerValue(Infinity, 'n/a')).toBe('n/a');
   });
 });
