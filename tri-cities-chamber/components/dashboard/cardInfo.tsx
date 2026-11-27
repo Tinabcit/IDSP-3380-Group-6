@@ -11,6 +11,8 @@ type CardInfoProps = {
   className?: string | null;
 };
 
+export type CardInfoItems = Pick <CardInfoProps, "title" | "trackerData">  
+
 /** A small stat: a muted label with a big number under it. Adds a divider on the left of all but the first. */
 export function CardInfo({ title, trackerData, fallback, className }: CardInfoProps) {
   return (
