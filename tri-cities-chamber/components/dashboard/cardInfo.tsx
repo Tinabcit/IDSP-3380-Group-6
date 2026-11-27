@@ -46,3 +46,16 @@ export function CardInfoGroup({ items, limit, emptyText = "No stats to show." }:
     </div>
   );
 }
+
+// scoreBoard Component (array of objects)
+// {
+// foreach (array) {headingText, NumbericalData)}
+// }
+
+// CardInfo heaadingText {[headingText]}
+
+// formattedData () {
+//   return data.map()
+// }
+
+// <ScoreBoard data={formattedData}
