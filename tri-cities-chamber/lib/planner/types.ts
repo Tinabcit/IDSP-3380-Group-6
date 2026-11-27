@@ -51,21 +51,6 @@ export interface StaffMember {
 /** The kinds of event, used for colour coding. Events without one count as "other". */
 export type EventCategory = "networking" | "workshop" | "meeting" | "fundraiser" | "other";
 
-/** How urgent an event is: 1 (most) to 6 (least). Shown as P1 to P6. */
-export type EventPriority = 1 | 2 | 3 | 4 | 5 | 6;
-
-/** When to remind staff about an event. */
-export type EventReminder = "day-before" | "week-before" | "on-date";
-
-/** One line in an event's comp ticket list. */
-export interface EventCompTicket {
-  id: string;
-  recipient: string;
-  ticketType: string;
-  quantity: number;
-  status: "Draft" | "Issued";
-}
-
 export interface ChamberEvent {
   id: string;
   name: string;
@@ -96,26 +81,13 @@ export interface ChamberEvent {
   fileName?: string;
   /** How many people are expected. Missing means unknown. */
   attendees?: number;
-  /** Name of the picture chosen for the event (the image itself is not stored). */
-  picture?: string;
-  /** Date by which the event's preparation must be finished. */
-  deadline?: ISODate;
-  priority?: EventPriority;
-  /** Labels such as "Design" or "Urgent". */
-  labels?: string[];
-  reminders?: EventReminder[];
-  /** Names of invited guests. */
-  guests?: string[];
-  /** Ticket types on sale, e.g. "General Admission". */
-  tickets?: string[];
-  compTickets?: EventCompTicket[];
 }
 
 /** Fields the user can set when creating or editing an event. */
 export type EventInput = Omit<ChamberEvent, "id">;
 
-export type TaskPriority = "Low" | "Medium" | "High";
-
+/** How urgent a task is. */
+export type TaskPriority = "low" | "medium" | "high";
 
 export interface Task {
   id: string;
@@ -125,13 +97,12 @@ export interface Task {
   assigneeId: string;
   eventId?: string;
   sponsorId?: string;
-  /** Set when the task was generated from a contract payment or deliverable. */
+  /** Set when the task was generated from a contract payment. */
   contractId?: string;
-  /** The payment or deliverable this task mirrors, kept in sync both ways. */
+  /** The payment this task mirrors, kept in sync both ways. */
   contractItemId?: string;
   notes?: string;
-
-  /** Task priority */
+  /** How urgent the task is. Missing means it has not been set. */
   priority?: TaskPriority;
   /** Start time as 24-hour "HH:mm". Missing means the task has no set time. */
   startTime?: string;
@@ -148,13 +119,6 @@ export interface PaymentInstalment {
   dueDate: ISODate;
   amount: number;
   paid: boolean;
-}
-
-export interface Deliverable {
-  id: string;
-  label: string;
-  dueDate: ISODate;
-  done: boolean;
 }
 
 export interface ContractSummary {
@@ -184,7 +148,6 @@ export interface Contract {
 
   fileName?: string;
   payments: PaymentInstalment[];
-  deliverables: Deliverable[];
   summary?: ContractSummary;
   notes?: string;
   createdAt: string;
@@ -202,7 +165,7 @@ export interface ActivityEntry {
   contractId?: string;
 }
 
-export type ContractGroupBy = "none" | "event" | "pillar" | "partner";
+export type ContractGroupBy = "none" | "event" | "partner";
 export type ContractSortBy = "nextDue" | "amount" | "title" | "partner";
 
 export type TaskStatus = "pending" | "overdue" | "completed";

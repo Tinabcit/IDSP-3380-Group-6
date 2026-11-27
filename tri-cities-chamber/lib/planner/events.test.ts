@@ -9,11 +9,9 @@ import {
   isValidISODate,
   isValidTime,
   cleanSponsors,
-  compTicketStats,
-  extrasFromEvent,
-  extrasToInput,
-  initialsOf,
-  toggleItem,
+  emptyEventForm,
+  eventToForm,
+  formToEventInput,
   validateEventForm,
   validateEventInput,
 } from './events';
@@ -137,128 +135,101 @@ describe('demo events', () => {
 });
 
 describe('validateEventForm', () => {
-  const full = {
-    title: 'Mayors BBQ',
-    sponsors: ['RBC'],
-    date: '2025-03-01',
-    isSignature: false,
-    category: '',
-    address: '123 Main st',
-  };
+  const full = { ...emptyEventForm('2025-03-01'), name: 'Mayors BBQ' };
 
-  it('returns no errors when every needed field is valid', () => {
+  it('only needs a name and a date', () => {
     expect(validateEventForm(full)).toEqual({});
   });
 
-  it('does not ask for a category on a normal event', () => {
-    expect(validateEventForm({ ...full, category: '' }).category).toBeUndefined();
+  it('asks for the name and date in plain words', () => {
+    const errors = validateEventForm({ ...full, name: ' ', startDate: '' });
+    expect(Object.keys(errors).sort()).toEqual(['name', 'startDate']);
+    expect(errors.name).toBe('Enter the event name.');
   });
 
-  it('asks for a category on a signature event', () => {
-    expect(validateEventForm({ ...full, isSignature: true }).category).toBe('Field Required');
-    expect(validateEventForm({ ...full, isSignature: true, category: 'networking' })).toEqual({});
+  it('rejects a date that does not exist', () => {
+    expect(validateEventForm({ ...full, startDate: '2025-99-99' }).startDate).toBeDefined();
   });
 
-  it('accepts as many sponsors as are added, and needs at least one', () => {
-    expect(validateEventForm({ ...full, sponsors: ['RBC', 'BCIT', 'Telus'] })).toEqual({});
-    expect(validateEventForm({ ...full, sponsors: [' ', ''] }).sponsors).toBe('Field Required');
-    expect(validateEventForm({ ...full, sponsors: [] }).sponsors).toBe('Field Required');
+  it('rejects a last day before the first day', () => {
+    expect(validateEventForm({ ...full, endDate: '2025-02-28' }).endDate).toMatch(/last day/i);
+    expect(validateEventForm({ ...full, endDate: '2025-03-02' })).toEqual({});
   });
 
-  it('marks every empty field as required', () => {
-    const errors = validateEventForm({
-      title: '', sponsors: [''], date: '', isSignature: false, category: '', address: '',
+  it('rejects an end time before the start time on a one-day event only', () => {
+    expect(validateEventForm({ ...full, startTime: '10:00', endTime: '09:00' }).endTime).toBeDefined();
+    expect(validateEventForm({ ...full, endDate: '2025-03-02', startTime: '10:00', endTime: '09:00' })).toEqual({});
+  });
+
+  it('accepts a blank or whole-number attendee count only', () => {
+    expect(validateEventForm({ ...full, attendees: '50' })).toEqual({});
+    expect(validateEventForm({ ...full, attendees: '2.5' }).attendees).toBeDefined();
+    expect(validateEventForm({ ...full, attendees: '-1' }).attendees).toBeDefined();
+  });
+});
+
+describe('formToEventInput', () => {
+  it('leaves blank optional fields out and uses the default pillar for a new event', () => {
+    const input = formToEventInput({ ...emptyEventForm('2025-03-01'), name: ' BBQ ' }, undefined, 'p1');
+    expect(input).toMatchObject({ name: 'BBQ', startDate: '2025-03-01', endDate: '2025-03-01', pillarId: 'p1' });
+    expect(input.location).toBeUndefined();
+    expect(input.sponsorNames).toBeUndefined();
+    expect(input.attendees).toBeUndefined();
+    expect(validateEventInput(input)).toBeNull();
+  });
+
+  it('cleans sponsor names and drops an end time with no start time', () => {
+    const input = formToEventInput(
+      { ...emptyEventForm('2025-03-01'), name: 'BBQ', sponsors: [' RBC ', '', 'rbc', 'BCIT'], endTime: '10:00' },
+      undefined,
+      'p1'
+    );
+    expect(input.sponsorNames).toEqual(['RBC', 'BCIT']);
+    expect(input.sponsorName).toBe('RBC, BCIT');
+    expect(input.endTime).toBeUndefined();
+  });
+
+  it('round-trips a saved event and keeps details the form does not show', () => {
+    const saved: ChamberEvent = {
+      ...base,
+      pillarId: 'p9',
+      endDate: '2025-03-02',
+      startTime: '09:00',
+      endTime: '17:00',
+      location: 'Civic Centre',
+      category: 'fundraiser',
+      attendees: 80,
+      sponsorNames: ['RBC'],
+      sponsorName: 'RBC',
+      description: 'Annual gala',
+      email: 'a@b.c',
+      fileName: 'gala.pdf',
+    };
+    const input = formToEventInput(eventToForm(saved), saved, 'p1');
+    expect(input).toMatchObject({
+      pillarId: 'p9',
+      endDate: '2025-03-02',
+      startTime: '09:00',
+      endTime: '17:00',
+      location: 'Civic Centre',
+      category: 'fundraiser',
+      attendees: 80,
+      sponsorNames: ['RBC'],
+      description: 'Annual gala',
+      email: 'a@b.c',
+      fileName: 'gala.pdf',
     });
-    expect(Object.keys(errors).sort()).toEqual(['address', 'date', 'sponsors', 'title']);
-    expect(errors.title).toBe('Field Required');
   });
 
-  it('rejects a bad date', () => {
-    const errors = validateEventForm({ ...full, date: '2025-99-99' });
-    expect(errors.date).toBeDefined();
-    expect(errors.title).toBeUndefined();
+  it('shows one empty sponsor box and a blank last day for a simple saved event', () => {
+    const form = eventToForm(base);
+    expect(form.sponsors).toEqual(['']);
+    expect(form.endDate).toBe('');
   });
 });
 
 describe('cleanSponsors', () => {
   it('trims names, drops blanks and repeats', () => {
     expect(cleanSponsors([' RBC ', '', 'rbc', 'BCIT'])).toEqual(['RBC', 'BCIT']);
-  });
-});
-
-describe('toggleItem', () => {
-  it('adds a missing item and removes a present one', () => {
-    expect(toggleItem(['a'], 'b')).toEqual(['a', 'b']);
-    expect(toggleItem(['a', 'b'], 'a')).toEqual(['b']);
-  });
-});
-
-describe('initialsOf', () => {
-  it('uses the first letters of the first two words', () => {
-    expect(initialsOf('Alice Ross')).toBe('AR');
-    expect(initialsOf('Marcus')).toBe('M');
-    expect(initialsOf('  ')).toBe('');
-  });
-});
-
-describe('event extras', () => {
-  it('starts empty for a new event', () => {
-    const extras = extrasFromEvent(undefined);
-    expect(extras.labels).toEqual([]);
-    expect(extras.priority).toBeNull();
-    expect(extras.deadline).toBe('');
-  });
-
-  it('round-trips through an event, leaving blanks out of the input', () => {
-    const empty = extrasToInput(extrasFromEvent(undefined));
-    expect(empty.description).toBeUndefined();
-    expect(empty.labels).toBeUndefined();
-    expect(empty.priority).toBeUndefined();
-    const extras = {
-      ...extrasFromEvent(undefined),
-      description: '  Big night ',
-      deadline: '2025-02-20',
-      priority: 2 as const,
-      labels: ['Design'],
-      guests: ['Alice Ross'],
-    };
-    const input = extrasToInput(extras);
-    expect(input).toMatchObject({ description: 'Big night', deadline: '2025-02-20', priority: 2 });
-    const back = extrasFromEvent({ ...base, ...input });
-    expect(back.labels).toEqual(['Design']);
-    expect(back.guests).toEqual(['Alice Ross']);
-  });
-});
-
-describe('validateEventInput for the extra fields', () => {
-  it('rejects a bad deadline, priority or comp ticket quantity', () => {
-    expect(validateEventInput({ ...base, deadline: '2025-13-40' })).toMatch(/deadline/i);
-    expect(validateEventInput({ ...base, priority: 9 as never })).toMatch(/priority/i);
-    expect(
-      validateEventInput({
-        ...base,
-        compTickets: [{ id: 'c', recipient: 'A', ticketType: 'VIP Access', quantity: 0, status: 'Issued' }],
-      }),
-    ).toMatch(/ticket/i);
-  });
-
-  it('accepts valid extras', () => {
-    expect(
-      validateEventInput({ ...base, deadline: '2025-02-20', priority: 3, labels: ['Urgent'] }),
-    ).toBeNull();
-  });
-});
-
-describe('compTicketStats', () => {
-  it('counts recipients, issued tickets and tickets per type', () => {
-    const stats = compTicketStats([
-      { id: '1', recipient: 'Alice Ross', ticketType: 'General Admission', quantity: 2, status: 'Issued' },
-      { id: '2', recipient: 'Marcus Reed', ticketType: 'VIP Access', quantity: 1, status: 'Issued' },
-      { id: '3', recipient: 'Marcus Reed', ticketType: 'VIP Access', quantity: 1, status: 'Draft' },
-    ]);
-    expect(stats.recipients).toBe(2);
-    expect(stats.issued).toBe(3);
-    expect(stats.byType['General Admission']).toBe(2);
-    expect(stats.byType['VIP Access']).toBe(1);
   });
 });

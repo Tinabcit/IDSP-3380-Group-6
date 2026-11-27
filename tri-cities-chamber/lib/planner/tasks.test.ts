@@ -4,7 +4,9 @@ import {
   paginate,
   searchTasks,
   sortByDueDate,
+  groupSidebarEvents,
   splitEvents,
+  taskInputFrom,
 } from '@/lib/planner/tasks';
 import type { ChamberEvent, Sponsor, Task } from '@/lib/planner/types';
 
@@ -101,13 +103,39 @@ describe('tasks helpers', () => {
       event({ id: 'now', isSignature: false, startDate: '2025-03-09', endDate: '2025-03-10' }),
     ];
 
-    it('puts finished events in archived, whatever their type', () => {
-      expect(splitEvents(events, today).archived.map((e) => e.id)).toEqual(['old']);
+    it('puts finished events in past, whatever their type', () => {
+      expect(splitEvents(events, today).past.map((e) => e.id)).toEqual(['old']);
     });
 
-    it('splits the rest into repeat (signature) and one-off events', () => {
-      const { repeat, oneOff } = splitEvents(events, today);
-      expect(repeat.map((e) => e.id)).toEqual(['sig']);
+    it('puts events not finished yet (including one ending today) in upcoming, soonest first', () => {
+      expect(splitEvents(events, today).upcoming.map((e) => e.id)).toEqual(['now', 'sig', 'one']);
+    });
+
+    it('lists past events most recent first', () => {
+      const past = [
+        event({ id: 'jan', startDate: '2025-01-05', endDate: '2025-01-05' }),
+        event({ id: 'feb', startDate: '2025-02-05', endDate: '2025-02-05' }),
+      ];
+      expect(splitEvents(past, today).past.map((e) => e.id)).toEqual(['feb', 'jan']);
+    });
+  });
+
+  describe('groupSidebarEvents', () => {
+    const today = '2025-03-10';
+    const events = [
+      event({ id: 'sig', isSignature: true, startDate: '2025-04-01', endDate: '2025-04-01' }),
+      event({ id: 'one', isSignature: false, startDate: '2025-04-02', endDate: '2025-04-02' }),
+      event({ id: 'old', isSignature: true, startDate: '2025-02-01', endDate: '2025-02-02' }),
+      event({ id: 'now', isSignature: false, startDate: '2025-03-09', endDate: '2025-03-10' }),
+    ];
+
+    it('puts finished events in archived, whatever their type', () => {
+      expect(groupSidebarEvents(events, today).archived.map((e) => e.id)).toEqual(['old']);
+    });
+
+    it('splits the rest into series (signature) and one-off events, soonest first', () => {
+      const { series, oneOff } = groupSidebarEvents(events, today);
+      expect(series.map((e) => e.id)).toEqual(['sig']);
       expect(oneOff.map((e) => e.id)).toEqual(['now', 'one']);
     });
   });
@@ -135,6 +163,22 @@ describe('tasks helpers', () => {
     it('says "low priority" (dark) when nothing is open and it is far away', () => {
       const badge = eventBadge(event({ startDate: '2025-05-01' }), 0, today);
       expect(badge).toEqual({ text: 'low priority', tone: 'dark' });
+    });
+  });
+});
+
+describe('taskInputFrom', () => {
+  it('keeps the editable fields and drops id, createdAt and completed', () => {
+    const input = taskInputFrom(
+      task({ notes: 'Call the venue', priority: 'high', eventId: 'e1', completed: true })
+    );
+    expect(input).toEqual({
+      title: 'Task',
+      dueDate: '2025-03-10',
+      assigneeId: 's1',
+      notes: 'Call the venue',
+      priority: 'high',
+      eventId: 'e1',
     });
   });
 });

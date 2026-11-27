@@ -24,7 +24,7 @@ import ReviewTasksDialog from "@/components/review-tasks-dialog/review-tasks-dia
 import { buildDemoSummary, formatCurrency, simulateExtraction } from "@/lib/planner/contracts";
 import { formatShortDate, shiftISODate } from "@/lib/planner/dates";
 import { suggestTasks, toTaskInput, type ProposedTask } from "@/lib/planner/proposed-tasks";
-import type { Deliverable, PaymentInstalment } from "@/lib/planner/types";
+import type { PaymentInstalment } from "@/lib/planner/types";
 
 /** Special dropdown value that means "no event chosen". */
 const NONE = "none";
@@ -32,7 +32,7 @@ const NONE = "none";
 const NEW_PARTNER = "new";
 
 /**
- * Makes a unique id for each payment/deliverable row added in the form
+ * Makes a unique id for each payment row added in the form
  * (the form needs ids before the contract is saved).
  */
 let rowCounter = 0;
@@ -48,7 +48,7 @@ interface Errors {
 /**
  * The "New contract" page (/contracts/new).
  * You can upload a file (we pretend to read it and fill the fields in), then
- * check or edit the partner, event, amount, payments and deliverables.
+ * check or edit the partner, event, amount and payments.
  * On save it creates the contract plus reminder tasks on the calendar, then
  * takes you to the new contract's page.
  */
@@ -78,7 +78,6 @@ export function ContractForm() {
   const [renewalDate, setRenewalDate] = useState<string>("");
 
   const [payments, setPayments] = useState<PaymentInstalment[]>([]);
-  const [deliverables, setDeliverables] = useState<Deliverable[]>([]);
   const [assigneeId, setAssigneeId] = useState(data.currentUserId);
   const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState<Errors>({});
@@ -148,14 +147,6 @@ export function ContractForm() {
     ]);
   }
 
-  /** Adds an empty deliverable row, due in 14 days. */
-  function addDeliverable() {
-    setDeliverables((rows) => [
-      ...rows,
-      { id: rowId("del"), label: "", dueDate: shiftISODate(today, 14), done: false },
-    ]);
-  }
-
   /**
    * Runs when you press Save. Checks that a partner, a title and an amount were
    * entered. If so, it adds the new partner (if needed), tidies the rows,
@@ -187,9 +178,6 @@ export function ContractForm() {
       ...p,
       label: p.label.trim() || `Payment ${i + 1}`,
     }));
-    const cleanDeliverables = deliverables
-      .filter((d) => d.label.trim())
-      .map((d) => ({ ...d, label: d.label.trim() }));
     const input = {
       title: title.trim(),
       sponsorId: finalSponsorId,
@@ -204,7 +192,6 @@ export function ContractForm() {
 
       fileName,
       payments: cleanPayments,
-      deliverables: cleanDeliverables,
       notes: notes.trim() || undefined,
     };
 
@@ -235,7 +222,7 @@ export function ContractForm() {
         <h1 className="text-xl font-bold leading-tight">New contract</h1>
         <p className="text-sm text-muted-foreground">
           Upload the signed file and check what we found, or fill it in by hand. Reminders for
-          every payment and deliverable are added to the calendar for you.
+          every payment are added to the calendar for you.
         </p>
       </div>
 
@@ -489,54 +476,6 @@ export function ContractForm() {
         <Button type="button" variant="outline" size="sm" className="justify-self-start" onClick={addPayment}>
           <Plus />
           Add payment
-        </Button>
-      </fieldset>
-
-      <fieldset className="grid gap-3">
-        <legend className="mb-1 text-base font-semibold">Deliverables</legend>
-        {deliverables.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            Logo placement, tickets, a speaking slot, anything promised in the contract.
-          </p>
-        )}
-        {deliverables.map((d, i) => (
-          <Card key={d.id} className="grid gap-2 rounded-md p-3 sm:grid-cols-[1fr_9rem_auto] sm:items-end">
-            <div className="grid gap-1.5">
-              <Label htmlFor={`del-label-${d.id}`} className="text-xs">Deliverable</Label>
-              <Input
-                id={`del-label-${d.id}`}
-                value={d.label}
-                onChange={(e) =>
-                  setDeliverables((rows) => rows.map((r) => (r.id === d.id ? { ...r, label: e.target.value } : r)))
-                }
-                placeholder="e.g. Logo in event program"
-              />
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor={`del-date-${d.id}`} className="text-xs">Due</Label>
-              <Input
-                id={`del-date-${d.id}`}
-                type="date"
-                value={d.dueDate}
-                onChange={(e) =>
-                  setDeliverables((rows) => rows.map((r) => (r.id === d.id ? { ...r, dueDate: e.target.value } : r)))
-                }
-              />
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label={`Remove deliverable ${i + 1}`}
-              onClick={() => setDeliverables((rows) => rows.filter((r) => r.id !== d.id))}
-            >
-              <Trash2 />
-            </Button>
-          </Card>
-        ))}
-        <Button type="button" variant="outline" size="sm" className="justify-self-start" onClick={addDeliverable}>
-          <Plus />
-          Add deliverable
         </Button>
       </fieldset>
 

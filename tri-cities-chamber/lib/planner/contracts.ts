@@ -28,11 +28,10 @@ export function amountPaid(contract: Contract): number {
     .reduce((sum, p) => sum + p.amount, 0);
 }
 
-/** Earliest unpaid payment or unfinished deliverable, or null if nothing is outstanding. */
+/** Earliest unpaid payment, or null if nothing is outstanding. */
 export function nextDueDate(contract: Contract): ISODate | null {
   const dates = [
     ...contract.payments.filter((p) => !p.paid).map((p) => p.dueDate),
-    ...contract.deliverables.filter((d) => !d.done).map((d) => d.dueDate),
   ].sort();
   return dates[0] ?? null;
 }
@@ -130,8 +129,8 @@ export interface ContractGroup {
 }
 
 /**
- * Puts contracts into groups by event, pillar or partner (or one single group
- * for "none"), sorted by name. Contracts with no event/pillar go in a catch-all group.
+ * Puts contracts into groups by event or partner (or one single group for
+ * "none"), sorted by name. Contracts with no event go in a catch-all group.
  */
 export function groupContracts(
   contracts: Contract[],
@@ -148,10 +147,6 @@ export function groupContracts(
     if (groupBy === "event") {
       key = event?.id ?? "none";
       label = event?.name ?? "Not tied to an event";
-    } else if (groupBy === "pillar") {
-      const pillar = event ? lookups.pillarsById.get(event.pillarId) : undefined;
-      key = pillar?.id ?? "none";
-      label = pillar?.name ?? "No pillar";
     } else {
       const sponsor = lookups.sponsorsById.get(c.sponsorId);
       key = sponsor?.id ?? "none";
@@ -169,7 +164,7 @@ export function groupContracts(
  * to an LLM; here we compose a plain-language summary from the entered fields.
  */
 export function buildDemoSummary(
-  input: Pick<ContractInput, "title" | "amount" | "payments" | "deliverables">,
+  input: Pick<ContractInput, "title" | "amount" | "payments">,
   sponsorName: string,
   eventName?: string
 ): ContractSummary {
@@ -181,12 +176,9 @@ export function buildDemoSummary(
       : `payable in ${count} instalment${count === 1 ? "" : "s"}`;
   return {
     overview: `${sponsorName} has agreed to "${input.title}"${where}, worth ${formatCurrency(input.amount)}, ${schedule}.`,
-    keyTerms: [
-      ...input.payments.map(
-        (p) => `${p.label}: ${formatCurrency(p.amount)} due ${p.dueDate}`
-      ),
-      ...input.deliverables.map((d) => `${d.label} by ${d.dueDate}`),
-    ],
+    keyTerms: input.payments.map(
+      (p) => `${p.label}: ${formatCurrency(p.amount)} due ${p.dueDate}`
+    ),
     watchouts: count === 0 ? ["No payment schedule recorded yet"] : [],
   };
 }

@@ -1,71 +1,92 @@
-
 "use client";
 
-import { useEffect, useState } from "react";
-import { ClipboardList, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ClipboardList } from "lucide-react";
 
-// Information for each task
-export type TaskInfo = {
-  id: string;
-  title: string;
-  description: string;
-  priority: string;
-  dueDate: string;
-  assignedTo: string;
-  event: string;
-};
+import { taskInputFrom } from "@/lib/planner/tasks";
+import type {
+  ChamberEvent,
+  StaffMember,
+  Task,
+  TaskInput,
+  TaskPriority,
+} from "@/lib/planner/types";
 
-// Information received from the Home page
+/** The priority choices shown in the dropdown. */
+const PRIORITY_OPTIONS: { value: TaskPriority; label: string }[] = [
+  { value: "low", label: "Low" },
+  { value: "medium", label: "Medium" },
+  { value: "high", label: "High" },
+];
+
+// Information received from the page that opens the popup
 type TaskDetailsProps = {
-  task: TaskInfo;
+  task: Task;
+  events: ChamberEvent[];
+  staff: StaffMember[];
   onClose: () => void;
-  onSave: (task: TaskInfo) => Promise<void>;
+  onSave: (input: TaskInput) => void;
 };
 
+/**
+ * Popup that shows a task with every field ready to edit. Dropdowns and the
+ * date save as soon as they change; text boxes save when you click out of
+ * them or close the popup. A task is never saved without a title or due date.
+ */
 export default function TaskDetails({
   task,
+  events,
+  staff,
   onClose,
   onSave,
 }: TaskDetailsProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedTask, setEditedTask] = useState<TaskInfo>(task);
-  const [savedTask, setSavedTask] = useState<TaskInfo>(task);
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  // The parent gives this popup a key per task, so it starts fresh for each one.
+  const [draft, setDraft] = useState<Task>(task);
+  const lastSaved = useRef<Task>(task);
 
-  // Available events
-  const eventOptions = [
-    "Business Excellence Gala",
-    "Digital Marketing Workshop",
-    "Small Business Summit",
-    "Networking Breakfast",
-    "Municipal Policy Roundtable",
-  ];
+  // Save the task if it changed and has the required fields.
+  function save(next: Task) {
+    if (!next.title.trim() || !next.dueDate) return;
 
-  // Load the selected task when it changes
-  useEffect(() => {
-    setEditedTask(task);
-    setSavedTask(task);
-    setIsEditing(false);
-    setError("");
-    setSuccess("");
-  }, [task]);
+    const input = taskInputFrom(next);
+    if (
+      JSON.stringify(input) === JSON.stringify(taskInputFrom(lastSaved.current))
+    ) {
+      return;
+    }
 
-  // Close the popup
+    onSave(input);
+    lastSaved.current = next;
+  }
+
+  // Change one field. Pass saveNow for dropdowns and the date picker.
+  function updateField<K extends keyof Task>(
+    field: K,
+    value: Task[K],
+    saveNow = false
+  ) {
+    const next = { ...draft, [field]: value };
+    setDraft(next);
+    if (saveNow) save(next);
+  }
+
+  // Save anything still unsaved, then close the popup
   function handleClose() {
-    if (isSaving) return;
-
-    setIsEditing(false);
+    save(draft);
     onClose();
   }
+
+  // Keep the latest close handler for the Escape key listener below
+  const closeRef = useRef(handleClose);
+  useEffect(() => {
+    closeRef.current = handleClose;
+  });
 
   // Close popup with Escape key
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && !isSaving) {
-        setIsEditing(false);
-        onClose();
+      if (event.key === "Escape") {
+        closeRef.current();
       }
     }
 
@@ -74,79 +95,15 @@ export default function TaskDetails({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [onClose, isSaving]);
-
-  // Update a task field
-  function updateField(field: keyof TaskInfo, value: string) {
-    setEditedTask((current) => ({
-      ...current,
-      [field]: value,
-    }));
-  }
-
-  // Start editing
-  function handleEdit() {
-    setError("");
-    setSuccess("");
-    setIsEditing(true);
-  }
-
-  // Cancel editing and restore saved information
-  function handleCancel() {
-    if (isSaving) return;
-
-    setEditedTask(savedTask);
-    setIsEditing(false);
-    setError("");
-    setSuccess("");
-  }
-
-  // Save task changes
-  async function handleSave() {
-    if (isSaving) return;
-
-    if (!editedTask.title.trim()) {
-      setError("Please enter a task title.");
-      return;
-    }
-
-    setIsSaving(true);
-    setError("");
-    setSuccess("");
-
-    const updatedTask = {
-      ...editedTask,
-      title: editedTask.title.trim(),
-    };
-
-    try {
-      // Wait for the parent component to save the task
-      await onSave(updatedTask);
-
-      // Update the saved task information
-      setEditedTask(updatedTask);
-      setSavedTask(updatedTask);
-      setIsEditing(false);
-      setSuccess("Task updated successfully!");
-    } catch (error) {
-      console.error("Error updating task:", error);
-
-      setError("Failed to save task. Please try again.");
-    } finally {
-      setIsSaving(false);
-    }
-  }
+  }, []);
 
   // Styles for light and dark mode
   const inputStyle =
     "w-full rounded-md border border-[#a7b4a0] " +
     "bg-[#eef2eb] px-3 py-2 text-sm text-gray-900 " +
     "outline-none focus:ring-2 focus:ring-[#0d7d8e] " +
-    "disabled:cursor-default disabled:opacity-100 " +
     "dark:border-slate-600 dark:bg-slate-800 " +
     "dark:text-white dark:focus:ring-cyan-500 " +
-    "dark:disabled:bg-slate-800 " +
-    "dark:disabled:text-slate-100 " +
     "dark:[color-scheme:dark]";
 
   const labelStyle =
@@ -171,8 +128,7 @@ export default function TaskDetails({
         role="dialog"
         aria-modal="true"
         aria-labelledby="task-details-title"
-        aria-busy={isSaving}
-        className="w-full max-w-3xl max-h-[95vh] overflow-y-auto rounded-2xl border border-[#d3ddcc] bg-[#f8faf5] p-5 text-gray-900 shadow-xl sm:p-6 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+        className="w-full max-w-3xl rounded-2xl border border-[#d3ddcc] bg-[#f8faf5] p-5 text-gray-900 shadow-xl sm:p-6 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
       >
         {/* Header */}
         <div className="mb-5 flex flex-wrap items-center justify-between gap-4 border-b border-[#d3ddcc] pb-4 dark:border-slate-700">
@@ -186,7 +142,6 @@ export default function TaskDetails({
               />
             </div>
 
-            {/* Header Title */}
             <div>
               <h1
                 id="task-details-title"
@@ -196,72 +151,21 @@ export default function TaskDetails({
               </h1>
 
               <p className="mt-1 text-xs text-gray-600 dark:text-slate-400">
-                {isEditing
-                  ? "Edit the information for the selected task."
-                  : "View the details of the selected task and its current status."}
+                Click any field to edit it. Changes save
+                automatically.
               </p>
             </div>
           </div>
 
-          {/* Header Buttons */}
-          <div className="flex items-center gap-2">
-
-            {/* Close / Cancel Button */}
-            <button
-              type="button"
-              disabled={isSaving}
-              onClick={isEditing ? handleCancel : handleClose}
-              className="rounded-md border border-[#d3ddcc] bg-[#e7eee0] px-3 py-2 text-xs text-gray-900 hover:bg-[#dce6d5] disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
-            >
-              {isEditing ? "Cancel" : "Close"}
-            </button>
-
-            {/* Edit / Save Button */}
-            <button
-              type="button"
-              disabled={isSaving}
-              onClick={isEditing ? handleSave : handleEdit}
-              className="rounded-md bg-[#0d7d8e] px-3 py-2 text-xs font-medium text-white hover:bg-[#096675] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-cyan-700 dark:hover:bg-cyan-600"
-            >
-              {isSaving
-                ? "Saving..."
-                : isEditing
-                  ? "Save Changes"
-                  : "Edit Task"}
-            </button>
-
-            {/* X Button */}
-            <button
-              type="button"
-              disabled={isSaving}
-              onClick={handleClose}
-              aria-label="Close Task Details"
-              className="ml-1 text-gray-500 hover:text-black disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-400 dark:hover:text-white"
-            >
-              <X size={18} />
-            </button>
-          </div>
+          {/* Close Button */}
+          <button
+            type="button"
+            onClick={handleClose}
+            className="rounded-md border border-[#d3ddcc] bg-[#e7eee0] px-3 py-2 text-xs text-gray-900 hover:bg-[#dce6d5] dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
+          >
+            Close
+          </button>
         </div>
-
-        {/* Success Message */}
-        {success && (
-          <div
-            role="status"
-            className="mb-4 rounded-md border border-green-300 bg-green-50 p-3 text-sm text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-300"
-          >
-            {success}
-          </div>
-        )}
-
-        {/* Error Message */}
-        {error && (
-          <div
-            role="alert"
-            className="mb-4 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300"
-          >
-            {error}
-          </div>
-        )}
 
         {/* Main Content */}
         <div className="max-h-[70vh] overflow-y-auto rounded-xl border border-[#d3ddcc] bg-[#f8faf5] p-4 sm:p-5 dark:border-slate-700 dark:bg-slate-800">
@@ -283,15 +187,19 @@ export default function TaskDetails({
             <input
               id="task-title"
               type="text"
-              value={editedTask.title}
-              onChange={(e) =>
-                updateField("title", e.target.value)
-              }
-              disabled={!isEditing || isSaving}
+              value={draft.title}
+              onChange={(e) => updateField("title", e.target.value)}
+              onBlur={() => save(draft)}
+              aria-invalid={!draft.title.trim()}
               className={inputStyle}
-              placeholder="Enter task title"
-              required
             />
+
+            {!draft.title.trim() && (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                A task needs a title. This change will not be saved until you
+                add one.
+              </p>
+            )}
           </div>
 
           {/* Task Description */}
@@ -305,14 +213,11 @@ export default function TaskDetails({
 
             <textarea
               id="task-description"
-              value={editedTask.description}
-              onChange={(e) =>
-                updateField("description", e.target.value)
-              }
-              disabled={!isEditing || isSaving}
+              value={draft.notes ?? ""}
+              onChange={(e) => updateField("notes", e.target.value)}
+              onBlur={() => save(draft)}
               rows={4}
               className={`${inputStyle} resize-none`}
-              placeholder="Enter task description"
             />
           </div>
 
@@ -332,16 +237,22 @@ export default function TaskDetails({
 
             <select
               id="task-priority"
-              value={editedTask.priority}
+              value={draft.priority ?? ""}
               onChange={(e) =>
-                updateField("priority", e.target.value)
+                updateField(
+                  "priority",
+                  (e.target.value || undefined) as TaskPriority | undefined,
+                  true
+                )
               }
-              disabled={!isEditing || isSaving}
               className={inputStyle}
             >
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
+              <option value="">Not set</option>
+              {PRIORITY_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -357,11 +268,8 @@ export default function TaskDetails({
             <input
               id="task-date"
               type="date"
-              value={editedTask.dueDate}
-              onChange={(e) =>
-                updateField("dueDate", e.target.value)
-              }
-              disabled={!isEditing || isSaving}
+              value={draft.dueDate}
+              onChange={(e) => updateField("dueDate", e.target.value, true)}
               className={inputStyle}
             />
           </div>
@@ -375,17 +283,18 @@ export default function TaskDetails({
               Assigned To
             </label>
 
-            <input
+            <select
               id="task-assigned"
-              type="text"
-              value={editedTask.assignedTo}
-              onChange={(e) =>
-                updateField("assignedTo", e.target.value)
-              }
-              disabled={!isEditing || isSaving}
+              value={draft.assigneeId}
+              onChange={(e) => updateField("assigneeId", e.target.value, true)}
               className={inputStyle}
-              placeholder="Enter assigned person"
-            />
+            >
+              {staff.map((person) => (
+                <option key={person.id} value={person.id}>
+                  {person.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Event */}
@@ -399,29 +308,16 @@ export default function TaskDetails({
 
             <select
               id="task-event"
-              value={editedTask.event}
+              value={draft.eventId ?? ""}
               onChange={(e) =>
-                updateField("event", e.target.value)
+                updateField("eventId", e.target.value || undefined, true)
               }
-              disabled={!isEditing || isSaving}
               className={inputStyle}
             >
-              <option value="">
-                No event selected
-              </option>
-
-              {/* Keep existing event if not in the list */}
-              {editedTask.event &&
-                !eventOptions.includes(editedTask.event) && (
-                  <option value={editedTask.event}>
-                    {editedTask.event}
-                  </option>
-                )}
-
-              {/* Display available events */}
-              {eventOptions.map((event) => (
-                <option key={event} value={event}>
-                  {event}
+              <option value="">No event</option>
+              {events.map((event) => (
+                <option key={event.id} value={event.id}>
+                  {event.name}
                 </option>
               ))}
             </select>

@@ -87,7 +87,6 @@ export function DayPanel({
       {events.length > 0 && (
         <ul aria-label="Events" className="grid gap-2">
           {events.map((event) => {
-            const pillar = lookups.pillarsById.get(event.pillarId);
             return (
               <li
                 key={event.id}
@@ -116,7 +115,6 @@ export function DayPanel({
                         <Clock className="h-3.5 w-3.5" aria-hidden />
                         {formatEventTime(event)}
                       </span>
-                      {pillar && <span>{pillar.name}</span>}
                       {event.location && (
                         <span className="inline-flex items-center gap-1">
                           <MapPin className="h-3.5 w-3.5" aria-hidden />

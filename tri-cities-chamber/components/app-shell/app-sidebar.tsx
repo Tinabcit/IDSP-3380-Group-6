@@ -31,13 +31,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { splitEvents } from "@/lib/planner/tasks";
-import type { ChamberEvent } from "@/lib/planner/types";
+import { groupSidebarEvents } from "@/lib/planner/tasks";
+import type { ChamberEvent, TaskInput } from "@/lib/planner/types";
+import {
+  TaskFormDialog,
+  type TaskFormState,
+} from "@/components/planner/task-form-dialog";
 import type { DisplayUser } from "@/lib/planner/user";
 import SearchBar from "@/components/search-bar/search-bar";
 import { UserMenu } from "./user-menu";
 import { OverdueBell } from "./overdue-bell";
 import { useOptionalPlannerData } from "./planner-provider";
+import { useToast } from "./toast-provider";
 
 // --------------------------------------------------
 // Staff selector
@@ -154,6 +159,15 @@ export function HomeFiltersProvider({
     []
   );
 
+  // Typing in the search box starts a fresh search: clear the event / sponsor
+  // filters, and bump viewKey so pages also reset their own filters.
+  const searchFor = useCallback((value: string) => {
+    setSearch(value);
+    setEventId("all");
+    setSponsorId("all");
+    setViewKey((key) => key + 1);
+  }, []);
+
   const pickEvent = useCallback(
     (id: string) => {
       pickView(eventId === id ? "all" : id, "all");
@@ -173,7 +187,7 @@ export function HomeFiltersProvider({
       search,
       eventId,
       sponsorId,
-      setSearch,
+      setSearch: searchFor,
       setEventId,
       setSponsorId: switchSponsor,
       pickEvent,
@@ -184,6 +198,7 @@ export function HomeFiltersProvider({
       search,
       eventId,
       sponsorId,
+      searchFor,
       switchSponsor,
       pickEvent,
       pickSponsor,
@@ -323,14 +338,12 @@ export function AppSidebar({
   const filters = useTasksFilters();
   const pathname = usePathname();
   const router = useRouter();
+  const toast = useToast();
+  const [taskForm, setTaskForm] = useState<TaskFormState | null>(null);
 
   const events = data
-    ? splitEvents(data.events, data.today)
-    : {
-        repeat: [],
-        oneOff: [],
-        archived: [],
-      };
+    ? groupSidebarEvents(data.events, data.today)
+    : { series: [], oneOff: [], archived: [] };
 
   const partners = data?.sponsors ?? [];
 
@@ -369,6 +382,13 @@ export function AppSidebar({
     filters.setSearch("");
     filters.setEventId("all");
     filters.setSponsorId("all");
+  }
+
+  // Save a task made with the sidebar's Add Task form.
+  function addTask(input: TaskInput) {
+    if (!data) return;
+    data.addTask(input);
+    toast({ title: "Task added", description: input.title });
   }
 
   // Render the event list.
@@ -436,12 +456,17 @@ export function AppSidebar({
             Upload Contract
           </Link>
 
-          <Link
-            href="/events/new"
-            className="flex min-h-11 min-w-0 items-center justify-center rounded-md bg-sky-600 px-1.5 py-2.5 text-center text-xs font-medium leading-tight text-white transition-colors hover:bg-sky-700"
+          <button
+            type="button"
+            disabled={!data}
+            onClick={() =>
+              data &&
+              setTaskForm({ mode: "create", defaultDate: data.today })
+            }
+            className="flex min-h-11 min-w-0 items-center justify-center rounded-md bg-sky-600 px-1.5 py-2.5 text-center text-xs font-medium leading-tight text-white transition-colors hover:bg-sky-700 disabled:opacity-50"
           >
-            Add Event
-          </Link>
+            Add Task
+          </button>
         </div>
 
         {/* Search */}
@@ -481,7 +506,7 @@ export function AppSidebar({
         {/* Events */}
         <div className="flex flex-col gap-4">
           <Section title="Event Series">
-            {eventItems(events.repeat)}
+            {eventItems(events.series)}
           </Section>
 
           <Section title="One-off Events">
@@ -523,6 +548,17 @@ export function AppSidebar({
       <div className="shrink-0">
         <UserMenu user={user} />
       </div>
+
+      {data && (
+        <TaskFormDialog
+          state={taskForm}
+          events={data.events}
+          sponsors={data.sponsors}
+          staff={[data.currentUser]}
+          onClose={() => setTaskForm(null)}
+          onSubmit={addTask}
+        />
+      )}
     </aside>
   );
 }

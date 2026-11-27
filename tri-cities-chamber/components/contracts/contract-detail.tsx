@@ -41,8 +41,8 @@ import { ContractStatusBadge } from "./contract-card";
  * The page for one contract (/contracts/:id). It shows:
  * - money received so far
  * - a summary of the contract
- * - checklists for payments and deliverables (ticking one also ticks the matching
- *   task on the calendar)
+ * - a checklist of payments (ticking one also ticks the matching task on the
+ *   calendar)
  * - the partner's contact info, a status dropdown and a delete button
  * - the history of changes to this contract
  * If the id does not exist, it shows a "Contract not found" message.
@@ -68,7 +68,6 @@ export function ContractDetail({ id }: { id: string }) {
 
   const sponsor = lookups.sponsorsById.get(contract.sponsorId);
   const event = contract.eventId ? lookups.eventsById.get(contract.eventId) : undefined;
-  const pillar = event ? lookups.pillarsById.get(event.pillarId) : undefined;
   const paid = amountPaid(contract);
   const percent = contract.amount > 0 ? Math.round((paid / contract.amount) * 100) : 0;
   const history = data.activity.filter((a) => a.contractId === contract.id);
@@ -94,7 +93,6 @@ export function ContractDetail({ id }: { id: string }) {
               {event.name}, {formatShortDate(event.startDate)}
             </span>
           )}
-          {pillar && <span>{pillar.name}</span>}
           {event?.location && (
             <span className="inline-flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5" aria-hidden />
@@ -166,20 +164,6 @@ export function ContractDetail({ id }: { id: string }) {
           dueDate: p.dueDate,
           done: p.paid,
           doneLabel: "Paid",
-        }))}
-        today={today}
-        onToggle={(itemId) => data.toggleContractItem(contract.id, itemId)}
-      />
-
-      <Checklist
-        title="Deliverables"
-        empty="No deliverables recorded."
-        items={contract.deliverables.map((d) => ({
-          id: d.id,
-          label: d.label,
-          dueDate: d.dueDate,
-          done: d.done,
-          doneLabel: "Done",
         }))}
         today={today}
         onToggle={(itemId) => data.toggleContractItem(contract.id, itemId)}
@@ -298,8 +282,8 @@ export function ContractDetail({ id }: { id: string }) {
 }
 
 /**
- * The common shape for a checklist row. Payments and deliverables are
- * converted into this so one Checklist component can show both.
+ * The common shape for a checklist row. Payments are converted into this
+ * before the Checklist shows them.
  */
 interface ChecklistItem {
   id: string;
@@ -311,7 +295,7 @@ interface ChecklistItem {
 }
 
 /**
- * A checklist box used for both Payments and Deliverables.
+ * A checklist box, used for Payments.
  * Each row has a checkbox, a name, an optional amount and a due date.
  * Unticked rows that are past due are shown in red.
  */

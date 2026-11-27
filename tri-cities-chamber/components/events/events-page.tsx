@@ -2,22 +2,25 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Calendar, MapPin, Plus } from "lucide-react";
+import { Calendar, ChevronRight, MapPin, Plus } from "lucide-react";
 
 import { usePlannerData } from "@/components/app-shell/planner-provider";
 import { FilterBar } from "@/components/planner/filter-bar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { amountPaid, formatCurrency } from "@/lib/planner/contracts";
+import { formatCurrency } from "@/lib/planner/contracts";
 import { formatShortDate } from "@/lib/planner/dates";
+import { summarizeEvent } from "@/lib/planner/event-detail";
+import { splitEvents } from "@/lib/planner/tasks";
 import { EMPTY_FILTERS, type ChamberEvent, type PlannerFilters } from "@/lib/planner/types";
 import { cn } from "@/lib/utils";
 
 /**
- * The events page (/events). It applies the filters, splits events into
- * Upcoming and Past, and shows each one with its contracts and money.
- * Has an "Add event" button that opens /events/new. (Here the sponsor filter means "has a contract
- * with that sponsor".)
+ * The events page (/events). It applies the filters and splits events into
+ * Upcoming and Past (the same groups as the sidebar). Each event shows when and
+ * where it is, its sponsorship money and what is left to do; clicking it opens
+ * the event's own page. (Here the sponsor filter means "has a contract with
+ * that sponsor".)
  */
 export function EventsPage() {
   const data = usePlannerData();
@@ -27,17 +30,12 @@ export function EventsPage() {
   const { upcoming, past } = useMemo(() => {
     const visible = data.events.filter((e) => {
       if (filters.signatureOnly && !e.isSignature) return false;
-      if (filters.pillarId && e.pillarId !== filters.pillarId) return false;
       if (filters.sponsorId) {
         return data.contracts.some((c) => c.eventId === e.id && c.sponsorId === filters.sponsorId);
       }
       return true;
     });
-    const byStart = (a: ChamberEvent, b: ChamberEvent) => a.startDate.localeCompare(b.startDate);
-    return {
-      upcoming: visible.filter((e) => e.endDate >= today).sort(byStart),
-      past: visible.filter((e) => e.endDate < today).sort((a, b) => byStart(b, a)),
-    };
+    return splitEvents(visible, today);
   }, [data.events, data.contracts, filters, today]);
 
   return (
@@ -46,36 +44,35 @@ export function EventsPage() {
         <div>
           <h1 className="text-xl font-bold leading-tight">Events</h1>
           <p className="text-sm text-muted-foreground">
-            Sponsorship for each event is added up from its contracts.
+            See which sponsors have signed for each event and how much has been paid. Click an
+            event to see everything about it.
           </p>
         </div>
         <Button render={<Link href="/events/new" />} nativeButton={false}>
-            <Plus />
-            <span>
-              <span className="sm:hidden">Add</span>
-              <span className="hidden sm:inline">Add event</span>
-            </span>
-          </Button>
+          <Plus />
+          <span>
+            <span className="sm:hidden">Add</span>
+            <span className="hidden sm:inline">Add event</span>
+          </span>
+        </Button>
       </header>
 
       <FilterBar
         label="Filter events"
         filters={filters}
-        pillars={data.pillars}
         sponsors={data.sponsors}
         onChange={setFilters}
       />
 
       <EventSection title="Upcoming" events={upcoming} empty="No upcoming events match." />
       <EventSection title="Past" events={past} empty="No past events match." />
-
     </div>
   );
 }
 
 /**
  * One list of events with a heading (used for "Upcoming" and "Past").
- * Each event shows its pillar, location and contracts.
+ * Each card links to the event's page.
  */
 function EventSection({
   title,
@@ -87,11 +84,10 @@ function EventSection({
   empty: string;
 }) {
   const data = usePlannerData();
-  const { lookups } = data;
   return (
     <section aria-label={title} className="grid gap-2">
       <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-        {title}
+        {title} ({events.length})
       </h2>
       {events.length === 0 ? (
         <p className="rounded-md border border-dashed px-4 py-6 text-center text-sm text-muted-foreground">
@@ -100,20 +96,17 @@ function EventSection({
       ) : (
         <ul className="grid gap-2">
           {events.map((event) => {
-            const pillar = lookups.pillarsById.get(event.pillarId);
-            const contracts = data.contracts.filter((c) => c.eventId === event.id);
-            const total = contracts.reduce((n, c) => n + c.amount, 0);
-            const received = contracts.reduce((n, c) => n + amountPaid(c), 0);
+            const summary = summarizeEvent(event, data.contracts, data.tasks, data.sponsors, data.today);
             return (
-              <li
-                key={event.id}
-                className={cn(
-                  "rounded-lg border bg-card p-4",
-                  event.isSignature && "border-l-[3px] border-l-signature"
-                )}
-              >
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
+              <li key={event.id}>
+                <Link
+                  href={`/events/${event.id}`}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg border bg-card p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    event.isSignature && "border-l-[3px] border-l-signature"
+                  )}
+                >
+                  <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="font-semibold">{event.name}</h3>
                       {event.isSignature && <Badge variant="signature">Signature</Badge>}
@@ -124,7 +117,6 @@ function EventSection({
                         {formatShortDate(event.startDate)}
                         {event.endDate !== event.startDate && ` to ${formatShortDate(event.endDate)}`}
                       </span>
-                      {pillar && <span>{pillar.name}</span>}
                       {event.location && (
                         <span className="inline-flex items-center gap-1">
                           <MapPin className="h-3.5 w-3.5" aria-hidden />
@@ -132,36 +124,26 @@ function EventSection({
                         </span>
                       )}
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-semibold">{formatCurrency(total)}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {formatCurrency(received)} received
+                    <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm">
+                      <span>
+                        {summary.sponsors.length} {summary.sponsors.length === 1 ? "sponsor" : "sponsors"}
+                      </span>
+                      <span className={cn(summary.overdue > 0 && "font-medium text-overdue")}>
+                        {summary.openTasks.length === 0
+                          ? "No tasks left"
+                          : `${summary.openTasks.length} ${summary.openTasks.length === 1 ? "task" : "tasks"} to do`}
+                        {summary.overdue > 0 && ` (${summary.overdue} overdue)`}
+                      </span>
                     </div>
                   </div>
-                </div>
-
-                {contracts.length > 0 ? (
-                  <ul aria-label={`Contracts for ${event.name}`} className="mt-3 grid gap-1 border-t pt-3">
-                    {contracts.map((c) => (
-                      <li key={c.id} className="flex justify-between gap-3 text-sm">
-                        <Link
-                          href={`/contracts/${c.id}`}
-                          className="min-w-0 truncate underline-offset-2 hover:underline"
-                        >
-                          {lookups.sponsorsById.get(c.sponsorId)?.name}: {c.title}
-                        </Link>
-                        <span className="shrink-0 text-muted-foreground">
-                          {formatCurrency(c.amount)}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="mt-3 border-t pt-3 text-sm text-muted-foreground">
-                    No contracts yet.
-                  </p>
-                )}
+                  <div className="shrink-0 text-right">
+                    <div className="font-semibold">{formatCurrency(summary.total)}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {formatCurrency(summary.received)} paid
+                    </div>
+                  </div>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+                </Link>
               </li>
             );
           })}

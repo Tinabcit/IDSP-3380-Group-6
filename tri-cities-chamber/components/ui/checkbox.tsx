@@ -6,7 +6,7 @@ import { Check } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-/** A round checkbox used to tick off tasks, payments and deliverables. Turns green when ticked. */
+/** A round checkbox used to tick off tasks and payments. Turns green when ticked. */
 function Checkbox({
   className,
   ...props

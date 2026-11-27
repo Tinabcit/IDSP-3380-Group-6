@@ -57,7 +57,6 @@ function contract(over: Partial<Contract>): Contract {
     amount: 1000,
     status: 'active',
     payments: [],
-    deliverables: [],
     createdAt: '2025-03-01T10:00:00.000Z',
     ...over,
   };

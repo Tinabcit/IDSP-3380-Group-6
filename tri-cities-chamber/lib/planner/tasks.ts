@@ -1,5 +1,5 @@
 import { isISODateBefore, shiftISODate } from "./dates";
-import type { ChamberEvent, ISODate, Sponsor, Task } from "./types";
+import type { ChamberEvent, ISODate, Sponsor, Task, TaskInput } from "./types";
 
 /** One page of a list, plus which page it is and how many pages there are. */
 export interface Page<T> {
@@ -41,6 +41,16 @@ export function searchTasks(
   });
 }
 
+/**
+ * Turns a task into the fields the store's updateTask expects, leaving out the
+ * ones the user cannot edit (id, created time, done tick).
+ */
+export function taskInputFrom(task: Task): TaskInput {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { id, createdAt, completed, ...input } = task;
+  return input;
+}
+
 /** Sorts tasks by due date, oldest first ("asc") or newest first ("desc"). Returns a new list. */
 export function sortByDueDate(tasks: Task[], direction: "asc" | "desc"): Task[] {
   const sign = direction === "asc" ? 1 : -1;
@@ -50,23 +60,41 @@ export function sortByDueDate(tasks: Task[], direction: "asc" | "desc"): Task[] 
   });
 }
 
-/** The three sidebar groups of events. */
+/** Events split into the two groups used everywhere: upcoming and past. */
 export interface EventGroups {
-  repeat: ChamberEvent[];
+  upcoming: ChamberEvent[];
+  past: ChamberEvent[];
+}
+
+/**
+ * Splits events into "upcoming" (not finished yet, soonest first) and "past"
+ * (finished, most recent first). The sidebar and the Events page both use it.
+ */
+export function splitEvents(events: ChamberEvent[], today: ISODate): EventGroups {
+  const byStart = [...events].sort((a, b) => a.startDate.localeCompare(b.startDate));
+  return {
+    upcoming: byStart.filter((e) => !isISODateBefore(e.endDate, today)),
+    past: byStart.filter((e) => isISODateBefore(e.endDate, today)).reverse(),
+  };
+}
+
+/** The three groups of events shown in the sidebar. */
+export interface SidebarEventGroups {
+  series: ChamberEvent[];
   oneOff: ChamberEvent[];
   archived: ChamberEvent[];
 }
 
 /**
  * Splits events for the sidebar: finished events are "archived", and the rest
- * are "repeat" (signature events) or "one-off". Each group is sorted by start date.
+ * are "series" (signature events) or "one-off". Each group is sorted by start date.
  */
-export function splitEvents(events: ChamberEvent[], today: ISODate): EventGroups {
-  const groups: EventGroups = { repeat: [], oneOff: [], archived: [] };
+export function groupSidebarEvents(events: ChamberEvent[], today: ISODate): SidebarEventGroups {
+  const groups: SidebarEventGroups = { series: [], oneOff: [], archived: [] };
   const byStart = [...events].sort((a, b) => a.startDate.localeCompare(b.startDate));
   for (const event of byStart) {
     if (isISODateBefore(event.endDate, today)) groups.archived.push(event);
-    else if (event.isSignature) groups.repeat.push(event);
+    else if (event.isSignature) groups.series.push(event);
     else groups.oneOff.push(event);
   }
   return groups;

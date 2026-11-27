@@ -16,7 +16,7 @@
 
 import { useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
-import { User, Sparkles, Plus, Sun, Moon, Save } from "lucide-react";
+import { User, Plus, Sun, Moon, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -101,43 +101,10 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#edf3e7] p-5 text-gray-900 dark:bg-slate-950 dark:text-white md:p-8">
-      <div className="mx-auto flex max-w-5xl flex-col items-start gap-5 md:flex-row">
-
-        {/* Settings navigation */}
-        <div className="w-full rounded-xl border border-gray-300 bg-[#fafbf7] p-3 dark:border-slate-700 dark:bg-slate-900 md:w-44 md:shrink-0">
-          <button
-            type="button"
-            onClick={() =>
-              document.getElementById("profile")?.scrollIntoView({
-                behavior: "smooth",
-              })
-            }
-            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-slate-800"
-          >
-            <User size={17} className="text-indigo-700 dark:text-indigo-300" />
-            Profile
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              document.getElementById("appearance")?.scrollIntoView({
-                behavior: "smooth",
-              })
-            }
-            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-slate-800"
-          >
-            <Sparkles
-              size={17}
-              className="text-indigo-700 dark:text-indigo-300"
-            />
-            Appearance
-          </button>
-        </div>
-
+    <div className="text-gray-900 dark:text-white">
+      <div className="mx-auto max-w-2xl">
         {/* Main settings card */}
-        <div className="w-full max-w-2xl rounded-xl border border-gray-300 bg-[#fafbf7] p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-6">
+        <div className="w-full rounded-xl border border-gray-300 bg-[#fafbf7] p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-6">
 
           {/* Profile section */}
           <div id="profile" className="mb-5 flex items-center gap-3">
@@ -155,7 +122,7 @@ export default function SettingsPage() {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <User size={26} className="text-indigo-700" />
+                    <User size={26} className="text-indigo-700 dark:text-white" />
                   )}
                 </div>
 

@@ -257,7 +257,7 @@ export function PlannerApp() {
         <div>
           <h1 className='text-xl font-bold leading-tight'>Calendar</h1>
           <p className='text-sm text-muted-foreground'>
-            Events, sponsor deliverables and reminders
+            Events, payments and reminders
           </p>
         </div>
         <div className='flex gap-2'>
@@ -285,7 +285,6 @@ export function PlannerApp() {
         <div className='grid content-start gap-4'>
           <FilterBar
             filters={filters}
-            pillars={store.pillars}
             sponsors={store.sponsors}
             onChange={setFilters}
           />
