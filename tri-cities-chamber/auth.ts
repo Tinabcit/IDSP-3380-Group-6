@@ -1,13 +1,21 @@
 import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
+import Credentials from "next-auth/providers/credentials";
 
-/**
- * Google sign-in (Auth.js). Needs AUTH_SECRET, AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET
- * in .env.local (see .env.example). Google has no separate "sign up", so Sign Up and Login
- * run the same flow: a new Google account is simply accepted the first time it signs in.
- */
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  providers: [Google],
+  providers: [
+    Credentials({
+      name: "Dev Login",
+      credentials: {
+        email: { label: "Email", type: "text", placeholder: "dev@example.com" },
+      },
+      async authorize(credentials) {
+        return {
+          id: "1",
+          name: "Test User",
+          email: (credentials?.email as string) || "dev@example.com",
+        };
+      },
+    }),
+  ],
   session: { strategy: "jwt" },
-  pages: { signIn: "/" },
 });
