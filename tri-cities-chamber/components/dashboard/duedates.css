@@ -1,0 +1,35 @@
+.due-dates {
+  @apply flex w-full flex-col gap-6 rounded-lg border bg-card p-4 text-card-foreground;
+}
+
+.due-datesheader {
+  @apply flex items-baseline justify-between gap-4;
+}
+
+.due-datestitle {
+  @apply text-sm font-semibold;
+}
+
+.due-datessubtitle {
+  @apply text-xs text-muted-foreground;
+}
+
+.due-dateslist {
+  @apply flex w-full overflow-x-auto pb-1;
+}
+
+.due-datesday {
+  @apply flex min-w-20 flex-1 flex-col items-center gap-1 text-center;
+}
+
+.due-datesweekday {
+  @apply text-xs text-muted-foreground;
+}
+
+.due-datesdate {
+  @apply text-2xl font-semibold leading-none;
+}
+
+.due-datescount {
+  @apply text-xs;
+}

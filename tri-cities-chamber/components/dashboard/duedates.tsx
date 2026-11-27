@@ -1,6 +1,6 @@
 import { fromISODate } from "@/lib/planner/dates";
 import type { TasksOnDay } from "@/lib/planner/dashboard";
-import "./due-dates.css";
+import "./duedates.css";
 
 interface DueDatesProps {
   days: TasksOnDay[];
