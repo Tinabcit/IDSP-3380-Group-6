@@ -16,7 +16,7 @@ const THEME_INIT_SCRIPT = `try{var c=localStorage.getItem('${THEME_STORAGE_KEY}'
 
 export const metadata: Metadata = {
   title: 'Tri-Cities Chamber',
-  description: 'Contracts, events, sponsor deliverables and reminders in one place.',
+  description: 'Contracts, events, payments and reminders in one place.',
 };
 
 export const viewport: Viewport = {

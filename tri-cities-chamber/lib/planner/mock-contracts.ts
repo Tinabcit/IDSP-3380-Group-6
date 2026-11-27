@@ -7,7 +7,7 @@ import type { ActivityEntry, Contract, ISODate } from "./types";
  * Replace with database queries once the backend lands.
  */
 
-/** Makes the demo contracts (with payments and deliverables). Dates are based on today. */
+/** Makes the demo contracts (with payments). Dates are based on today. */
 export function buildMockContracts(today: ISODate): Contract[] {
   const d = (offset: number) => shiftISODate(today, offset);
   const createdAt = new Date().toISOString();
@@ -24,10 +24,6 @@ export function buildMockContracts(today: ISODate): Contract[] {
       payments: [
         { id: "pay-gc-1", label: "Deposit (50%)", dueDate: d(-30), amount: 7500, paid: true },
         { id: "pay-gc-2", label: "Balance (50%)", dueDate: d(6), amount: 7500, paid: false },
-      ],
-      deliverables: [
-        { id: "del-gc-1", label: "Logo files for program", dueDate: d(-1), done: false },
-        { id: "del-gc-2", label: "Speaking slot confirmed", dueDate: d(7), done: false },
       ],
       summary: {
         overview:
@@ -56,9 +52,6 @@ export function buildMockContracts(today: ISODate): Contract[] {
       payments: [
         { id: "pay-gh-1", label: "Full payment", dueDate: d(0), amount: 5000, paid: false },
       ],
-      deliverables: [
-        { id: "del-gh-1", label: "Confirm guest list for table", dueDate: d(5), done: false },
-      ],
       summary: {
         overview: "Harbour Insurance sponsors one table at the gala for $5,000, due in full.",
         keyTerms: ["Table of ten", "Name on table signage", "Logo in program"],
@@ -78,9 +71,6 @@ export function buildMockContracts(today: ISODate): Contract[] {
       payments: [
         { id: "pay-gr-1", label: "First instalment (50%)", dueDate: d(-10), amount: 6000, paid: true },
         { id: "pay-gr-2", label: "Second instalment (50%)", dueDate: d(4), amount: 6000, paid: false },
-      ],
-      deliverables: [
-        { id: "del-gr-1", label: "Hole sponsor signs to printer", dueDate: d(14), done: false },
       ],
       summary: {
         overview:
@@ -106,9 +96,6 @@ export function buildMockContracts(today: ISODate): Contract[] {
       payments: [
         { id: "pay-sc-1", label: "Full payment", dueDate: d(-45), amount: 6000, paid: true },
       ],
-      deliverables: [
-        { id: "del-sc-1", label: "Post-event thank-you", dueDate: d(-3), done: true },
-      ],
       summary: {
         overview:
           "Coastline Credit Union was the education partner for the Small Business Summit ($6,000).",
@@ -128,9 +115,6 @@ export function buildMockContracts(today: ISODate): Contract[] {
       payments: [
         { id: "pay-bn-1", label: "Full payment", dueDate: d(-5), amount: 1500, paid: true },
       ],
-      deliverables: [
-        { id: "del-bn-1", label: "Sponsor recognition slide", dueDate: d(0), done: true },
-      ],
       summary: {
         overview: "North Shore Dental sponsors the Networking Breakfast for $1,500.",
         keyTerms: ["Recognition slide", "Two tickets"],
@@ -146,9 +130,6 @@ export function buildMockContracts(today: ISODate): Contract[] {
       amount: 3000,
       status: "draft",
       payments: [],
-      deliverables: [
-        { id: "del-gp-1", label: "Signage proof approval", dueDate: d(3), done: false },
-      ],
       notes: "In-kind. Waiting on a signed copy from Pacific Print.",
       createdAt,
     },

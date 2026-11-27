@@ -25,17 +25,17 @@ import type {
  * The public API (addTask, addContract, ...) is what the UI depends on, so
  * swapping the internals for database calls later won't touch components.
  *
- * Contract payments and deliverables are mirrored as tasks (linked by
+ * Contract payments are mirrored as tasks (linked by
  * `contractItemId`) so they show up on the calendar and in reminders. Ticking
  * either side updates the other.
  */
 
 /**
  * The name the data is saved under in the browser's localStorage.
- * Change the version number (v2) if the shape of the saved data changes,
+ * Change the version number (v3) if the shape of the saved data changes,
  * so old saved data is ignored.
  */
-const STORAGE_KEY = "partner-calendar:v2";
+const STORAGE_KEY = "partner-calendar:v3";
 
 /** The lists of data that get saved in the browser. */
 interface Data {
@@ -98,8 +98,8 @@ function log(
 /**
  * The "reducer": one function that takes the current data plus an action and
  * returns the new data. All data changes happen here. Special cases:
- * - ticking a task made from a contract also ticks the payment/deliverable
- * - ticking a payment/deliverable also ticks its task
+ * - ticking a task made from a contract also ticks the payment
+ * - ticking a payment also ticks its task
  * - deleting a contract also deletes the tasks made from it
  */
 export function reducer(state: PlannerState, action: Action): PlannerState {
@@ -207,11 +207,10 @@ export function reducer(state: PlannerState, action: Action): PlannerState {
       const contract = state.contracts.find((c) => c.id === action.contractId);
       if (!contract) return state;
       const payment = contract.payments.find((p) => p.id === action.itemId);
-      const deliverable = contract.deliverables.find((d) => d.id === action.itemId);
-      const label = (payment ?? deliverable)?.label;
-      if (!label) return state;
-      const done = !(payment ? payment.paid : deliverable!.done);
-      const verb = payment ? (done ? "paid" : "unpaid") : done ? "done" : "not done";
+      if (!payment) return state;
+      const label = payment.label;
+      const done = !payment.paid;
+      const verb = done ? "paid" : "unpaid";
       return {
         ...state,
         contracts: state.contracts.map((c) =>
@@ -252,12 +251,11 @@ export function reducer(state: PlannerState, action: Action): PlannerState {
   }
 }
 
-/** Marks one payment as paid (or one deliverable as done) on a contract. */
+/** Marks one payment as paid (or unpaid) on a contract. */
 function setItemDone(contract: Contract, itemId: string, done: boolean): Contract {
   return {
     ...contract,
     payments: contract.payments.map((p) => (p.id === itemId ? { ...p, paid: done } : p)),
-    deliverables: contract.deliverables.map((d) => (d.id === itemId ? { ...d, done } : d)),
   };
 }
 
@@ -390,7 +388,7 @@ export function usePlannerStore() {
     dispatch({ type: "updateTask", id, input, logId: createId("act") });
   }, []);
 
-  /** Ticks or unticks a task (and its matching payment/deliverable, if it has one). */
+  /** Ticks or unticks a task (and its matching payment, if it has one). */
   const toggleTask = useCallback((id: string) => {
     dispatch({ type: "toggleTask", id, logId: createId("act") });
   }, []);
@@ -430,38 +428,25 @@ export function usePlannerStore() {
   }, []);
 
   /**
-   * Saves the contract and creates a reminder task for every unpaid payment
-   * and unfinished deliverable, so entry is one step instead of two.
+   * Saves the contract and creates a reminder task for every unpaid payment,
+   * so entry is one step instead of two.
    */
   const addContract = useCallback(
     (input: ContractInput, { assigneeId }: NewContractOptions): string => {
       const id = createId("contract");
       const now = new Date().toISOString();
       const base = { assigneeId, eventId: input.eventId, sponsorId: input.sponsorId, contractId: id };
-      const tasks: Task[] = [
-        ...input.payments
-          .filter((p) => !p.paid)
-          .map((p) => ({
-            ...base,
-            id: createId("task"),
-            title: `${input.title}: ${p.label}`,
-            dueDate: p.dueDate,
-            completed: false,
-            contractItemId: p.id,
-            createdAt: now,
-          })),
-        ...input.deliverables
-          .filter((d) => !d.done)
-          .map((d) => ({
-            ...base,
-            id: createId("task"),
-            title: d.label,
-            dueDate: d.dueDate,
-            completed: false,
-            contractItemId: d.id,
-            createdAt: now,
-          })),
-      ];
+      const tasks: Task[] = input.payments
+        .filter((p) => !p.paid)
+        .map((p) => ({
+          ...base,
+          id: createId("task"),
+          title: `${input.title}: ${p.label}`,
+          dueDate: p.dueDate,
+          completed: false,
+          contractItemId: p.id,
+          createdAt: now,
+        }));
       dispatch({
         type: "addContract",
         contract: { ...input, id, createdAt: now },
@@ -473,7 +458,7 @@ export function usePlannerStore() {
     []
   );
 
-  /** Ticks or unticks a payment/deliverable on a contract (and its matching task). */
+  /** Ticks or unticks a payment on a contract (and its matching task). */
   const toggleContractItem = useCallback((contractId: string, itemId: string) => {
     dispatch({ type: "toggleContractItem", contractId, itemId, logId: createId("act") });
   }, []);

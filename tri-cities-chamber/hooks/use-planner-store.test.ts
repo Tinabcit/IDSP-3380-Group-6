@@ -17,15 +17,17 @@ function emptyState(overrides: Partial<PlannerState> = {}): PlannerState {
   };
 }
 
-/** A contract with one unpaid payment (item "pay1") and one open deliverable (item "del1"). */
+/** A contract with two unpaid payments (items "pay1" and "pay2"). */
 const contract: Contract = {
   id: 'c1',
   title: 'Gala Sponsorship',
   sponsorId: 'sp1',
   amount: 5000,
   status: 'active',
-  payments: [{ id: 'pay1', label: 'Deposit', dueDate: '2025-03-15', amount: 2500, paid: false }],
-  deliverables: [{ id: 'del1', label: 'Logo on banner', dueDate: '2025-03-20', done: false }],
+  payments: [
+    { id: 'pay1', label: 'Deposit', dueDate: '2025-03-15', amount: 2500, paid: false },
+    { id: 'pay2', label: 'Balance', dueDate: '2025-03-20', amount: 2500, paid: false },
+  ],
   createdAt: '2025-03-01T00:00:00.000Z',
 };
 
@@ -42,13 +44,13 @@ const mirroredTasks: Task[] = [
     createdAt: '2025-03-01T00:00:00.000Z',
   },
   {
-    id: 't-del',
-    title: 'Logo on banner',
+    id: 't-bal',
+    title: 'Gala Sponsorship: Balance',
     dueDate: '2025-03-20',
     completed: false,
     assigneeId: 'staff-1',
     contractId: 'c1',
-    contractItemId: 'del1',
+    contractItemId: 'pay2',
     createdAt: '2025-03-01T00:00:00.000Z',
   },
 ];
@@ -70,23 +72,10 @@ describe('reducer: contracts and tasks stay in sync', () => {
     const ticked = reducer(stateWithContract(), { type: 'toggleTask', id: 't-pay', logId: 'log2' });
     expect(ticked.tasks.find((t) => t.id === 't-pay')?.completed).toBe(true);
     expect(ticked.contracts[0].payments[0].paid).toBe(true);
-    expect(ticked.contracts[0].deliverables[0].done).toBe(false);
+    expect(ticked.contracts[0].payments[1].paid).toBe(false);
 
     const unticked = reducer(ticked, { type: 'toggleTask', id: 't-pay', logId: 'log3' });
     expect(unticked.contracts[0].payments[0].paid).toBe(false);
-  });
-
-  it('ticking a deliverable on the contract also completes its task', () => {
-    const state = reducer(stateWithContract(), {
-      type: 'toggleContractItem',
-      contractId: 'c1',
-      itemId: 'del1',
-      logId: 'log2',
-    });
-    expect(state.contracts[0].deliverables[0].done).toBe(true);
-    expect(state.tasks.find((t) => t.id === 't-del')?.completed).toBe(true);
-    expect(state.tasks.find((t) => t.id === 't-pay')?.completed).toBe(false);
-    expect(state.activity[0].message).toContain('done');
   });
 
   it('ticking a payment on the contract also completes its task', () => {
@@ -98,6 +87,7 @@ describe('reducer: contracts and tasks stay in sync', () => {
     });
     expect(state.contracts[0].payments[0].paid).toBe(true);
     expect(state.tasks.find((t) => t.id === 't-pay')?.completed).toBe(true);
+    expect(state.tasks.find((t) => t.id === 't-bal')?.completed).toBe(false);
     expect(state.activity[0].message).toContain('paid');
   });
 

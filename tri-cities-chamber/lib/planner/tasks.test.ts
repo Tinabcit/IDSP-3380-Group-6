@@ -5,6 +5,7 @@ import {
   searchTasks,
   sortByDueDate,
   splitEvents,
+  taskInputFrom,
 } from '@/lib/planner/tasks';
 import type { ChamberEvent, Sponsor, Task } from '@/lib/planner/types';
 
@@ -141,6 +142,22 @@ describe('tasks helpers', () => {
     it('says "low priority" (dark) when nothing is open and it is far away', () => {
       const badge = eventBadge(event({ startDate: '2025-05-01' }), 0, today);
       expect(badge).toEqual({ text: 'low priority', tone: 'dark' });
+    });
+  });
+});
+
+describe('taskInputFrom', () => {
+  it('keeps the editable fields and drops id, createdAt and completed', () => {
+    const input = taskInputFrom(
+      task({ notes: 'Call the venue', priority: 'high', eventId: 'e1', completed: true })
+    );
+    expect(input).toEqual({
+      title: 'Task',
+      dueDate: '2025-03-10',
+      assigneeId: 's1',
+      notes: 'Call the venue',
+      priority: 'high',
+      eventId: 'e1',
     });
   });
 });

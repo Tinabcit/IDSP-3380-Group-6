@@ -257,7 +257,7 @@ export function PlannerApp() {
         <div>
           <h1 className='text-xl font-bold leading-tight'>Calendar</h1>
           <p className='text-sm text-muted-foreground'>
-            Events, sponsor deliverables and reminders
+            Events, payments and reminders
           </p>
         </div>
         <div className='flex gap-2'>

@@ -15,7 +15,7 @@ import { TaskTable } from "@/components/tasks/task-table";
 import { isISODateBefore, shiftISODate } from "@/lib/planner/dates";
 import { paginate, searchTasks, sortByDueDate } from "@/lib/planner/tasks";
 import { getTaskStatus } from "@/lib/planner/selectors";
-import TaskDetails, { type TaskInfo } from "@/components/TaskDetails";
+import TaskDetails from "@/components/TaskDetails";
 
 /** How many rows the table shows per page. */
 const PAGE_SIZE = 9;
@@ -66,7 +66,11 @@ export function TasksPage() {
     setSelected(new Set());
   }
 
-  const [selectedTask, setSelectedTask] = useState<TaskInfo | null>(null);
+  // The id of the task open in the details popup (null when it is closed).
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const selectedTask = selectedTaskId
+    ? tasks.find((t) => t.id === selectedTaskId) ?? null
+    : null;
 
   // The page number remembers which filters it was picked for. When any filter
   // changes (here or in the sidebar), it goes back to the first page, so the
@@ -213,19 +217,7 @@ export function TasksPage() {
               onToggleRow: toggleRow,
               onToggleAll: toggleAllOnPage,
             }}
-            onViewDetails={(t) =>
-              setSelectedTask({
-                id: t.id,
-                title: t.title,
-                description: "",
-                priority: "Medium",
-                dueDate: t.dueDate,
-                assignedTo: "",
-                event: t.eventId
-                  ? lookups.eventsById.get(t.eventId)?.name || ""
-                  : "",
-              })
-            }
+            onViewDetails={(t) => setSelectedTaskId(t.id)}
             sort={{
               direction,
               onToggle: () =>
@@ -272,10 +264,10 @@ export function TasksPage() {
         <TaskDetails
           key={selectedTask.id}
           task={selectedTask}
-          onClose={() => setSelectedTask(null)}
-          onSave={(updatedTask) => {
-            setSelectedTask(updatedTask);
-          }}
+          events={events}
+          staff={data.staff}
+          onClose={() => setSelectedTaskId(null)}
+          onSave={(input) => data.updateTask(selectedTask.id, input)}
         />
       )}
     </div>

@@ -86,6 +86,9 @@ export interface ChamberEvent {
 /** Fields the user can set when creating or editing an event. */
 export type EventInput = Omit<ChamberEvent, "id">;
 
+/** How urgent a task is. */
+export type TaskPriority = "low" | "medium" | "high";
+
 export interface Task {
   id: string;
   title: string;
@@ -94,11 +97,13 @@ export interface Task {
   assigneeId: string;
   eventId?: string;
   sponsorId?: string;
-  /** Set when the task was generated from a contract payment or deliverable. */
+  /** Set when the task was generated from a contract payment. */
   contractId?: string;
-  /** The payment or deliverable this task mirrors, kept in sync both ways. */
+  /** The payment this task mirrors, kept in sync both ways. */
   contractItemId?: string;
   notes?: string;
+  /** How urgent the task is. Missing means it has not been set. */
+  priority?: TaskPriority;
   /** Start time as 24-hour "HH:mm". Missing means the task has no set time. */
   startTime?: string;
   /** End time as 24-hour "HH:mm". Only used when startTime is set. */
@@ -114,13 +119,6 @@ export interface PaymentInstalment {
   dueDate: ISODate;
   amount: number;
   paid: boolean;
-}
-
-export interface Deliverable {
-  id: string;
-  label: string;
-  dueDate: ISODate;
-  done: boolean;
 }
 
 export interface ContractSummary {
@@ -150,7 +148,6 @@ export interface Contract {
 
   fileName?: string;
   payments: PaymentInstalment[];
-  deliverables: Deliverable[];
   summary?: ContractSummary;
   notes?: string;
   createdAt: string;

@@ -28,7 +28,6 @@ function contract(overrides: Partial<Contract> = {}): Contract {
     amount: 5000,
     status: 'active',
     payments: [],
-    deliverables: [],
     createdAt: '2025-03-01T00:00:00.000Z',
     ...overrides,
   };

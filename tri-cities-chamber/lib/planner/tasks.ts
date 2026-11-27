@@ -1,5 +1,5 @@
 import { isISODateBefore, shiftISODate } from "./dates";
-import type { ChamberEvent, ISODate, Sponsor, Task } from "./types";
+import type { ChamberEvent, ISODate, Sponsor, Task, TaskInput } from "./types";
 
 /** One page of a list, plus which page it is and how many pages there are. */
 export interface Page<T> {
@@ -39,6 +39,16 @@ export function searchTasks(
       text?.toLowerCase().includes(needle)
     );
   });
+}
+
+/**
+ * Turns a task into the fields the store's updateTask expects, leaving out the
+ * ones the user cannot edit (id, created time, done tick).
+ */
+export function taskInputFrom(task: Task): TaskInput {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { id, createdAt, completed, ...input } = task;
+  return input;
 }
 
 /** Sorts tasks by due date, oldest first ("asc") or newest first ("desc"). Returns a new list. */

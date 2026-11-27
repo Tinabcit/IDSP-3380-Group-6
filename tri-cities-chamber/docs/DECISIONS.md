@@ -203,3 +203,19 @@ Context: In user testing the client (staff who manage sponsorship contracts, not
 Decision: One shared form (components/events/event-form-fields.tsx) is used by /events/new and the calendar pop-up: name and date required; last day, times, location, sponsors, type, expected attendees, signature event and description optional. The never-shown fields and their types and helpers were removed (old saved values are ignored and dropped on the next edit); event-sections.tsx was deleted. Form logic moved to lib/planner/events.ts (emptyEventForm, eventToForm, validateEventForm, formToEventInput). /events/[id] is back as an event page (sponsors with their contracts, money, open tasks, edit and delete), with its logic in lib/planner/event-detail.ts; this reverses the 2026-11-04 removal. Events are grouped Upcoming / Past everywhere (splitEvents now returns { upcoming, past }). Pillars are hidden from every screen (filter dropdown, "Group by pillar", names on cards); pillarId stays in the data and new events get the first pillar. Sponsors and the PDF upload stay on the event form. Comp tickets linked to sponsors and tasks are wanted later, not for the MVP.
 
 Alternatives considered: Removing sponsors and the upload from the event form so sponsors come only from contracts (not chosen by the team for now). Removing pillarId from the data model (rejected: a larger migration for no visible gain).
+
+## 2026-11-27 — Task details pop-up edits in place and auto-saves
+
+Context: The Task Details pop-up on the Tasks page needed an "Edit Task" click before any field could change, had both a "Close" button and an X, and its "Save Task" only changed the pop-up's own copy, so edits were lost when it closed. It also showed made-up fields (free-text assignee, event names typed into the code, a priority the data did not have).
+
+Decision: Every field is editable as soon as the pop-up opens and saves to the store through updateTask: dropdowns and the due date save on change, text boxes save when you click out of them or close the pop-up (so the activity log gets one entry per edit, not one per keystroke). A blank title or due date is never saved. Only the "Close" button remains (Escape and clicking outside also close). Task Description maps to the existing notes field, Assigned To lists the staff, Event lists the real events. Task gets a new optional priority ("low" | "medium" | "high"); old tasks show "Not set".
+
+Alternatives considered: Saving on every keystroke (rejected: floods the activity log). Keeping a Save button and discarding unsaved changes on close (the user chose auto-save).
+
+## 2026-11-27 — Deliverables removed from contracts
+
+Context: The client does not track deliverables separately; anything a partner was promised can be a task. The Deliverables section on the New contract (upload) page and the Deliverables checklist on the contract page added steps without value.
+
+Decision: Deliverables are removed everywhere: the Deliverable type and Contract.deliverables, the form section, the contract page checklist, the demo data, deliverable reminder tasks, next-due-date and summary logic, and the tests. Contracts now mirror only payments as tasks. The saved-data key moved from partner-calendar:v2 to v3, so browsers holding old data (with deliverable tasks) start again from the demo data.
+
+Alternatives considered: Hiding deliverables in the UI but keeping them in the data (rejected: dead data and code paths). Keeping old saved data and stripping deliverables on load (rejected: extra migration code for a frontend-only MVP).

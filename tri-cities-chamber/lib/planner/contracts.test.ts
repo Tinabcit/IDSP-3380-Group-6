@@ -41,7 +41,6 @@ function makeContract(overrides: Partial<Contract> = {}): Contract {
     amount: 5000,
     status: 'active',
     payments: [],
-    deliverables: [],
     createdAt: '2025-03-01T00:00:00.000Z',
     ...overrides,
   };
@@ -71,11 +70,11 @@ describe('nextDueDate and isContractOverdue', () => {
     payments: [
       { id: 'a', label: 'Deposit', dueDate: '2025-03-01', amount: 100, paid: true },
       { id: 'b', label: 'Balance', dueDate: '2025-03-20', amount: 100, paid: false },
+      { id: 'c', label: 'Extra', dueDate: '2025-03-05', amount: 100, paid: false },
     ],
-    deliverables: [{ id: 'd', label: 'Logo on banner', dueDate: '2025-03-05', done: false }],
   });
 
-  it('picks the earliest unpaid or unfinished item and ignores finished ones', () => {
+  it('picks the earliest unpaid payment and ignores paid ones', () => {
     expect(nextDueDate(c)).toBe('2025-03-05');
   });
 
@@ -173,21 +172,23 @@ describe('buildDemoSummary', () => {
       {
         title: 'Gala Sponsorship',
         amount: 5000,
-        payments: [{ id: 'a', label: 'Deposit', dueDate: '2025-03-01', amount: 2500, paid: false }],
-        deliverables: [{ id: 'd', label: 'Logo on banner', dueDate: '2025-03-05', done: false }],
+        payments: [
+          { id: 'a', label: 'Deposit', dueDate: '2025-03-01', amount: 2500, paid: false },
+          { id: 'b', label: 'Balance', dueDate: '2025-03-05', amount: 2500, paid: false },
+        ],
       },
       'Acme Bank',
       'Gala Night'
     );
     expect(summary.overview).toContain('Acme Bank');
     expect(summary.overview).toContain('for Gala Night');
-    expect(summary.overview).toContain('1 instalment.');
+    expect(summary.overview).toContain('2 instalments.');
     expect(summary.keyTerms).toHaveLength(2);
     expect(summary.watchouts).toEqual([]);
   });
 
   it('warns when there is no payment schedule', () => {
-    const summary = buildDemoSummary({ title: 'T', amount: 1, payments: [], deliverables: [] }, 'Acme Bank');
+    const summary = buildDemoSummary({ title: 'T', amount: 1, payments: [] }, 'Acme Bank');
     expect(summary.watchouts).toEqual(['No payment schedule recorded yet']);
   });
 });

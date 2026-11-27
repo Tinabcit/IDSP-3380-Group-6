@@ -1,53 +1,92 @@
-
 "use client";
 
-import { useEffect, useState } from "react";
-import { ClipboardList, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ClipboardList } from "lucide-react";
 
-// Information for each task
-export type TaskInfo = {
-  id: string;
-  title: string;
-  description: string;
-  priority: string;
-  dueDate: string;
-  assignedTo: string;
-  event: string;
-};
+import { taskInputFrom } from "@/lib/planner/tasks";
+import type {
+  ChamberEvent,
+  StaffMember,
+  Task,
+  TaskInput,
+  TaskPriority,
+} from "@/lib/planner/types";
 
-// Information received from the Home page
+/** The priority choices shown in the dropdown. */
+const PRIORITY_OPTIONS: { value: TaskPriority; label: string }[] = [
+  { value: "low", label: "Low" },
+  { value: "medium", label: "Medium" },
+  { value: "high", label: "High" },
+];
+
+// Information received from the page that opens the popup
 type TaskDetailsProps = {
-  task: TaskInfo;
+  task: Task;
+  events: ChamberEvent[];
+  staff: StaffMember[];
   onClose: () => void;
-  onSave?: (task: TaskInfo) => void;
+  onSave: (input: TaskInput) => void;
 };
 
+/**
+ * Popup that shows a task with every field ready to edit. Dropdowns and the
+ * date save as soon as they change; text boxes save when you click out of
+ * them or close the popup. A task is never saved without a title or due date.
+ */
 export default function TaskDetails({
   task,
+  events,
+  staff,
   onClose,
   onSave,
 }: TaskDetailsProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedTask, setEditedTask] = useState<TaskInfo>(task);
+  // The parent gives this popup a key per task, so it starts fresh for each one.
+  const [draft, setDraft] = useState<Task>(task);
+  const lastSaved = useRef<Task>(task);
 
-  // Load the selected task when it changes
-  useEffect(() => {
-    setEditedTask(task);
-    setIsEditing(false);
-  }, [task]);
+  // Save the task if it changed and has the required fields.
+  function save(next: Task) {
+    if (!next.title.trim() || !next.dueDate) return;
 
-  // Close the popup
+    const input = taskInputFrom(next);
+    if (
+      JSON.stringify(input) === JSON.stringify(taskInputFrom(lastSaved.current))
+    ) {
+      return;
+    }
+
+    onSave(input);
+    lastSaved.current = next;
+  }
+
+  // Change one field. Pass saveNow for dropdowns and the date picker.
+  function updateField<K extends keyof Task>(
+    field: K,
+    value: Task[K],
+    saveNow = false
+  ) {
+    const next = { ...draft, [field]: value };
+    setDraft(next);
+    if (saveNow) save(next);
+  }
+
+  // Save anything still unsaved, then close the popup
   function handleClose() {
-    setIsEditing(false);
+    save(draft);
     onClose();
   }
+
+  // Keep the latest close handler for the Escape key listener below
+  const closeRef = useRef(handleClose);
+  useEffect(() => {
+    closeRef.current = handleClose;
+  });
 
   // Close popup with Escape key
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        setIsEditing(false);
-        onClose();
+        closeRef.current();
       }
     }
 
@@ -56,41 +95,15 @@ export default function TaskDetails({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [onClose]);
-
-  // Update a task field
-  function updateField(field: keyof TaskInfo, value: string) {
-    setEditedTask((current) => ({
-      ...current,
-      [field]: value,
-    }));
-  }
-
-  // Start editing
-  function handleEdit() {
-    setIsEditing(true);
-  }
-
-  // Save task changes
-  function handleSave() {
-    if (!editedTask.title.trim()) {
-      alert("Please enter a task title.");
-      return;
-    }
-
-    onSave?.(editedTask);
-    setIsEditing(false);
-  }
+  }, []);
 
   // Styles for light and dark mode
   const inputStyle =
     "w-full rounded-md border border-[#a7b4a0] " +
     "bg-[#eef2eb] px-3 py-2 text-sm text-gray-900 " +
     "outline-none focus:ring-2 focus:ring-[#0d7d8e] " +
-    "disabled:cursor-default disabled:opacity-100 " +
     "dark:border-slate-600 dark:bg-slate-800 " +
     "dark:text-white dark:focus:ring-cyan-500 " +
-    "dark:disabled:bg-slate-800 dark:disabled:text-slate-100 " +
     "dark:[color-scheme:dark]";
 
   const labelStyle =
@@ -138,43 +151,20 @@ export default function TaskDetails({
               </h1>
 
               <p className="mt-1 text-xs text-gray-600 dark:text-slate-400">
-                View the details of the selected task and its
-                current status.
+                Click any field to edit it. Changes save
+                automatically.
               </p>
             </div>
           </div>
 
-          {/* Header Buttons */}
-          <div className="flex items-center gap-2">
-
-            {/* Close Button */}
-            <button
-              type="button"
-              onClick={handleClose}
-              className="rounded-md border border-[#d3ddcc] bg-[#e7eee0] px-3 py-2 text-xs text-gray-900 hover:bg-[#dce6d5] dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
-            >
-              Close
-            </button>
-
-            {/* Edit / Save Button */}
-            <button
-              type="button"
-              onClick={isEditing ? handleSave : handleEdit}
-              className="rounded-md bg-[#0d7d8e] px-3 py-2 text-xs font-medium text-white hover:bg-[#096675] dark:bg-cyan-700 dark:hover:bg-cyan-600"
-            >
-              {isEditing ? "Save Task" : "Edit Task"}
-            </button>
-
-            {/* X Button */}
-            <button
-              type="button"
-              onClick={handleClose}
-              aria-label="Close Task Details"
-              className="ml-1 text-gray-500 hover:text-black dark:text-slate-400 dark:hover:text-white"
-            >
-              <X size={18} />
-            </button>
-          </div>
+          {/* Close Button */}
+          <button
+            type="button"
+            onClick={handleClose}
+            className="rounded-md border border-[#d3ddcc] bg-[#e7eee0] px-3 py-2 text-xs text-gray-900 hover:bg-[#dce6d5] dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
+          >
+            Close
+          </button>
         </div>
 
         {/* Main Content */}
@@ -197,13 +187,19 @@ export default function TaskDetails({
             <input
               id="task-title"
               type="text"
-              value={editedTask.title}
-              onChange={(e) =>
-                updateField("title", e.target.value)
-              }
-              disabled={!isEditing}
+              value={draft.title}
+              onChange={(e) => updateField("title", e.target.value)}
+              onBlur={() => save(draft)}
+              aria-invalid={!draft.title.trim()}
               className={inputStyle}
             />
+
+            {!draft.title.trim() && (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                A task needs a title. This change will not be saved until you
+                add one.
+              </p>
+            )}
           </div>
 
           {/* Task Description */}
@@ -217,11 +213,9 @@ export default function TaskDetails({
 
             <textarea
               id="task-description"
-              value={editedTask.description}
-              onChange={(e) =>
-                updateField("description", e.target.value)
-              }
-              disabled={!isEditing}
+              value={draft.notes ?? ""}
+              onChange={(e) => updateField("notes", e.target.value)}
+              onBlur={() => save(draft)}
               rows={4}
               className={`${inputStyle} resize-none`}
             />
@@ -243,16 +237,22 @@ export default function TaskDetails({
 
             <select
               id="task-priority"
-              value={editedTask.priority}
+              value={draft.priority ?? ""}
               onChange={(e) =>
-                updateField("priority", e.target.value)
+                updateField(
+                  "priority",
+                  (e.target.value || undefined) as TaskPriority | undefined,
+                  true
+                )
               }
-              disabled={!isEditing}
               className={inputStyle}
             >
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
+              <option value="">Not set</option>
+              {PRIORITY_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -268,11 +268,8 @@ export default function TaskDetails({
             <input
               id="task-date"
               type="date"
-              value={editedTask.dueDate}
-              onChange={(e) =>
-                updateField("dueDate", e.target.value)
-              }
-              disabled={!isEditing}
+              value={draft.dueDate}
+              onChange={(e) => updateField("dueDate", e.target.value, true)}
               className={inputStyle}
             />
           </div>
@@ -286,16 +283,18 @@ export default function TaskDetails({
               Assigned To
             </label>
 
-            <input
+            <select
               id="task-assigned"
-              type="text"
-              value={editedTask.assignedTo}
-              onChange={(e) =>
-                updateField("assignedTo", e.target.value)
-              }
-              disabled={!isEditing}
+              value={draft.assigneeId}
+              onChange={(e) => updateField("assigneeId", e.target.value, true)}
               className={inputStyle}
-            />
+            >
+              {staff.map((person) => (
+                <option key={person.id} value={person.id}>
+                  {person.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Event */}
@@ -309,36 +308,18 @@ export default function TaskDetails({
 
             <select
               id="task-event"
-              value={editedTask.event}
+              value={draft.eventId ?? ""}
               onChange={(e) =>
-                updateField("event", e.target.value)
+                updateField("eventId", e.target.value || undefined, true)
               }
-              disabled={!isEditing}
               className={inputStyle}
             >
-              <option value={editedTask.event}>
-                {editedTask.event || "No event selected"}
-              </option>
-
-              <option value="Business Excellence Gala">
-                Business Excellence Gala
-              </option>
-
-              <option value="Digital Marketing Workshop">
-                Digital Marketing Workshop
-              </option>
-
-              <option value="Small Business Summit">
-                Small Business Summit
-              </option>
-
-              <option value="Networking Breakfast">
-                Networking Breakfast
-              </option>
-
-              <option value="Municipal Policy Roundtable">
-                Municipal Policy Roundtable
-              </option>
+              <option value="">No event</option>
+              {events.map((event) => (
+                <option key={event.id} value={event.id}>
+                  {event.name}
+                </option>
+              ))}
             </select>
           </div>
         </div>
