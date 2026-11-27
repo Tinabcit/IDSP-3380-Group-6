@@ -114,6 +114,9 @@ export interface ChamberEvent {
 /** Fields the user can set when creating or editing an event. */
 export type EventInput = Omit<ChamberEvent, "id">;
 
+export type TaskPriority = "Low" | "Medium" | "High";
+
+
 export interface Task {
   id: string;
   title: string;
@@ -127,6 +130,9 @@ export interface Task {
   /** The payment or deliverable this task mirrors, kept in sync both ways. */
   contractItemId?: string;
   notes?: string;
+
+  /** Task priority */
+  priority?: TaskPriority;
   /** Start time as 24-hour "HH:mm". Missing means the task has no set time. */
   startTime?: string;
   /** End time as 24-hour "HH:mm". Only used when startTime is set. */
