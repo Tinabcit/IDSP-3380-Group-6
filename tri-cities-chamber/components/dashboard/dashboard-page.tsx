@@ -24,9 +24,9 @@ export function DashboardPage() {
         subtitle="A clear view of due dates across your events and projects."
       />
       <div className="flex w-fit max-w-full overflow-x-auto rounded-lg border bg-card text-card-foreground">
-        <CardInfo headingText="Tasks" numberInfo={data.tasks.length} />
-        <CardInfo headingText="Events" numberInfo={data.events.length} />
-        <CardInfo headingText="Sponsors" numberInfo={data.sponsors.length} />
+        <CardInfo title="Tasks" trackerData={data.tasks.length} />
+        <CardInfo title="Events" trackerData={data.events.length} />
+        <CardInfo title="Sponsors" trackerData={data.sponsors.length} />
       </div>
       <DueDates days={days} />
       <UploadedDocuments docs={docs} />
