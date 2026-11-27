@@ -40,4 +40,18 @@ export function CardInfo({ title, trackerData, fallback, className }: CardInfoPr
   );
 }
 
+export function CardInfoGroup({ items, limit, emptyText = "No stats to show." }: CardInfoGroupProps) {
+  const shown = (items ?? []).slice(0, limit);
 
+  if (shown.length === 0) {
+    return <p className="text-sm text-muted-foreground">{emptyText}</p>;
+  }
+
+  return (
+    <div className="flex w-fit max-w-full overflow-x-auto rounded-lg border bg-card text-card-foreground">
+      {shown.map((item, index) => (
+        <CardInfo key={`${item.title ?? "stat"}-${index}`} title={item.title} trackerData={item.trackerData} />
+      ))}
+    </div>
+  );
+}
