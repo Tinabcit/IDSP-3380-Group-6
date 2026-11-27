@@ -3,6 +3,8 @@
  * Guide: docs/PAGE_STARTER_GUIDE.md
  */
 
+import { CardTitle } from "../ui/card";
+
 /** TYPES (already set up): the props this part takes. To add a prop, add a line here. */
 type CardInfoProps = {
   title?: string | null ;
@@ -11,7 +13,25 @@ type CardInfoProps = {
   className?: string | null;
 };
 
-export type CardInfoItems = Pick <CardInfoProps, "title" | "trackerData">  
+const DEFAULT_HEADING= "Card Title"
+
+export type CardInfoItems = Pick <CardInfoProps, "title" | "trackerData">
+  type CardInfoGroupProps = {
+    items?: CardInfoItems[] | null
+    limit?: Number
+    emptyText?: string   
+  }
+
+function FormatValue(value: CardInfoProps["trackerData"], fallback: string){
+ if (typeof value==="number"){
+  return Number.isFinite(value)? value.toLocaleString():fallback
+ }
+  if (typeof value==="string" && value.trim() !==""){
+  return value.trim()
+ }
+ return fallback
+} 
+
 
 /** A small stat: a muted label with a big number under it. Adds a divider on the left of all but the first. */
 export function CardInfo({ title, trackerData, fallback, className }: CardInfoProps) {
