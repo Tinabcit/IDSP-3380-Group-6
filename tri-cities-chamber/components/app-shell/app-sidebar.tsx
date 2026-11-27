@@ -343,11 +343,7 @@ export function AppSidebar({
 
   const events = data
     ? splitEvents(data.events, data.today)
-    : {
-        repeat: [],
-        oneOff: [],
-        archived: [],
-      };
+    : { upcoming: [], past: [] };
 
   const partners = data?.sponsors ?? [];
 
@@ -509,19 +505,15 @@ export function AppSidebar({
 
         {/* Events */}
         <div className="flex flex-col gap-4">
-          <Section title="Event Series">
-            {eventItems(events.repeat)}
-          </Section>
-
-          <Section title="One-off Events">
-            {eventItems(events.oneOff)}
+          <Section title="Upcoming Events">
+            {eventItems(events.upcoming)}
           </Section>
 
           <Section
-            title="Archived Events"
+            title="Past Events"
             startOpen={false}
           >
-            {eventItems(events.archived)}
+            {eventItems(events.past)}
           </Section>
         </div>
 

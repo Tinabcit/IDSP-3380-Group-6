@@ -50,26 +50,22 @@ export function sortByDueDate(tasks: Task[], direction: "asc" | "desc"): Task[] 
   });
 }
 
-/** The three sidebar groups of events. */
+/** Events split into the two groups used everywhere: upcoming and past. */
 export interface EventGroups {
-  repeat: ChamberEvent[];
-  oneOff: ChamberEvent[];
-  archived: ChamberEvent[];
+  upcoming: ChamberEvent[];
+  past: ChamberEvent[];
 }
 
 /**
- * Splits events for the sidebar: finished events are "archived", and the rest
- * are "repeat" (signature events) or "one-off". Each group is sorted by start date.
+ * Splits events into "upcoming" (not finished yet, soonest first) and "past"
+ * (finished, most recent first). The sidebar and the Events page both use it.
  */
 export function splitEvents(events: ChamberEvent[], today: ISODate): EventGroups {
-  const groups: EventGroups = { repeat: [], oneOff: [], archived: [] };
   const byStart = [...events].sort((a, b) => a.startDate.localeCompare(b.startDate));
-  for (const event of byStart) {
-    if (isISODateBefore(event.endDate, today)) groups.archived.push(event);
-    else if (event.isSignature) groups.repeat.push(event);
-    else groups.oneOff.push(event);
-  }
-  return groups;
+  return {
+    upcoming: byStart.filter((e) => !isISODateBefore(e.endDate, today)),
+    past: byStart.filter((e) => isISODateBefore(e.endDate, today)).reverse(),
+  };
 }
 
 /** The small coloured label next to an event in the sidebar. */

@@ -38,7 +38,6 @@ interface ContractCardProps {
 export function ContractCard({ contract, today, lookups }: ContractCardProps) {
   const sponsor = lookups.sponsorsById.get(contract.sponsorId);
   const event = contract.eventId ? lookups.eventsById.get(contract.eventId) : undefined;
-  const pillar = event ? lookups.pillarsById.get(event.pillarId) : undefined;
   const paid = amountPaid(contract);
   const percent = contract.amount > 0 ? Math.round((paid / contract.amount) * 100) : 0;
   const next = nextDueDate(contract);
@@ -71,7 +70,6 @@ export function ContractCard({ contract, today, lookups }: ContractCardProps) {
                 {event.name}
               </span>
             )}
-            {pillar && <span>{pillar.name}</span>}
             {next && (
               <span
                 className={cn(

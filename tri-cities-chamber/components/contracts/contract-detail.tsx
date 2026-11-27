@@ -68,7 +68,6 @@ export function ContractDetail({ id }: { id: string }) {
 
   const sponsor = lookups.sponsorsById.get(contract.sponsorId);
   const event = contract.eventId ? lookups.eventsById.get(contract.eventId) : undefined;
-  const pillar = event ? lookups.pillarsById.get(event.pillarId) : undefined;
   const paid = amountPaid(contract);
   const percent = contract.amount > 0 ? Math.round((paid / contract.amount) * 100) : 0;
   const history = data.activity.filter((a) => a.contractId === contract.id);
@@ -94,7 +93,6 @@ export function ContractDetail({ id }: { id: string }) {
               {event.name}, {formatShortDate(event.startDate)}
             </span>
           )}
-          {pillar && <span>{pillar.name}</span>}
           {event?.location && (
             <span className="inline-flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5" aria-hidden />

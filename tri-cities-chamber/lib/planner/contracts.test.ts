@@ -162,8 +162,7 @@ describe('groupContracts', () => {
     expect(groups.map((g) => g.label)).toEqual(['Gala Night', 'Mixer', 'Not tied to an event']);
   });
 
-  it('groups by pillar and by partner', () => {
-    expect(groupContracts(contracts, 'pillar', lookups).map((g) => g.label)).toEqual(['Business', 'No pillar']);
+  it('groups by partner', () => {
     expect(groupContracts(contracts, 'partner', lookups).map((g) => g.label)).toEqual(['Acme Bank', 'Zed Foods']);
   });
 });

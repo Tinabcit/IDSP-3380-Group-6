@@ -46,7 +46,6 @@ import { PaymentReminderPanel } from "./payment-reminder-panel";
 const GROUP_LABELS: Record<ContractGroupBy, string> = {
   none: "No grouping",
   event: "Group by event",
-  pillar: "Group by pillar",
   partner: "Group by partner",
 };
 
@@ -351,7 +350,6 @@ export function ContractsPage() {
         <FilterBar
           label="Filter contracts"
           filters={filters}
-          pillars={data.pillars}
           sponsors={data.sponsors}
           onChange={setFilters}
         />

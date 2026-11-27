@@ -101,14 +101,20 @@ describe('tasks helpers', () => {
       event({ id: 'now', isSignature: false, startDate: '2025-03-09', endDate: '2025-03-10' }),
     ];
 
-    it('puts finished events in archived, whatever their type', () => {
-      expect(splitEvents(events, today).archived.map((e) => e.id)).toEqual(['old']);
+    it('puts finished events in past, whatever their type', () => {
+      expect(splitEvents(events, today).past.map((e) => e.id)).toEqual(['old']);
     });
 
-    it('splits the rest into repeat (signature) and one-off events', () => {
-      const { repeat, oneOff } = splitEvents(events, today);
-      expect(repeat.map((e) => e.id)).toEqual(['sig']);
-      expect(oneOff.map((e) => e.id)).toEqual(['now', 'one']);
+    it('puts events not finished yet (including one ending today) in upcoming, soonest first', () => {
+      expect(splitEvents(events, today).upcoming.map((e) => e.id)).toEqual(['now', 'sig', 'one']);
+    });
+
+    it('lists past events most recent first', () => {
+      const past = [
+        event({ id: 'jan', startDate: '2025-01-05', endDate: '2025-01-05' }),
+        event({ id: 'feb', startDate: '2025-02-05', endDate: '2025-02-05' }),
+      ];
+      expect(splitEvents(past, today).past.map((e) => e.id)).toEqual(['feb', 'jan']);
     });
   });
 

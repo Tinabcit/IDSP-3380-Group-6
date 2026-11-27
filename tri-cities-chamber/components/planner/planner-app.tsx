@@ -285,7 +285,6 @@ export function PlannerApp() {
         <div className='grid content-start gap-4'>
           <FilterBar
             filters={filters}
-            pillars={store.pillars}
             sponsors={store.sponsors}
             onChange={setFilters}
           />

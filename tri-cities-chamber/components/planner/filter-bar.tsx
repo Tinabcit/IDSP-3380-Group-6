@@ -13,7 +13,6 @@ import {
 import { hasActiveFilters } from "@/lib/planner/selectors";
 import {
   EMPTY_FILTERS,
-  type Pillar,
   type PlannerFilters,
   type Sponsor,
 } from "@/lib/planner/types";
@@ -25,21 +24,18 @@ const ALL = "all";
 /** The information FilterBar needs. */
 interface FilterBarProps {
   filters: PlannerFilters;
-  pillars: Pillar[];
   sponsors: Sponsor[];
   onChange: (filters: PlannerFilters) => void;
   label?: string;
 }
 
 /**
- * The row of filters: a "Signature events" button, a pillar dropdown, a sponsor
- * dropdown and a "Clear filters" button. It does not remember the filters itself;
+ * The row of filters: a "Signature events" button, a sponsor dropdown and a "Clear filters" button. It does not remember the filters itself;
  * the parent passes them in and gets told when they change.
  * Used on the calendar page and the contracts page.
  */
 export function FilterBar({
   filters,
-  pillars,
   sponsors,
   onChange,
   label = "Filter calendar",
@@ -68,32 +64,6 @@ export function FilterBar({
         <Star className={cn(filters.signatureOnly && "fill-current")} />
         Signature events
       </Button>
-
-      <Select
-        value={filters.pillarId ?? ALL}
-        items={[{ value: ALL, label: "All pillars" }, ...pillars.map((p) => ({ value: p.id, label: p.name }))]}
-        onValueChange={(v) =>
-          onChange({ ...filters, pillarId: v === ALL ? null : v })
-        }
-      >
-        <SelectTrigger
-          aria-label="Pillar"
-          className={cn(
-            "h-9 w-auto shrink-0 gap-2",
-            filters.pillarId && "border-primary"
-          )}
-        >
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value={ALL}>All pillars</SelectItem>
-          {pillars.map((p) => (
-            <SelectItem key={p.id} value={p.id}>
-              {p.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
 
       <Select
         value={filters.sponsorId ?? ALL}

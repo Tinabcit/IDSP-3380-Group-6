@@ -130,8 +130,8 @@ export interface ContractGroup {
 }
 
 /**
- * Puts contracts into groups by event, pillar or partner (or one single group
- * for "none"), sorted by name. Contracts with no event/pillar go in a catch-all group.
+ * Puts contracts into groups by event or partner (or one single group for
+ * "none"), sorted by name. Contracts with no event go in a catch-all group.
  */
 export function groupContracts(
   contracts: Contract[],
@@ -148,10 +148,6 @@ export function groupContracts(
     if (groupBy === "event") {
       key = event?.id ?? "none";
       label = event?.name ?? "Not tied to an event";
-    } else if (groupBy === "pillar") {
-      const pillar = event ? lookups.pillarsById.get(event.pillarId) : undefined;
-      key = pillar?.id ?? "none";
-      label = pillar?.name ?? "No pillar";
     } else {
       const sponsor = lookups.sponsorsById.get(c.sponsorId);
       key = sponsor?.id ?? "none";
